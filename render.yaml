@@ -1,0 +1,65 @@
+services:
+  - type: web
+    name: pyq-studio-web
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    preDeployCommand: python -m flask --app backend:create_app db upgrade
+    healthCheckPath: /healthz
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: SECRET_KEY
+        sync: false
+      - key: GOOGLE_OAUTH_CLIENT_ID
+        sync: false
+      - key: GOOGLE_OAUTH_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_OAUTH_REDIRECT_URI
+        sync: false
+      - key: STORAGE_BACKEND
+        value: r2
+      - key: R2_ENDPOINT_URL
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_PDF_BUCKET_NAME
+        value: pyq-pdfs
+      - key: R2_IMAGE_BUCKET_NAME
+        value: pyq-images
+      - key: R2_PREFIX
+        value: pyq
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: REDIS_URL
+        sync: false
+      - key: CACHE_NAMESPACE
+        value: pyq:content:v1
+      - key: CONTENT_CACHE_TTL
+        value: "86400"
+      - key: WEB_CONCURRENCY
+        value: "1"
+      - key: GUNICORN_THREADS
+        value: "8"
+      - key: DB_POOL_SIZE
+        value: "6"
+      - key: DB_MAX_OVERFLOW
+        value: "6"
+      - key: DB_POOL_TIMEOUT
+        value: "15"
+      - key: IMAGE_DELIVERY
+        value: signed
+      - key: IMAGE_CDN_BASE_URL
+        sync: false
+      - key: IMAGE_CDN_MANIFEST
+        sync: false
+      - key: CELERY_BROKER_URL
+        sync: false
+      - key: CELERY_QUEUE_NAMESPACE
+        value: pyq:ingestion
+      - key: UPLOAD_DIR
+        value: /data/uploads

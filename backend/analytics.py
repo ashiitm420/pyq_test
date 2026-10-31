@@ -311,7 +311,7 @@ def question_attention(first,last,course,mode):
     graded=func.sum(Q.correct+Q.partial+Q.incorrect)
     candidates=query.group_by(Q.question_id,Q.paper_key,Q.version).having(graded>=20).having(func.sum(Q.correct)*100<graded*30).order_by((func.sum(Q.correct)*1.0/graded),graded.desc()).limit(100).all()
     from sqlalchemy.orm import joinedload
-    questions={q.id:q for q in Question.query.options(joinedload(Question.options),joinedload(Question.images),joinedload(Question.paper)).filter(Question.id.in_([r.question_id for r in candidates]),Question.status=='AVAILABLE').unique()}
+    questions={} if not candidates else {q.id:q for q in Question.query.options(joinedload(Question.options),joinedload(Question.images),joinedload(Question.paper)).filter(Question.id.in_([r.question_id for r in candidates]),Question.status=='AVAILABLE').all()}
     rows=[]
     for r in candidates:
         q=questions.get(r.question_id)

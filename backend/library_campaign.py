@@ -1,0 +1,186 @@
+"""Fresh-library reset and systematic catalog campaign helpers."""
+import time
+from collections import defaultdict
+from sqlalchemy import func,or_
+from sqlalchemy.orm import joinedload
+from flask import current_app
+from .models import *
+from .storage import project_prefix_inventory,purge_project_prefix,StorageError
+from .content_cache import invalidate
+
+SUCCESS={'AVAILABLE','PARTIAL','DUPLICATE'}
+FAILED={'PROCESSING_FAILED','EXTRACTION_FAILED'}
+ACTIVE={'FETCH_QUEUED','QUEUED','FETCHING','PROCESSING'}
+
+def library_inventory(include_storage=True):
+    counts={
+        'users':User.query.count(),'courses':Course.query.count(),'terms':Term.query.count(),'exam_types':ExamType.query.count(),
+        'papers':Paper.query.count(),'questions':Question.query.count(),'available_questions':Question.query.filter_by(status='AVAILABLE').count(),
+        'images':QuestionImage.query.count(),'options':QuestionOption.query.count(),'source_entries':SourceEntry.query.count(),
+        'ingestion_files':IngestionFile.query.count(),'ingestion_batches':IngestionBatch.query.count(),'imports':ImportRun.query.count(),
+        'attempts':Attempt.query.count(),'progress':PaperProgress.query.count(),'bookmarks':Bookmark.query.count(),
+        'ai_solutions':AISolution.query.count(),'solution_jobs':SolutionJob.query.count(),'solution_batches':SolutionBatch.query.count(),
+        'reviews':QuestionReview.query.count(),'content_reports':ContentReport.query.count(),
+    }
+    counts['ready_papers']=db.session.query(Question.paper_id).filter(Question.status=='AVAILABLE').distinct().count()
+    now=time.time();stale_before=now-1800
+    active_q=IngestionFile.query.filter(IngestionFile.status.in_(['FETCHING','PROCESSING']))
+    counts['active_ingestion']=active_q.count()
+    counts['stale_ingestion']=active_q.filter(or_(IngestionFile.started_at.is_(None),IngestionFile.started_at<stale_before)).count()
+    counts['live_ingestion']=counts['active_ingestion']-counts['stale_ingestion']
+    result={'counts':counts}
+    if include_storage:
+        try:result['storage']=project_prefix_inventory()
+        except StorageError as exc:result['storage']={'enabled':True,'error':str(exc)}
+    return result
+
+def reset_library(user_id,cleanup_storage=True,cancel_active=False):
+    inventory=library_inventory(include_storage=False)
+    if inventory['counts']['live_ingestion'] and not cancel_active:
+        raise RuntimeError('A paper is genuinely still processing. Confirm cancellation to stop it and continue the full library reset.')
+    # A full reset owns the content lifecycle. Old PROCESSING markers can survive
+    # a deploy/worker restart; explicit cancellation prevents those zombie rows
+    # from blocking a clean start forever.
+    active=IngestionFile.query.filter(IngestionFile.status.in_(['FETCHING','PROCESSING'])).all()
+    if active:
+        now=time.time()
+        for f in active:
+            f.status='PAUSED';f.finished_at=now;f.error='Cancelled by administrator during full PYQ library reset.'
+            f.events=(f.events or [])+[{'time':now,'stage':'RESET_CANCELLED','message':'Cancelled by administrator during full PYQ library reset.'}]
+        db.session.commit()
+    # Delete dependent content explicitly so PostgreSQL and SQLite behave the same.
+    SolutionJob.query.delete(synchronize_session=False)
+    AISolution.query.delete(synchronize_session=False)
+    SolutionBatch.query.delete(synchronize_session=False)
+    Bookmark.query.delete(synchronize_session=False)
+    ContentReport.query.delete(synchronize_session=False)
+    QuestionReview.query.delete(synchronize_session=False)
+    AttemptAnswer.query.delete(synchronize_session=False)
+    Attempt.query.delete(synchronize_session=False)
+    PaperProgress.query.delete(synchronize_session=False)
+    QuestionImage.query.delete(synchronize_session=False)
+    QuestionOption.query.delete(synchronize_session=False)
+    Question.query.delete(synchronize_session=False)
+    SourceEntry.query.delete(synchronize_session=False)
+    IngestionFile.query.delete(synchronize_session=False)
+    IngestionBatch.query.delete(synchronize_session=False)
+    Paper.query.update({Paper.canonical_paper_id:None},synchronize_session=False)
+    Paper.query.delete(synchronize_session=False)
+    ImportRun.query.delete(synchronize_session=False)
+    ExamType.query.delete(synchronize_session=False)
+    Term.query.delete(synchronize_session=False)
+    Course.query.delete(synchronize_session=False)
+    db.session.flush()
+    report={'mode':'controlled_library_reset','created_at':time.time(),'requested_by':user_id,'before':inventory['counts']}
+    db.session.add(ImportRun(workbook_hash=None,report=report))
+    db.session.commit();invalidate()
+    storage={'enabled':False,'deleted':0}
+    warning=None
+    if cleanup_storage:
+        try:storage=purge_project_prefix()
+        except StorageError as exc:
+            warning=str(exc)
+            current_app.logger.error('library_reset_storage_cleanup_failed type=%s',type(exc).__name__)
+    return {'reset':True,'before':inventory['counts'],'storage':storage,'warning':warning}
+
+def diploma_reset_inventory():
+    papers=[p.id for p in Paper.query.join(Course).filter(Course.level=='Diploma').all()]
+    questions=[q.id for q in Question.query.filter(Question.paper_id.in_(papers)).all()]
+    files=[f.id for f in IngestionFile.query.filter(IngestionFile.paper_id.in_(papers)).all()]
+    blockers=[]
+    if IngestionFile.query.filter(IngestionFile.paper_id.in_(papers),IngestionFile.status.in_(['FETCHING','PROCESSING'])).count():
+        blockers.append('Diploma processing is active. Pause processing and wait for the current paper to finish before resetting.')
+    if Paper.query.filter(Paper.id.notin_(papers),Paper.canonical_paper_id.in_(papers)).count():
+        blockers.append('Another level shares a Diploma question bank. Resolve that link before resetting.')
+    if Question.query.filter(Question.paper_id.notin_(papers),Question.ingestion_file_id.in_(files)).count():
+        blockers.append('Another level references a Diploma import. Resolve that link before resetting.')
+    if AttemptAnswer.query.join(Attempt).filter(AttemptAnswer.question_id.in_(questions),or_(Attempt.paper_id.notin_(papers),Attempt.paper_id.is_(None))).count():
+        blockers.append('A mixed-paper attempt references Diploma questions. Remove that attempt before resetting.')
+    return {'counts':{'papers':len(papers),'questions':len(questions),
+        'courses':Course.query.filter_by(level='Diploma').count(),
+        'solutions':AISolution.query.filter(AISolution.question_id.in_(questions)).count(),
+        'attempts':Attempt.query.filter(Attempt.paper_id.in_(papers)).count()},
+        'blockers':blockers,'confirmation':'RESET DIPLOMA'}
+
+def reset_diploma(user_id):
+    # Lock targeted papers; running extraction must finish before this operation.
+    papers=[p.id for p in Paper.query.join(Course).filter(Course.level=='Diploma').with_for_update().all()]
+    # Claims update ingestion rows atomically; lock those rows before checking
+    # active work so a queued job cannot become active during deletion.
+    IngestionFile.query.filter(IngestionFile.paper_id.in_(papers)).with_for_update().all()
+    preview=diploma_reset_inventory()
+    if preview['blockers']:raise RuntimeError(' '.join(preview['blockers']))
+    questions=[q.id for q in Question.query.filter(Question.paper_id.in_(papers)).all()]
+    files=[f.id for f in IngestionFile.query.filter(IngestionFile.paper_id.in_(papers)).all()]
+    attempts=[a.id for a in Attempt.query.filter(Attempt.paper_id.in_(papers)).all()]
+    ingestion_batches=[bid for bid, in db.session.query(IngestionFile.batch_id).filter(IngestionFile.paper_id.in_(papers)).distinct()]
+    solution_batches=[bid for bid, in db.session.query(SolutionJob.batch_id).filter(SolutionJob.question_id.in_(questions)).distinct()]
+    for model,column,ids in [(SolutionJob,SolutionJob.question_id,questions),(AISolution,AISolution.question_id,questions),
+        (Bookmark,Bookmark.question_id,questions),(ContentReport,ContentReport.question_id,questions),
+        (QuestionReview,QuestionReview.question_id,questions),(AttemptAnswer,AttemptAnswer.attempt_id,attempts),
+        (Attempt,Attempt.id,attempts),(PaperProgress,PaperProgress.paper_id,papers),
+        (QuestionImage,QuestionImage.question_id,questions),(QuestionOption,QuestionOption.question_id,questions),
+        (Question,Question.paper_id,papers),(SourceEntry,SourceEntry.paper_id,papers)]:
+        model.query.filter(column.in_(ids)).delete(synchronize_session=False)
+    IngestionFile.query.filter(IngestionFile.duplicate_of_id.in_(files)).update({IngestionFile.duplicate_of_id:None},synchronize_session=False)
+    IngestionFile.query.filter(IngestionFile.id.in_(files)).delete(synchronize_session=False)
+    Paper.query.filter(Paper.id.in_(papers)).update({Paper.canonical_paper_id:None},synchronize_session=False)
+    Paper.query.filter(Paper.id.in_(papers)).delete(synchronize_session=False)
+    IngestionBatch.query.filter(IngestionBatch.id.in_(ingestion_batches),~IngestionBatch.id.in_(db.session.query(IngestionFile.batch_id))).delete(synchronize_session=False)
+    SolutionBatch.query.filter(SolutionBatch.id.in_(solution_batches),~SolutionBatch.id.in_(db.session.query(SolutionJob.batch_id))).delete(synchronize_session=False)
+    # Keep shared metadata, audit history, permanent analytics and storage assets.
+    # In particular, never purge the project R2 prefix for a level-only reset.
+    db.session.add(ImportRun(report={'mode':'diploma_only_reset','requested_by':user_id,'before':preview['counts'],'created_at':time.time()}))
+    db.session.commit();invalidate()
+    return {'reset':True,'before':preview['counts'],'storage_preserved':True}
+
+def _stage(p):
+    name=(p.exam_type.name or '').strip().casefold();session=(p.session or '').strip().upper()
+    if name=='quiz 1':return ('quiz1','Quiz 1',1)
+    if name=='quiz 2':return ('quiz2','Quiz 2',2)
+    if name=='end term' and session=='FN':return ('end_fn','End Term · FN',3)
+    if name=='end term' and session=='AN':return ('end_an','End Term · AN',4)
+    return ('other','Other / Practical',5)
+
+def _paper_state(p,ready,latest):
+    effective=p.canonical_paper_id or p.id
+    if effective in ready:return 'available'
+    job=latest.get(p.id)
+    if job and job.status in ACTIVE:return 'queued'
+    if job and job.status in FAILED:return 'failed'
+    if p.status=='ARCHIVED':return 'ignored'
+    return 'pending'
+
+def campaign(level=None):
+    papers=Paper.query.options(joinedload(Paper.exam_type),joinedload(Paper.term),joinedload(Paper.course)).filter(Paper.source_url.isnot(None)).all()
+    if level:papers=[p for p in papers if p.course.level==level]
+    ready={pid for pid, in db.session.query(Question.paper_id).filter(Question.status=='AVAILABLE').distinct()}
+    latest_ids=db.session.query(func.max(IngestionFile.id)).group_by(IngestionFile.paper_id)
+    latest={f.paper_id:f for f in IngestionFile.query.filter(IngestionFile.id.in_(latest_ids)).all()}
+    grouped={}
+    totals=defaultdict(int)
+    for p in papers:
+        key,label,rank=_stage(p);state=_paper_state(p,ready,latest)
+        totals[state]+=1
+        gkey=(rank,key,label,p.term.id,p.term.name,p.term.year,p.term.month)
+        row=grouped.setdefault(gkey,{'stage':key,'label':label,'rank':rank,'term_id':p.term.id,'term':p.term.name,'year':p.term.year,'month':p.term.month,'total':0,'available':0,'pending':0,'queued':0,'failed':0,'ignored':0})
+        row['total']+=1;row[state]+=1
+    rows=sorted(grouped.values(),key=lambda x:(x['rank'],-x['year'],-x['month'],x['term']))
+    for row in rows:
+        row['finished']=row['available']+row['ignored']
+        row['percent']=round((row['finished']/row['total'])*100,1) if row['total'] else 100
+        row['complete']=row['pending']==0 and row['queued']==0 and row['failed']==0
+    # Failed papers stay visible and retryable without blocking older terms.
+    current=next((r for r in rows if r['pending'] or r['queued']),None)
+    retry_target=next((r for r in rows if r['failed']),None)
+    ready_count=totals['available'];total=len(papers)
+    return {'total':total,'available':ready_count,'pending':totals['pending'],'queued':totals['queued'],'failed':totals['failed'],'ignored':totals['ignored'],
+            'percent':round((ready_count/total)*100,1) if total else 0,'groups':rows,'current':current,'retry_target':retry_target}
+
+def group_papers(stage,term_id,state='pending',level=None):
+    papers=Paper.query.options(joinedload(Paper.exam_type),joinedload(Paper.term)).filter_by(term_id=term_id).filter(Paper.source_url.isnot(None)).order_by(Paper.id).all()
+    if level:papers=[p for p in papers if p.course.level==level]
+    ready={pid for pid, in db.session.query(Question.paper_id).filter(Question.status=='AVAILABLE').distinct()}
+    latest_ids=db.session.query(func.max(IngestionFile.id)).group_by(IngestionFile.paper_id)
+    latest={f.paper_id:f for f in IngestionFile.query.filter(IngestionFile.id.in_(latest_ids)).all()}
+    return [p for p in papers if _stage(p)[0]==stage and _paper_state(p,ready,latest)==state]

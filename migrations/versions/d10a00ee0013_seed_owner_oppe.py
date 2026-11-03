@@ -11,7 +11,12 @@ branch_labels=None
 depends_on=None
 
 def upgrade():
-    bundles=json.loads((Path(__file__).resolve().parents[2]/'backend/data/oppe/seed-bundles-20261020.json').read_text())
+    # The in-house OPPE workspace was retired in favour of an external practice
+    # site, and its seed data was removed. Deployments that already ran this
+    # revision are unaffected; new databases simply skip the seed.
+    source=Path(__file__).resolve().parents[2]/'backend/data/oppe/seed-bundles-20261020.json'
+    if not source.exists():return
+    bundles=json.loads(source.read_text())
     conn=op.get_bind()
     courses=sa.table('oppe_course',sa.column('id',sa.Integer),sa.column('slug',sa.String))
     questions=sa.table('oppe_question',sa.column('course_id',sa.Integer),sa.column('external_id',sa.String),sa.column('content',sa.JSON),sa.column('status',sa.String),sa.column('validation_hash',sa.String),sa.column('updated_at',sa.Float))

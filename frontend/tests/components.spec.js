@@ -22,11 +22,13 @@ it('exam saves options and review mark, then submits through confirmation',async
 });
 });
 describe('automatic processing',()=>{it('shows processing counters and queues catalog without approval controls',async()=>{
+ localStorage.setItem('pyq-admin-tab','Processing');
  mocks.api.mockImplementation(async(path,options)=>path.startsWith('/courses')?{items:[]}:path==='/metadata'?{terms:[],exams:[]}:path==='/admin/stats'?{papers:734,processed:1,questions:20}:path.startsWith('/admin/ingestion')?{items:[],total:0}:({queued:3,batch_id:1}));
  const w=mount(Admin);await flushPromises();expect(w.text()).toContain('734');expect(w.text()).not.toContain('Verify');expect(w.text()).not.toContain('Publish');await w.findAll('button').find(b=>b.text()==='Queue next 20 pending').trigger('click');await flushPromises();expect(mocks.api).toHaveBeenCalledWith('/admin/process-catalog',expect.objectContaining({method:'POST'}));w.unmount();
 })});
 
 describe('admin notices',()=>{it('clears a stale success notice when the next admin action fails',async()=>{
+ localStorage.setItem('pyq-admin-tab','Processing');
  mocks.api.mockImplementation(async(path)=>path.startsWith('/courses')?{items:[]}:path==='/metadata'?{terms:[],exams:[]}:path==='/admin/stats'?{papers:1}:path.startsWith('/admin/ingestion')?{items:[],total:0}:path==='/admin/process-catalog'?(()=>{throw new Error('Server failed')})():{});
  const w=mount(Admin);await flushPromises();
  w.vm.notice='Old success';await w.findAll('button').find(b=>b.text()==='Queue next 20 pending').trigger('click');await flushPromises();

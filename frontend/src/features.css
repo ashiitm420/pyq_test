@@ -292,3 +292,7 @@
 @media(max-width:760px){[data-theme="dark"] .sidebar nav{background:#18212d;box-shadow:0 -4px 18px #0006}[data-theme="dark"] .sidebar nav a.active{background:#22314a}}
 /* P1: breadcrumb replaces the separate "Go back" button; long names wrap. */
 .breadcrumb-link{flex-wrap:wrap;row-gap:4px}.breadcrumb-link a{color:inherit}.breadcrumb-link a:hover{color:var(--blue)}
+/* Public OPPE practice card: external site, visually distinct from PYQ exam cards. */
+.exam-type-card.oppe-card{background:linear-gradient(135deg,#173452 0%,#285fd8 100%)}
+.exam-type-card.oppe-card:hover{background:linear-gradient(135deg,#1d4066 0%,#2f6ae6 100%)}
+@media(min-width:761px) and (max-width:1099px){.exam-type-cards.oppe-home-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}

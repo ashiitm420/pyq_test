@@ -1,7 +1,7 @@
 from .storage import send_asset,ensure_local,publish,StorageError
 import uuid,time,hashlib
 from pathlib import Path
-import fitz
+from .lazy import fitz
 from sqlalchemy import or_
 from flask import Blueprint,jsonify,request,g,abort,current_app,send_from_directory,redirect
 from .models import *
@@ -35,6 +35,16 @@ def analytics_report():
 
 def admin_question(q):return {**question_snapshot(q),'status':q.status,'confidence':q.confidence,'warnings':q.warnings,'ingestion_file_id':q.ingestion_file_id,'hidden':q.status=='HIDDEN','manual_locked':bool((q.evidence or {}).get('_admin_locked'))}
 def file_json(f):return {k:getattr(f,k) for k in ('id','batch_id','paper_id','filename','status','error','warnings','pages','extracted','retries','started_at','finished_at','source_url','events','duplicate_of_id')}
+
+@admin.get('/client-ip')
+@require_user(True)
+def client_ip_check():
+    """Lets the owner confirm, on the live deployment, which address the rate
+    limiter uses. It should equal your own public IP (e.g. from whatismyip)."""
+    from .client_ip import client_ip
+    return jsonify(rate_limit_ip=client_ip(),
+                   has_cf_connecting_ip=bool(request.headers.get('CF-Connecting-IP')),
+                   forwarded_hops=len([p for p in request.headers.get('X-Forwarded-For','').split(',') if p.strip()]))
 
 @admin.get('/google-drive/status')
 @require_user(True)
@@ -470,7 +480,6 @@ def upload_pyq():
 def ingestion_detail(id):
     record=db.get_or_404(IngestionFile,id)
     paper=db.get_or_404(Paper,record.paper_id)
-    effective=db.session.get(Paper,paper.canonical_paper_id) if paper.canonical_paper_id else paper
     result=file_json(record)
     if record.duplicate_of_id:
         canonical=db.session.get(IngestionFile,record.duplicate_of_id)

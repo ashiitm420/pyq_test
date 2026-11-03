@@ -61,8 +61,10 @@ def register_contact_routes(admin):
             abort(400, description='Invalid inbox status.')
         row.status = status
         db.session.commit()
-        from .content_cache import invalidate
-        invalidate()
+        # Inbox changes only affect the public feedback list.
+        from .content_cache import forget
+        from .api import SITE_FEEDBACK_CACHE_KEY
+        forget(SITE_FEEDBACK_CACHE_KEY)
         return jsonify(ok=True)
 
     @admin.delete('/contact-messages/<int:id>')
@@ -71,6 +73,8 @@ def register_contact_routes(admin):
         row = db.get_or_404(ContactMessage, id)
         db.session.delete(row)
         db.session.commit()
-        from .content_cache import invalidate
-        invalidate()
+        # Inbox changes only affect the public feedback list.
+        from .content_cache import forget
+        from .api import SITE_FEEDBACK_CACHE_KEY
+        forget(SITE_FEEDBACK_CACHE_KEY)
         return jsonify(ok=True)

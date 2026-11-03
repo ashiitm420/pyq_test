@@ -107,16 +107,23 @@ def invalidate():
 
 invalidate_content_cache = invalidate
 
-def _old_invalidate_unused():
-    _local_clear()
+
+def forget(key):
+    """Drop one cached entry without clearing the whole content cache.
+
+    Used for data outside CONTENT_TABLES (for example site feedback), so a
+    single public post never forces every paper/course entry to be rebuilt.
+    """
+    with _local_lock:
+        _local_cache.pop(key, None)
     try:
         r = client()
-        if r is not None:r.set(prefix()+':epoch', uuid.uuid4().hex)
+        if r is not None:
+            epoch = r.get(prefix()+':epoch')
+            if epoch:
+                r.delete(prefix()+':'+str(epoch)+':'+key)
     except Exception:
-        # Local entries are already cleared in this process. Other processes have
-        # a bounded TTL even if shared invalidation is temporarily unavailable.
-        current_app.logger.warning('content_cache_invalidation_failed; entries expire within configured TTL')
-
+        current_app.logger.warning('content_cache_forget_failed; entry expires within configured TTL')
 
 def cached(key, loader):
     lock = None
@@ -188,5 +195,3 @@ def committed(session):
 def rolled_back(session, previous):
     if previous.parent is None:
         session.info.pop('content_changed', None)
-
-invalidate_content_cache = invalidate

@@ -5,6 +5,7 @@ from sqlalchemy import insert
 from sqlalchemy.orm import selectinload,joinedload
 from .models import *
 from . import limiter
+from .client_ip import ip_key
 from .api import integer_argument,require_visitor,body,paginate,visible_papers
 from .engine import *
 from .performance import span
@@ -87,35 +88,12 @@ def prepare_image_paths(snapshots,signed_ttl=None):
     if missing:paths.update(db.session.query(QuestionImage.id,QuestionImage.path).filter(QuestionImage.id.in_(missing)).all())
     g.image_paths=paths
 
-def _build_practice_keys(a_mode, paper_id, snapshots_list):
-    if a_mode != 'practice' or not snapshots_list:
-        return []
-    try:
-        from .ai_solutions import _cached_paper_solutions, practice_key_payload, version
-        sol_map = _cached_paper_solutions(paper_id) if paper_id else {}
-        out = []
-        for s in snapshots_list:
-            qid = s.get('id')
-            sol = sol_map.get(qid)
-            ai_text = sol['text'] if sol and sol.get('version') == version(s) else None
-            out.append({'question_id': qid, 'key': practice_key_payload(s, ai_text)})
-        return out
-    except Exception:
-        return []
-
 def bootstrap_json(a):
     items=sorted(a.items,key=lambda i:(i.snapshot.get('paper_id',0),question_order(i.snapshot['number']),i.position))
     use_paper_image_delivery(a.paper_id)
     prepare_image_paths([i.snapshot for i in items],attempt_image_ttl(a))
     bookmarks=set()
-    res={**attempt_json(a),'items':[item_json(a,i,bookmarks) for i in items]}
-    if a.mode=='practice':
-        res['practice_keys']=_build_practice_keys(a.mode,a.paper_id,[i.snapshot for i in items])
-    return res
-
-def start_response(a):
-    # Legacy helper for continuation flows that already own ORM answer objects.
-    return jsonify(bootstrap_json(a) if request.args.get('bootstrap')=='1' else attempt_json(a)),201
+    return {**attempt_json(a),'items':[item_json(a,i,bookmarks) for i in items]}
 
 def start_payload(a,snapshots,images_prepared=False):
     """Build a newly-created attempt response without re-reading its answer rows."""
@@ -129,13 +107,10 @@ def start_payload(a,snapshots,images_prepared=False):
         if not images_prepared:
             use_paper_image_delivery(a.paper_id)
             prepare_image_paths(ordered,attempt_image_ttl(a))
-        qids=[s['id'] for s in ordered]
         bookmarks=set()
         result['items']=[{'question':question_with_image_urls(s),'answer':None,'marked':False,
                           'visited':False,'status':a.status,'bookmarked':s['id'] in bookmarks}
                          for s in ordered]
-        if a.mode=='practice':
-            result['practice_keys']=_build_practice_keys(a.mode,a.paper_id,ordered)
     return result
 
 def finish_new_attempt(a,snapshots,paper=None):
@@ -397,10 +372,6 @@ def topics(id):
     rows=db.session.query(Question.topic,db.func.count(Question.id)).join(Paper).filter(Paper.course_id==id,Question.status=='AVAILABLE',Question.topic.isnot(None),Question.topic!='').group_by(Question.topic).all()
     return jsonify([{'topic':topic,'count':count} for topic,count in rows])
 
-def progress_json(p):
-    paper=db.session.get(Paper,p.paper_id)
-    return {'paper_id':p.paper_id,'name':paper.name,'course':paper.course.name,'exam':paper.exam_type.name,'term':paper.term.name,'attempted':p.attempted,'last_score':p.last_score,'last_attempted_at':p.last_attempted_at}
-
 @exams.get('/progress')
 @require_visitor
 def progress():
@@ -496,7 +467,7 @@ def switch_mode(id):
 
 
 @exams.post('/questions/<int:id>/report-format')
-@limiter.limit('60 per hour')
+@limiter.limit('60 per hour', key_func=ip_key)
 @require_visitor
 def report_format(id):
     from sqlalchemy.exc import IntegrityError

@@ -3,9 +3,9 @@ Green/red indicators are consumed during ingestion, never exposed in student ass
 """
 import io,re,hashlib,subprocess,tempfile,shutil
 from pathlib import Path
-import fitz
-from PIL import Image
-import numpy as np
+from .lazy import fitz
+from .lazy import PIL_Image as Image
+from .lazy import np
 
 def color_kind(color):
     r=(color>>16)&255;g=(color>>8)&255;b=color&255

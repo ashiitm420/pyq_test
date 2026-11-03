@@ -1,7 +1,6 @@
 """Public About content with administrator-only editing."""
 import io, uuid, warnings
 from flask import Blueprint, jsonify, request, abort
-from PIL import Image, ImageOps, UnidentifiedImageError
 from .models import db, AboutPage
 from .api import require_user, body
 from .storage import write_asset, send_asset
@@ -54,6 +53,8 @@ def upload_photo():
     if not upload: abort(400, description='Choose a photo.')
     raw = upload.stream.read(5 * 1024 * 1024 + 1)
     if len(raw) > 5 * 1024 * 1024: abort(413, description='Photo must be 5 MB or smaller.')
+    # Pillow is imported only for this admin action, not at web startup.
+    from PIL import Image, ImageOps, UnidentifiedImageError
     try:
         with warnings.catch_warnings():
             warnings.simplefilter('error', Image.DecompressionBombWarning)

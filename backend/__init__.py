@@ -2,27 +2,16 @@ import os, secrets, gzip, re
 from pathlib import Path
 from flask import Flask, jsonify, request, session, send_from_directory, abort
 from sqlalchemy import text
-from flask_migrate import Migrate
 from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
+from .client_ip import visitor_key
 from werkzeug.exceptions import HTTPException
 from sqlalchemy.exc import IntegrityError,SQLAlchemyError
 from sqlalchemy.orm.exc import StaleDataError
 from .models import db
 
-def _rate_limit_key():
-    try:
-        visitor = session.get('visitor')
-        if visitor:
-            return 'visitor:' + str(visitor)[:32]
-        forwarded = request.headers.get('X-Forwarded-For', '')
-        if forwarded:
-            return forwarded.split(',')[0].strip()
-    except Exception:
-        pass
-    return get_remote_address()
-
-limiter = Limiter(key_func=_rate_limit_key, default_limits=['1200 per minute'])
+# Coarse anti-flood limit per browser; sensitive endpoints add per-IP limits
+# (see client_ip.py) because a client can discard its cookie.
+limiter = Limiter(key_func=visitor_key, default_limits=['1200 per minute'])
 
 def create_app(config=None):
     from .database_config import database_url,engine_options
@@ -89,7 +78,13 @@ def create_app(config=None):
     upload_path=Path(app.config['UPLOAD_DIR'])
     app.config['UPLOAD_DIR']=str((root/upload_path).resolve() if not upload_path.is_absolute() else upload_path)
     Path(app.config['UPLOAD_DIR']).mkdir(parents=True, exist_ok=True)
-    db.init_app(app); Migrate(app, db); limiter.init_app(app)
+    db.init_app(app); limiter.init_app(app)
+    # Flask-Migrate pulls in Alembic (~1.5 s of imports). Gunicorn web workers
+    # never run `flask db`, so skip it there; CLI, scripts and tests keep it.
+    import sys
+    if 'gunicorn' not in sys.modules:
+        from flask_migrate import Migrate
+        Migrate(app, db)
     from .analytics import install as install_analytics
     install_analytics(app)
     from .performance import install
@@ -214,20 +209,7 @@ def create_app(config=None):
         return response
     from .cli import register_cli
     register_cli(app)
-    if not app.config.get('TESTING'):
-        import threading
-        def _warm_ram_cache():
-            try:
-                with app.app_context():
-                    from .api import _all_courses, _all_visible_papers, stats, _metadata
-                    from .content_cache import cached
-                    _all_courses()
-                    _all_visible_papers()
-                    stats()
-                    cached('metadata', _metadata)
-            except Exception:
-                pass
-        t = threading.Timer(0.2, _warm_ram_cache)
-        t.daemon = True
-        t.start()
+    # Public content is warmed once per Gunicorn worker in gunicorn.conf.py
+    # (post_worker_init). A second warm-up here also ran during `flask db
+    # upgrade` and competed for the same 0.1 vCPU at boot.
     return app

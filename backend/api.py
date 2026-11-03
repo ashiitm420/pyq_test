@@ -7,6 +7,7 @@ from sqlalchemy import or_,and_,func,case,select
 from sqlalchemy.orm import joinedload
 from .models import *
 from . import limiter
+from .client_ip import ip_key
 api=Blueprint('api',__name__,url_prefix='/api')
 
 def integer_argument(name):
@@ -55,7 +56,7 @@ def paginate(query,mapper):
 def _paper_content_rows(papers):
     """Batch cached catalog counts and current published solution coverage."""
     if not papers:return []
-    ids=[p.id for p in papers];effective_ids={p.canonical_paper_id or p.id for p in papers}
+    effective_ids={p.canonical_paper_id or p.id for p in papers}
     effective={p.id:p for p in papers}
     missing=effective_ids-set(effective)
     if missing:effective.update({p.id:p for p in Paper.query.filter(Paper.id.in_(missing))})
@@ -111,7 +112,8 @@ def register():
     abort(410,description='Student accounts are no longer required. Open a paper to start practising.')
 
 @api.post('/auth/login')
-@limiter.limit('10 per minute')
+@limiter.limit('10 per minute', key_func=ip_key)
+@limiter.limit('50 per hour', key_func=ip_key)
 def login():
     b=body();u=User.query.filter_by(email=str(b.get('email','')).lower().strip()).first();password=b.get('password','')
     if not isinstance(password,str) or len(password)>128 or not u or not u.active or u.role!='ADMIN' or not check_password_hash(u.password_hash,password):abort(401,description='Invalid email or password.')
@@ -270,6 +272,8 @@ def home():
         stats=stats().get_json(),**catalog_options().get_json()))
 
 
+SITE_FEEDBACK_CACHE_KEY = 'site-feedback'
+
 def _load_site_feedback():
     rows = ContactMessage.query.filter(
         ContactMessage.topic.like('Site feedback · %'),
@@ -300,12 +304,13 @@ def _load_site_feedback():
 @api.get('/feedback')
 def get_site_feedback():
     from .content_cache import cached
-    return jsonify(cached('site-feedback', _load_site_feedback))
+    return jsonify(cached(SITE_FEEDBACK_CACHE_KEY, _load_site_feedback))
 
 @api.post('/feedback')
 @limiter.limit('5 per hour')
+@limiter.limit('20 per hour', key_func=ip_key)
 def post_site_feedback():
-    from .content_cache import invalidate
+    from .content_cache import forget
     data = body()
     name = str(data.get('name') or '').strip()[:80] or 'Anonymous Student'
     message = str(data.get('message') or '').strip()
@@ -326,5 +331,6 @@ def post_site_feedback():
     )
     db.session.add(row)
     db.session.commit()
-    invalidate()
+    # Refresh only the feedback list; papers/courses stay cached.
+    forget(SITE_FEEDBACK_CACHE_KEY)
     return jsonify(ok=True, **(_load_site_feedback())), 201

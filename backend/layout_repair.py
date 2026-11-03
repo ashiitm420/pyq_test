@@ -1,7 +1,7 @@
 """Offline presentation repair. Never acquire catalog PDFs or change grading data."""
 import hashlib
 from pathlib import Path
-import fitz
+from .lazy import fitz
 from flask import current_app
 from .models import db,Question,QuestionImage,IngestionFile,Attempt,AttemptAnswer
 from .visual_pdf import layout_document

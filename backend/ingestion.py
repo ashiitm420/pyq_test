@@ -1,7 +1,7 @@
 """Automatic, resumable acquisition -> extraction -> validation -> availability."""
 import hashlib,time,uuid,json,re
 from pathlib import Path
-import fitz
+from .lazy import fitz
 from flask import current_app
 from sqlalchemy import update
 from .models import *

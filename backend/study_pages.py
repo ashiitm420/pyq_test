@@ -67,10 +67,12 @@ def image(id):
     return send_asset(image.path,mimetype='image/png',conditional=True)
 
 from . import limiter
+from .client_ip import ip_key
 from .contact import public_contact
 
 @study.route('/contact', methods=['GET', 'POST'])
 @limiter.limit('5 per hour', methods=['POST'])
+@limiter.limit('20 per hour', methods=['POST'], key_func=ip_key)
 def contact():
     return public_contact()
 

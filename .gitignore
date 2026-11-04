@@ -21,3 +21,7 @@ r2-ready.json
 frontend/.installed-lock-sha256
 
 tools/ai-worker/local.env
+
+# Vite build output: Docker builds it; never commit it (it caused merge noise).
+frontend/dist/
+analytics-archive/

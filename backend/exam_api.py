@@ -430,7 +430,12 @@ def source_pdf(id):
     p=visible_papers(Paper.query).filter_by(id=id).first_or_404();f=IngestionFile.query.filter(IngestionFile.paper_id==(p.canonical_paper_id or p.id),IngestionFile.path.isnot(None)).order_by(IngestionFile.id.desc()).first_or_404()
     # Source download is separate from the question API. Students can view original
     # source material; answer-bearing source pages never enter exam payloads/assets.
-    return send_asset(f.path,mimetype='application/pdf',as_attachment=True,download_name='paper-'+str(p.id)+'.pdf')
+    filename='paper-'+str(p.id)+'.pdf'
+    from .storage import private_download_url
+    url=private_download_url(f.path,filename)
+    if url:
+        response=redirect(url,code=302);response.headers['Cache-Control']='private, no-store';return response
+    return send_asset(f.path,mimetype='application/pdf',as_attachment=True,download_name=filename)
 
 @exams.post('/attempts/<int:id>/switch-mode')
 @require_visitor

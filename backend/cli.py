@@ -24,6 +24,33 @@ def register_cli(app):
         from .engine import expire_all
         expire_all();click.echo('Expired sessions cleaned; latest paper progress retained.')
 
+    @app.cli.command('db-usage')
+    def db_usage():
+        """Show database size per table against the Supabase free-tier limit. Read-only."""
+        from .db_maintenance import usage,human
+        u=usage()
+        if u['dialect']=='postgresql':
+            pct=100*u['total_bytes']/u['limit_bytes']
+            click.echo(f"Database: {human(u['total_bytes'])} of {human(u['limit_bytes'])} free tier ({pct:.1f}%)")
+        else:
+            click.echo(f"SQLite file: {human(u['total_bytes'])} (per-table sizes are shown for PostgreSQL only)")
+        for r in u['tables']:click.echo(f"  {r['table']:<24} {r['rows']:>10,} rows  {human(r['bytes']):>10}")
+
+    @app.cli.command('analytics-archive')
+    @click.option('--before',required=True,help='Archive analytics older than this day (YYYY-MM-DD).')
+    @click.option('--apply',is_flag=True,help='Write the CSV backup and delete. Without it, only counts are shown.')
+    @click.option('--out',default='analytics-archive',show_default=True,help='Folder for the gzipped CSV backups.')
+    @click.option('--drop-legacy',is_flag=True,help='Also empty the unused analytics_daily and analytics_receipt tables.')
+    def analytics_archive(before,apply,out,drop_legacy):
+        """Back up and remove old analytics rows to stay within the free database limit."""
+        from .db_maintenance import archive
+        try:plan=archive(before,apply=apply,out_dir=out,drop_legacy=drop_legacy)
+        except ValueError as exc:raise click.ClickException(str(exc)) from None
+        click.echo(f"Analytics before {plan['before']}: {plan['events']:,} usage events, {plan['question_days']:,} question-day rows"+(f", {plan['legacy_daily']:,} legacy daily rows, {plan['legacy_receipts']:,} legacy receipts" if drop_legacy else ''))
+        if not plan['applied']:click.echo('Dry run: nothing changed. Add --apply to back up and delete.');return
+        for f in plan['files']:click.echo(f"  backup {f['file']} ({f['rows']:,} rows)")
+        click.echo('Archived and deleted. Reports for later periods are unchanged.')
+
     @app.cli.command('init-db')
     def init_db():
         db.create_all();click.echo('Database created. Use flask db upgrade for versioned deployment.')

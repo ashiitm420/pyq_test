@@ -21,3 +21,13 @@ storage-reports
 r2-ready.json
 
 .git
+
+# Not needed inside the runtime image (Docker builds frontend/dist itself).
+frontend/dist
+tests
+docs
+sample-data
+# tools/ai-worker/SOLUTION_IMPORT_PROMPT.txt is read at runtime; keep tools/ai-worker.
+tools/oppe-runner
+*.cmd
+CHECKPOINT-*

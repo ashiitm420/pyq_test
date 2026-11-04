@@ -225,6 +225,23 @@ def private_asset_url(name,image_id=None,expires=600):
     return '/api/images/'+str(image_id) if image_id is not None else None
 
 
+def private_download_url(name,filename,mimetype='application/pdf',expires=900):
+    """Short-lived signed R2 link that downloads as an attachment.
+
+    Source PDFs can be megabytes. Redirecting the browser to R2 means Flask
+    no longer copies the file to local disk and streams it on a 0.1 vCPU
+    instance; Cloudflare serves the bytes directly. Returns None when R2 is
+    not the storage backend so callers can fall back to send_asset.
+    """
+    if not enabled():return None
+    if not re.fullmatch(r'[A-Za-z0-9._-]{1,120}',filename or ''):raise StorageError('Invalid download filename')
+    try:
+        params={**object_args(name),'ResponseContentDisposition':'attachment; filename="'+filename+'"','ResponseContentType':mimetype}
+        return client().generate_presigned_url('get_object',Params=params,ExpiresIn=max(60,min(int(expires),3600)))
+    except StorageError:raise
+    except Exception as exc:raise failure(exc,'signed download URL generation') from None
+
+
 def project_prefix_inventory():
     """Count objects owned by this app's configured R2 prefix. Read-only."""
     if not enabled():return {'enabled':False,'objects':0,'bytes':0,'buckets':{}}

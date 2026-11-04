@@ -35,7 +35,10 @@ def app(tmp_path,remote_test_schema):
         remote,options,schema,control=remote_test_schema
         config={'SQLALCHEMY_DATABASE_URI':remote,'SQLALCHEMY_ENGINE_OPTIONS':options}
     else:config={'SQLALCHEMY_DATABASE_URI':'sqlite:///'+str(tmp_path/'test.db')}
-    a=create_app({'TESTING':True,'STORAGE_BACKEND':'local',**config,'UPLOAD_DIR':str(tmp_path/'uploads'),'RATELIMIT_ENABLED':False})
+    # frontend/dist is a build output (not committed); serve a minimal stand-in.
+    dist=tmp_path/'dist';dist.mkdir(exist_ok=True)
+    (dist/'index.html').write_text('<!doctype html><html><head><title>MauryaHub</title></head><body><div id="app"></div></body></html>')
+    a=create_app({'TESTING':True,'STORAGE_BACKEND':'local',**config,'UPLOAD_DIR':str(tmp_path/'uploads'),'RATELIMIT_ENABLED':False,'FRONTEND_DIST':str(dist)})
     with a.app_context():
         if not remote_test_schema:db.create_all()
         try:

@@ -12,7 +12,7 @@ describe('nonblocking exam navigation',()=>{
  it('navigates immediately while save is unresolved; serializes newer responses and submit',async()=>{
   const w=mount(Exam,{props:{id:4}});await flushPromises();let release;
   const base=mocks.api.getMockImplementation();mocks.api.mockImplementation((path,o)=>path.endsWith('/answers')&&o.body.items?.some(x=>x.answer==='3/4')?new Promise(r=>release=r):base(path,o));
-  await w.get('input.numeric-answer').setValue('3/4');await vi.advanceTimersByTimeAsync(400);
+  await w.get('input.numeric-answer').setValue('3/4');await vi.advanceTimersByTimeAsync(900);
   await button(w,'Save & next').trigger('click');expect(w.text()).toContain('Question 2 of 2');
   await w.get('input.numeric-answer').setValue('0');await button(w,'Previous').trigger('click');expect(w.get('input.numeric-answer').element.value).toBe('3/4');
   await button(w,'Submit exam').trigger('click');await button(w,'Submit attempt').trigger('click');expect(mocks.api.mock.calls.some(c=>c[0].endsWith('/submit'))).toBe(false);
@@ -47,7 +47,7 @@ describe('nonblocking exam navigation',()=>{
  });
  it('keeps offline responses inside the test and discards them on leaving',async()=>{
   let w=mount(Exam,{props:{id:4}});await flushPromises();const base=mocks.api.getMockImplementation();mocks.api.mockImplementation((path,o)=>path.endsWith('/answers')?Promise.reject(new Error('Offline')):base(path,o));
-  await w.get('input.numeric-answer').setValue('-2.5');await vi.advanceTimersByTimeAsync(400);await button(w,'Save & next').trigger('click');await w.get('input.numeric-answer').setValue('7');await button(w,'Previous').trigger('click');expect(w.get('input.numeric-answer').element.value).toBe('-2.5');
+  await w.get('input.numeric-answer').setValue('-2.5');await vi.advanceTimersByTimeAsync(900);await button(w,'Save & next').trigger('click');await w.get('input.numeric-answer').setValue('7');await button(w,'Previous').trigger('click');expect(w.get('input.numeric-answer').element.value).toBe('-2.5');
   await vi.advanceTimersByTimeAsync(600);await flushPromises();mocks.api.mockImplementation(base);await button(w,'Retry save').trigger('click');await flushPromises();expect(sessionStorage.getItem('pyq-pending-4')).toBeNull();w.unmount();expect(mocks.api).toHaveBeenCalledWith('/attempts/4',{method:'DELETE'});expect(sessionStorage.getItem('pyq-draft-4')).toBeNull();
  });
  it('submits only once when the timer expires while the response is pending',async()=>{

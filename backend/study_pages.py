@@ -121,7 +121,7 @@ def solution_coverage(paper_ids, totals=None):
                       Question.source_page,Question.source_pages,Question.evidence),
             joinedload(Question.options).load_only(QuestionOption.key,QuestionOption.text,QuestionOption.position),
             joinedload(Question.images).load_only(QuestionImage.id,QuestionImage.path,QuestionImage.alt,QuestionImage.option_key)
-        ).filter(Question.id.in_(qids)).unique().all()}
+        ).filter(Question.id.in_(qids)).all()}
         counts={pid:0 for pid in sorted_ids}
         for qid,s_ver,pid in sol_rows:
             q=q_map.get(qid)

@@ -7,8 +7,12 @@ threads = int(os.getenv('GUNICORN_THREADS','8'))
 timeout = int(os.getenv('GUNICORN_TIMEOUT','60'))
 graceful_timeout = 30
 keepalive = 5
-max_requests = 2000
-max_requests_jitter = 200
+# Periodic worker recycling wiped the in-process content cache every ~2,000
+# requests, forcing an expensive rebuild from Supabase on a 0.1 vCPU instance.
+# Memory stays flat in practice, so recycling is off; set GUNICORN_MAX_REQUESTS
+# (for example 50000) to re-enable it if memory ever grows.
+max_requests = int(os.getenv('GUNICORN_MAX_REQUESTS','0'))
+max_requests_jitter = int(os.getenv('GUNICORN_MAX_REQUESTS_JITTER','0'))
 accesslog = '-'
 errorlog = '-'
 # No query strings, signed URLs, headers or request bodies in access logs.

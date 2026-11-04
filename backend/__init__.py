@@ -180,7 +180,8 @@ def create_app(config=None):
     @app.route('/<path:path>')
     def frontend(path):
         if path.startswith('api/'): return jsonify(error='Not found'),404
-        dist=root/'frontend/dist'
+        # Built by Vite (Docker build or `npm run build`); not committed to git.
+        dist=Path(app.config.get('FRONTEND_DIST') or root/'frontend/dist')
         if path and (dist/path).is_file() and (dist/path).resolve().is_relative_to(dist):
             response=send_from_directory(dist,path)
             if path=='manifest.webmanifest':

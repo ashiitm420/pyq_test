@@ -15,7 +15,8 @@ class MemoryR2:
         if Key not in self.objects:raise ClientError({'Error':{'Code':'NoSuchKey'}},'GetObject')
         data,meta=self.objects[Key];return {'Body':io.BytesIO(data),'Metadata':meta}
     def generate_presigned_url(self,operation,Params,ExpiresIn):
-        assert operation=='get_object' and ExpiresIn==600
+        assert operation=='get_object'
+        self.last_presign=dict(Params,ExpiresIn=ExpiresIn)
         return f"https://signed.test/{Params['Bucket']}/{Params['Key']}?expires={ExpiresIn}"
 
 @pytest.fixture
@@ -44,7 +45,23 @@ def test_local_backend_works_without_r2(app):
 
 def test_r2_private_image_url_uses_existing_object_key(app,remote):
     from backend.storage import private_asset_url
-    assert private_asset_url('diagram.png',image_id=17)=='https://signed.test/test/pyq/diagram.png?expires=600'
+    url=private_asset_url('diagram.png',image_id=17)
+    assert url=='https://signed.test/test/pyq/diagram.png?expires=7200'
+    assert private_asset_url('diagram.png',image_id=17)==url  # cached, not re-signed
+    assert remote.last_presign['Key']=='pyq/diagram.png'
+
+def test_source_pdf_download_redirects_to_signed_r2_link(app,client,remote):
+    from backend.models import db,User,Course,Term,ExamType,Paper,IngestionBatch,IngestionFile
+    u=User(email='a@x.in',name='A',password_hash='x',role='ADMIN');c=Course(name='Stats',code='ST');t=Term(name='May 2026',year=2026,month=5);e=ExamType(name='Quiz 1')
+    db.session.add_all([u,c,t,e]);db.session.flush()
+    p=Paper(identity='pdf-1',course_id=c.id,term_id=t.id,exam_type_id=e.id,name='Quiz 1',status='AVAILABLE');db.session.add(p);db.session.flush()
+    b=IngestionBatch(user_id=u.id);db.session.add(b);db.session.flush()
+    db.session.add(IngestionFile(batch_id=b.id,paper_id=p.id,filename='src.pdf',path='sources/abc.pdf',status='AVAILABLE'));db.session.commit()
+    r=client.get(f'/api/papers/{p.id}/source')
+    assert r.status_code==302 and r.headers['Location'].startswith('https://signed.test/test/pyq/sources/abc.pdf')
+    assert remote.last_presign['ResponseContentDisposition']==f'attachment; filename="paper-{p.id}.pdf"'
+    assert remote.last_presign['ResponseContentType']=='application/pdf' and remote.last_presign['ExpiresIn']<=3600
+    assert 'no-store' in r.headers['Cache-Control']
 
 def test_real_upload_ingestion_then_cold_cache_student_assets(app,client,remote):
     from test_automatic import ingest_real
@@ -63,7 +80,7 @@ def test_real_upload_ingestion_then_cold_cache_student_assets(app,client,remote)
     assert client.get('/api/images/'+str(images[0].id)).status_code==200
     login(client)
     assert client.get('/api/images/'+str(images[0].id)).status_code==200
-    assert client.get('/api/papers/'+str(p.id)+'/source').data.startswith(b'%PDF-')
+    source=client.get('/api/papers/'+str(p.id)+'/source');assert source.status_code==302 and ('/pyq/'+f.path) in source.headers['Location']  # served by R2, not Flask
     assert Question.query.filter_by(status='AVAILABLE').count()==20
 
 def test_storage_failure_does_not_leak_secrets(app,remote):

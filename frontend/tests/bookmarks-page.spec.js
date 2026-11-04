@@ -38,3 +38,31 @@ it('removes with undo and practises one paper group',async()=>{
  expect(mocks.api).toHaveBeenCalledWith('/attempts',{method:'POST',body:{collection:'bookmarks',mode:'practice',question_ids:expect.arrayContaining([1,2])}});
  expect(mocks.api.mock.calls[0][1].body.question_ids).toHaveLength(2);expect(mocks.go).toHaveBeenCalledWith('/attempt/77');
 });
+
+it('shows the answer and solution on demand, loading one paper once',async()=>{
+ mocks.api.mockImplementation(async path=>path.startsWith('/papers/5/answers')?{items:[{id:1,answers:['k2'],answer_status:'ANSWER_AVAILABLE',explanation:null,solution:'Use the Fisher equation.'},{id:2,answers:[],answer_status:'NOT_AVAILABLE',explanation:null,solution:null}]}:{items:[]});
+ const w=mount(BookmarksPage);await flushPromises();
+ const card=text=>w.findAll('.bm-card').find(c=>c.text().includes(text));
+ expect(w.find('.bm-answer').exists()).toBe(false);expect(mocks.api).not.toHaveBeenCalled();
+ await card('Real interest rate?').findAll('button').find(b=>b.text()==='Show answer').trigger('click');await flushPromises();
+ expect(mocks.api).toHaveBeenCalledTimes(1);
+ const [path]=mocks.api.mock.calls[0];expect(path.split('?')[0]).toBe('/papers/5/answers');expect(new URLSearchParams(path.split('?')[1]).get('ids').split(',').sort()).toEqual(['1','2']);
+ const first=card('Real interest rate?');
+ expect(first.get('.bm-answer').text()).toContain('Option B');expect(first.get('.bm-answer').text()).toContain('Use the Fisher equation.');
+ expect(first.find('.bm-correct').text()).toContain('Beta');expect(first.findAll('.bm-correct')).toHaveLength(1);
+ await card('Bond duration?').findAll('button').find(b=>b.text()==='Show answer').trigger('click');await flushPromises();
+ expect(mocks.api).toHaveBeenCalledTimes(1);
+ expect(card('Bond duration?').get('.bm-answer').text()).toContain('Answer key not available');
+ await first.findAll('button').find(b=>b.text()==='Hide answer').trigger('click');
+ expect(card('Real interest rate?').find('.bm-answer').exists()).toBe(false);
+});
+
+it('offers retry when the answer cannot load',async()=>{
+ mocks.api.mockRejectedValueOnce(new Error('Network down')).mockResolvedValue({items:[{id:3,answers:['k1'],answer_status:'ANSWER_AVAILABLE'}]});
+ const w=mount(BookmarksPage);await flushPromises();
+ const card=()=>w.findAll('.bm-card').find(c=>c.text().includes('Find the median'));
+ await card().findAll('button').find(b=>b.text()==='Show answer').trigger('click');await flushPromises();
+ expect(card().get('.bm-answer').text()).toContain('Network down');
+ await card().get('.bm-answer .text-btn').trigger('click');await flushPromises();
+ expect(card().get('.bm-answer').text()).toContain('Option A');
+});

@@ -425,6 +425,27 @@ def paper_questions(id):
     prepare_image_paths(selected)
     return jsonify(items=[question_with_image_urls(s) for s in selected],total=len(rows),page=page,limit=size)
 
+@exams.get('/papers/<int:id>/answers')
+@limiter.limit('120 per hour', key_func=ip_key)
+def paper_answers(id):
+    """Answer keys and published solutions for bookmarked questions of one paper.
+
+    Called only when a student taps "Show answer" on the bookmarks page, once per
+    paper. Reads the same in-process paper and solution caches as practice and
+    study pages, so it adds no extra database work after the first load.
+    """
+    from .paper_content import snapshots
+    from .ai_solutions import _cached_paper_solutions
+    raw=request.args.get('ids','').split(',')
+    if not 1<=len(raw)<=100 or any(not v.isdigit() for v in raw):abort(400,description='Request 1 to 100 question IDs')
+    wanted={int(v) for v in raw}
+    p=visible_papers(Paper.query).filter_by(id=id).first_or_404();effective=p.canonical_paper_id or p.id
+    solutions=_cached_paper_solutions(effective)
+    items=[{'id':s['id'],'answers':s.get('answers'),'answer_status':s.get('answer_status'),'explanation':s.get('explanation'),
+            'tolerance':s.get('tolerance') or 0,'solution':(solutions.get(str(s['id'])) or {}).get('text')}
+           for s in snapshots(effective) if s['id'] in wanted]
+    return jsonify(items=items)
+
 @exams.get('/papers/<int:id>/source')
 def source_pdf(id):
     p=visible_papers(Paper.query).filter_by(id=id).first_or_404();f=IngestionFile.query.filter(IngestionFile.paper_id==(p.canonical_paper_id or p.id),IngestionFile.path.isnot(None)).order_by(IngestionFile.id.desc()).first_or_404()

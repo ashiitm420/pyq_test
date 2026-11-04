@@ -2,10 +2,12 @@
 // Bookmarks live only in this browser (localStorage). Grouping, search, sorting
 // and undo all run here; the server is used only when a practice is started.
 import {ref,computed,onUnmounted} from 'vue';
-import {Search,Bookmark,ChevronDown,ExternalLink,PlayCircle,Trash2,BookOpen} from 'lucide-vue-next';
+import {Search,Bookmark,ChevronDown,ExternalLink,PlayCircle,Trash2,BookOpen,Lightbulb} from 'lucide-vue-next';
 import {api,go} from './api';
 import {bookmarkRows,setBookmark,restoreBookmark,clearBookmarks} from './browserStore';
 import QuestionContent from './QuestionContent.vue';
+import AnswerValue from './AnswerValue.vue';
+import MathText from './MathText.vue';
 const rows=ref([]),query=ref(''),course=ref(''),sort=ref('newest'),openOptions=ref(new Set()),undo=ref(null),error=ref(''),starting=ref(''),limit=ref(30);
 let undoTimer;
 function load(){rows.value=bookmarkRows().map((q,n)=>({...q,_order:n}))}
@@ -33,6 +35,27 @@ function remove(q){try{setBookmark({id:q.id},false);load();showUndo([q],'Bookmar
 function clearAll(){if(!rows.value.length||!confirm('Remove all '+rows.value.length+' bookmarks from this browser?'))return;const saved=rows.value.slice();try{clearBookmarks();load();showUndo(saved,'All bookmarks removed')}catch(e){error.value=e.message}}
 function undoRemove(){if(!undo.value)return;try{for(const q of undo.value.items){const {_order,...clean}=q;restoreBookmark(clean)}load()}catch(e){error.value=e.message}clearTimeout(undoTimer);undo.value=null}
 async function practice(list,key){if(starting.value)return;starting.value=key;error.value='';try{const ids=list.map(q=>q.id).slice(0,500);const a=await api('/attempts',{method:'POST',body:{collection:'bookmarks',mode:'practice',question_ids:ids}});go('/attempt/'+a.id)}catch(e){error.value=e.message}finally{starting.value=''}}
+// Answers are fetched only when asked for, once per paper, and kept in memory
+// for this visit (never written to localStorage, so corrections show next time).
+const answers=ref({}),openAnswers=ref(new Set()),loadingAnswers=ref(new Set()),answerErrors=ref({});
+const CHOICE=['MCQ','MSQ','TRUE_FALSE'];
+async function loadAnswers(paperId){
+ if(loadingAnswers.value.has(paperId))return;
+ const ids=rows.value.filter(r=>r.paper_id===paperId&&!(r.id in answers.value)).map(r=>r.id);
+ if(!ids.length)return;
+ loadingAnswers.value=new Set(loadingAnswers.value).add(paperId);
+ const errs={...answerErrors.value};delete errs[paperId];answerErrors.value=errs;
+ try{const got={};for(let i=0;i<ids.length;i+=100){const d=await api('/papers/'+paperId+'/answers?ids='+ids.slice(i,i+100).join(','));for(const a of d.items||[])got[a.id]=a}
+  for(const id of ids)if(!(id in got))got[id]=null;
+  answers.value={...answers.value,...got}}
+ catch(e){answerErrors.value={...answerErrors.value,[paperId]:e.message||'Answer could not load.'}}
+ finally{const s=new Set(loadingAnswers.value);s.delete(paperId);loadingAnswers.value=s}
+}
+function toggleAnswer(q){const s=new Set(openAnswers.value);if(s.has(q.id)){s.delete(q.id);openAnswers.value=s;return}
+ s.add(q.id);openAnswers.value=s;if(q.options?.length&&!openOptions.value.has(q.id))toggleOptions(q.id);if(q.paper_id)loadAnswers(q.paper_id)}
+const answerOf=q=>answers.value[q.id];
+const hasKey=a=>a&&a.answers!==null&&a.answers!==undefined&&a.answers!==''&&!(Array.isArray(a.answers)&&!a.answers.length);
+const isCorrectOption=(q,key)=>openAnswers.value.has(q.id)&&CHOICE.includes(q.kind)&&Array.isArray(answerOf(q)?.answers)&&answerOf(q).answers.includes(key);
 const studyLink=q=>q.paper_id?'/study/papers/'+q.paper_id+'#question-'+q.id:null;
 onUnmounted(()=>clearTimeout(undoTimer));
 </script>
@@ -61,10 +84,23 @@ onUnmounted(()=>clearTimeout(undoTimer));
     <details v-if="q.passage" class="bm-passage"><summary>Show passage</summary><QuestionContent lazy :text="q.passage" :images="[]"/></details>
     <QuestionContent lazy :text="q.text" :images="(q.images||[]).filter(x=>!x.option_key)"/>
     <div v-if="q.options?.length&&openOptions.has(q.id)" class="bm-options">
-     <div v-for="(o,n) in q.options" :key="o.key" class="bm-option"><strong>{{letter(n)}}.</strong><QuestionContent lazy :text="o.text" :images="(q.images||[]).filter(x=>x.option_key===o.key)"/></div>
+     <div v-for="(o,n) in q.options" :key="o.key" class="bm-option" :class="{'bm-correct':isCorrectOption(q,o.key)}"><strong>{{letter(n)}}.</strong><QuestionContent lazy :text="o.text" :images="(q.images||[]).filter(x=>x.option_key===o.key)"/><span v-if="isCorrectOption(q,o.key)" class="bm-correct-tag">Correct</span></div>
     </div>
+    <section v-if="openAnswers.has(q.id)" class="bm-answer" aria-live="polite">
+     <p v-if="!q.paper_id" class="muted mb-0">The answer is not available for this bookmark. Open it from its paper to see the answer.</p>
+     <p v-else-if="loadingAnswers.has(q.paper_id)&&!(q.id in answers)" class="muted mb-0" role="status">Loading answer…</p>
+     <p v-else-if="answerErrors[q.paper_id]&&!(q.id in answers)" class="muted mb-0">{{answerErrors[q.paper_id]}} <button type="button" class="text-btn" @click="loadAnswers(q.paper_id)">Retry</button></p>
+     <template v-else-if="answerOf(q)">
+      <div class="bm-answer-key"><span class="eyebrow">Correct answer</span><AnswerValue v-if="hasKey(answerOf(q))" :question="q" :value="answerOf(q).answers"/><span v-else class="muted">Answer key not available for this question.</span><span v-if="q.kind==='NAT'&&answerOf(q).tolerance" class="muted small">Accepted range ± {{answerOf(q).tolerance}}</span></div>
+      <MathText v-if="answerOf(q).explanation" class="bm-explanation" :text="answerOf(q).explanation"/>
+      <div v-if="answerOf(q).solution" class="bm-solution"><span class="eyebrow">Solution</span><MathText class="solution-text" :text="answerOf(q).solution" inline-dollar/></div>
+      <p v-else-if="!answerOf(q).explanation" class="muted small mb-0">A worked solution is not published for this question yet.</p>
+     </template>
+     <p v-else class="muted mb-0">This question is no longer available.</p>
+    </section>
     <div class="bm-actions">
      <button v-if="q.options?.length" type="button" class="btn btn-light btn-sm" :aria-expanded="openOptions.has(q.id)" @click="toggleOptions(q.id)"><ChevronDown :size="15" :class="{flip:openOptions.has(q.id)}"/>{{openOptions.has(q.id)?'Hide options':'Show options ('+q.options.length+')'}}</button>
+     <button type="button" class="btn btn-sm" :class="openAnswers.has(q.id)?'btn-light':'btn-outline-primary'" :aria-expanded="openAnswers.has(q.id)" @click="toggleAnswer(q)"><Lightbulb :size="15"/>{{openAnswers.has(q.id)?'Hide answer':'Show answer'}}</button>
      <a v-if="studyLink(q)" :href="studyLink(q)" class="btn btn-light btn-sm"><BookOpen :size="15"/>Open question</a>
      <a v-if="q.paper_id" :href="'/paper/'+q.paper_id" class="btn btn-light btn-sm"><ExternalLink :size="15"/>Paper</a>
      <span class="bm-spacer"></span>
@@ -99,6 +135,19 @@ onUnmounted(()=>clearTimeout(undoTimer));
 .bm-actions .btn{display:inline-flex;align-items:center;gap:6px}
 .bm-actions .flip{transform:rotate(180deg)}
 .bm-spacer{flex:1}
+.bm-option{position:relative}
+.bm-correct{border-color:#3fa36b;background:#eefaf3}
+.bm-correct-tag{margin-left:auto;align-self:center;font-size:.7rem;font-weight:700;color:#1d7a47;background:#d7f3e3;border-radius:999px;padding:2px 8px;white-space:nowrap}
+.bm-answer{margin-top:14px;padding:14px 16px;border:1px solid #cfe9db;background:#f5fbf8;border-radius:10px;display:grid;gap:10px}
+.bm-answer .eyebrow{display:block;margin-bottom:4px}
+.bm-answer-key{display:grid;gap:4px}
+.bm-solution{border-top:1px dashed #cfe0d7;padding-top:10px}
+.solution-text{display:block;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.75}
+.solution-text :deep(.katex-display){margin:.65em 0;overflow-x:auto;overflow-y:hidden}
+[data-theme="dark"] .bm-correct{border-color:#2f8a57;background:#15291f}
+[data-theme="dark"] .bm-correct-tag{background:#1f4430;color:#9ee2b9}
+[data-theme="dark"] .bm-answer{background:#14231c;border-color:#29493a}
+[data-theme="dark"] .bm-solution{border-color:#29493a}
 .bm-remove{color:#b54646;display:inline-flex;align-items:center;gap:5px;font-size:.84rem}
 .bm-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:8px;flex-wrap:wrap}
 .bm-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:1100;display:flex;align-items:center;gap:16px;background:#172e54;color:#fff;padding:12px 16px 12px 20px;border-radius:10px;box-shadow:0 10px 30px #14233b40;font-size:.9rem}

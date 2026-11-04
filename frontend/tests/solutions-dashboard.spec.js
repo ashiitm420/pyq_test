@@ -19,7 +19,7 @@ it('offers a searchable list course and only exams available under that course',
  mocks.api.mockImplementation(async path=>path==='/catalog'?{courses:[{id:1,name:'Machine Learning Foundations',code:'MLF'}]}:path==='/metadata'?{exams:[{id:2,name:'Quiz 1'},{id:3,name:'Quiz 2'},{id:4,name:'End Term'}]}:path.startsWith('/admin/ai-solutions/summary')?{papers:[{id:7,course:'MLF',name:'Paper',exam_type_id:2,questions:1,uploaded:0,published:0}],statistics:{}}:{items:[],total:0});
  const w=mount(AISolutions);await flushPromises();
  await w.get('[aria-label="Filter solution course"]').trigger('click');await w.get('[aria-label="Search options"]').setValue('MLF');await w.get('.searchable-select-option').trigger('click');await flushPromises();
- const exam=w.get('[aria-label="Filter solution exam"]');expect(exam.findAll('option').map(o=>o.text())).toEqual(['All exams under this course','Quiz 1']);
+ const exam=w.get('[aria-label="Filter solution exam"]');expect(exam.findAll('option').map(o=>o.text())).toEqual(['All quizzes and ET','Quiz 1']);
  await exam.setValue('2');await flushPromises();expect(mocks.api.mock.calls.some(([p])=>p.includes('course_id=1&exam_type_id=2'))).toBe(true);w.unmount();
 });
 
@@ -40,4 +40,21 @@ it('combines level year term and ET session, clearing session when switching to 
  expect(w.find('[aria-label="Filter solution session"]').exists()).toBe(false);
  expect(mocks.api.mock.calls.filter(([p])=>p.includes('/summary?')).at(-1)[0]).toContain('session=');
  expect(mocks.api.mock.calls.filter(([p])=>p.includes('/summary?')).at(-1)[0]).not.toContain('session=AN');w.unmount();
+});
+
+it('filters every course by year and Quiz / ET and selects papers in batches of 50',async()=>{
+ const papers=Array.from({length:60},(_,n)=>({id:100+n,course:'C'+n,name:'Quiz 1 paper',exam:'Quiz 1',exam_type_id:2,term:'May 2025',questions:4,uploaded:0,published:0}));
+ mocks.api.mockImplementation(async path=>path==='/catalog'?{courses:[{id:1,name:'Maths'}]}:path==='/metadata'?{exams:[{id:2,name:'Quiz 1'},{id:3,name:'Quiz 2'}],terms:[{year:2025}]}:path.startsWith('/admin/ai-solutions/summary')?{papers,statistics:{}}:{items:[],total:0});
+ const w=mount(AISolutions);await flushPromises();
+ const exam=w.get('[aria-label="Filter solution exam"]');expect(exam.attributes('disabled')).toBeUndefined();
+ await w.get('[aria-label="Filter solution year"]').setValue('2025');await flushPromises();
+ await exam.setValue('2');await flushPromises();
+ const params=Object.fromEntries(new URLSearchParams(mocks.api.mock.calls.filter(([p])=>p.includes('/summary?')).at(-1)[0].split('?')[1]));
+ expect(params).toMatchObject({year:'2025',exam_type_id:'2',course_id:''});
+ expect(w.text()).toContain('All courses · 2025 · Quiz 1');
+ await w.findAll('button').find(b=>b.text()==='Select first 50 filtered papers').trigger('click');
+ expect(w.text()).toContain('50 / 50 selected · Papers 1–50 of 60');
+ await w.findAll('button').find(b=>b.text()==='Select next 50').trigger('click');
+ expect(w.text()).toContain('10 / 50 selected · Papers 51–60 of 60');
+ w.unmount();
 });

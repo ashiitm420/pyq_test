@@ -59,6 +59,9 @@ def create_app(config=None):
     app.config.update(CONTENT_CACHE_URL=os.getenv('REDIS_URL',''), CACHE_NAMESPACE=os.getenv('CACHE_NAMESPACE','pyq:content:v1'), CONTENT_CACHE_TTL=int(os.getenv('CONTENT_CACHE_TTL','86400')), LOCAL_CONTENT_CACHE_MAX=int(os.getenv('LOCAL_CONTENT_CACHE_MAX','256')), IMAGE_DELIVERY=image_delivery, IMAGE_CDN_BASE_URL=os.getenv('IMAGE_CDN_BASE_URL',''), IMAGE_CDN_MANIFEST=os.getenv('IMAGE_CDN_MANIFEST',''))
     app.config.update(ANALYTICS_ENABLED=os.getenv('ANALYTICS_ENABLED','true').lower()=='true',
                       ANALYTICS_EXCLUDE_TRAFFIC=os.getenv('ANALYTICS_EXCLUDE_TRAFFIC','false').lower()=='true')
+    app.config.update(LOCAL_CONTENT_CACHE_BYTES=int(os.getenv('LOCAL_CONTENT_CACHE_BYTES',32*1024*1024)),
+                      ANALYTICS_BACKGROUND_WRITES=int(os.getenv('ANALYTICS_BACKGROUND_WRITES','1')),
+                      MEMORY_LOG_INTERVAL_SECONDS=int(os.getenv('MEMORY_LOG_INTERVAL_SECONDS','60')))
     if config: app.config.update(config)
     from . import content_cache
     from .storage import configure_delivery

@@ -7,7 +7,6 @@ import {ref,reactive,onMounted,onUnmounted,computed,nextTick,defineAsyncComponen
 import SavedAISolution from './SavedAISolution.vue';
 import ReportFormat from './ReportFormat.vue';import LoadingState from './LoadingState.vue';
 import {api,go,session} from './api';import {clock,paletteLabel,answerText} from './utils';import MathText from './MathText.vue';import QuestionContent from './QuestionContent.vue';import AnswerValue from './AnswerValue.vue';const ScratchBoard=defineAsyncComponent(()=>import('./ScratchBoard.vue'));const TcsCalculator=defineAsyncComponent(()=>import('./TcsCalculator.vue'));
-import {clearActiveAttempt,rememberAttempt} from './activeAttempt';
 const props=defineProps({id:Number});const attempt=ref(null),item=ref(null),index=ref(0),value=ref(null),error=ref(''),saving=ref(false),feedback=ref(null),confirm=ref(false),showPalette=ref(false),seconds=ref(null),saved=ref('All responses saved'),pending=ref(null);
 const navigating=ref(false),switching=ref(false),instructions=ref(false),submitting=ref(false),scratchOpen=ref(false),calculatorOpen=ref(false),natInput=ref(null),feedbackPanel=ref(null);
 const reportQuestion=ref(null),reportNotice=ref('');
@@ -29,7 +28,7 @@ function journal(){if(stopped)return;const entries=[...inflightEntries(),...queu
 function saveVisited(){sessionStorage.setItem(visitedKey,JSON.stringify([...cache.values()].filter(d=>d.visited).map(d=>d.question.id)))}
 function markVisited(qid){const d=cache.get(qid);if(!d||d.visited)return;d.visited=true;localState(qid);saveVisited()}
 function localState(qid){const d=cache.get(qid),p=attempt.value?.palette.find(p=>p.question_id===qid);if(!p||!d)return;const answered=d.answer!==null&&d.answer!==''&&d.answer!==undefined&&(!Array.isArray(d.answer)||d.answer.length>0);p.state=d.marked?(answered?'ANSWERED_AND_MARKED_FOR_REVIEW':'MARKED_FOR_REVIEW'):answered?'ANSWERED':d.touched?'NOT_ANSWERED':d.visited?'VISITED':p.state}
-async function sync(initial=false){try{const a=await api('/attempts/'+props.id+(initial?'?bootstrap=1':'/status'));if(stopped)return;if(initial)attempt.value=a;else if(attempt.value){attempt.value.status=a.status;attempt.value.deadline=a.deadline;attempt.value.submitted_at=a.submitted_at;attempt.value.expires_at=a.expires_at}serverNow=a.server_time;received=performance.now();if(initial)for(const qid of cache.keys())localState(qid);if(a.status!=='ACTIVE'){clearActiveAttempt(props.id);sessionStorage.removeItem(key);sessionStorage.removeItem(draftKey);sessionStorage.removeItem(visitedKey);go('/result/'+a.id)}return a}catch(e){error.value=e.message}}
+async function sync(initial=false){try{const a=await api('/attempts/'+props.id+(initial?'?bootstrap=1':'/status'));if(stopped)return;if(initial)attempt.value=a;else if(attempt.value){attempt.value.status=a.status;attempt.value.deadline=a.deadline;attempt.value.submitted_at=a.submitted_at;attempt.value.expires_at=a.expires_at}serverNow=a.server_time;received=performance.now();if(initial)for(const qid of cache.keys())localState(qid);if(a.status!=='ACTIVE'){sessionStorage.removeItem(key);sessionStorage.removeItem(draftKey);sessionStorage.removeItem(visitedKey);go('/result/'+a.id)}return a}catch(e){error.value=e.message}}
 function scheduleHeartbeat(){clearTimeout(poller);if(stopped||!attempt.value?.deadline)return;const delay=600000+Math.floor(Math.random()*300000);poller=setTimeout(async()=>{await sync();scheduleHeartbeat()},delay)}
 function show(n){index.value=n;item.value=cache.get(current.value.question_id);value.value=item.value.answer;feedback.value=checked.has(current.value.question_id)?item.value.feedback||null:null;sessionStorage.setItem('pyq-position-'+props.id,String(n));if(item.value?.question.kind==='NAT')nextTick(()=>natInput.value?.focus({preventScroll:true}))}
 function prefetchImages(qid){
@@ -170,7 +169,6 @@ async function switchMode(){
   if(!await flushText()){error.value='Save pending responses before switching mode.';return}
   const next=await api('/attempts/'+props.id+'/switch-mode',{method:'POST',body:{mode:attempt.value.mode==='exam'?'practice':'exam',duration_seconds:5400}});
   Object.assign(attempt.value,{mode:next.mode,title:next.title,deadline:next.deadline,expires_at:next.expires_at});
-  rememberAttempt(attempt.value);
   for(const d of cache.values())d.feedback=null;
   for(const row of next.feedback||[]){const d=cache.get(row.question_id);if(d)d.feedback=row.feedback}
   checked.clear();feedback.value=null;practiceGeneration++;practiceCache.clear();practicePending.clear();if(next.mode==='practice')prefetchPractice(index.value);

@@ -1,6 +1,5 @@
 import {reactive} from 'vue';
 import {paperProgress,progressRows,saveResult,bookmarkRows,isBookmarked,setBookmark,localPage} from './browserStore';
-import {rememberAttempt,clearActiveAttempt} from './activeAttempt';
 export const session=reactive({user:null,csrf:'',storageWarning:''});
 let catalogPromise;
 const bootstraps=new Map();
@@ -51,16 +50,15 @@ async function requestApi(path,options={}){
  if(method==='POST'&&path==='/attempts'&&body?.collection==='bookmarks'&&!Array.isArray(body.question_ids))body={...body,question_ids:bookmarkRows().map(q=>q.id).slice(0,500)};
  const initial=path.match(/^\/attempts\/(\d+)\?bootstrap=1$/);
  if(method==='GET'&&initial){const cached=bootstraps.get(initial[1]);bootstraps.delete(initial[1]);if(cached&&cached.user===session.user?.id&&Date.now()-cached.time<10000)return browserData({...cached.data,server_time:cached.data.server_time+(Date.now()-cached.time)/1000})}
- if(path.startsWith('/auth/')){clearActiveAttempt();bootstraps.clear();submittedResults.clear();}
+ if(path.startsWith('/auth/')){bootstraps.clear();submittedResults.clear();}
  const createsAttempt=method==='POST'&&path==='/attempts';
  const target=createsAttempt?path+'?bootstrap=1':path;
  const r=await fetch('/api'+target,{method,credentials:'same-origin',headers:{...(body?{'Content-Type':'application/json'}:{}),...(method!=='GET'?{'X-CSRF-Token':session.csrf}:{})},body:form|| (body?JSON.stringify(body):undefined)});
  let data;try{data=await r.json()}catch{const error=new Error('The server is temporarily unavailable. Please retry.');error.status=r.status;throw error;}
- if(!r.ok){if(initial&&[404,410].includes(r.status))clearActiveAttempt(initial[1]);const error=new Error(data.error||'Request failed');error.status=r.status;error.code=data.code;throw error;}
- if(createsAttempt||initial){if(data.status==='ACTIVE')rememberAttempt(data);else clearActiveAttempt(data.id)}
+ if(!r.ok){const error=new Error(data.error||'Request failed');error.status=r.status;error.code=data.code;throw error;}
  if(createsAttempt&&data.items){bootstraps.clear();bootstraps.set(String(data.id),{data,time:Date.now(),user:session.user?.id})}
  const submitId=path.match(/^\/attempts\/(\d+)\/submit$/);
- if(method==='POST'&&submitId&&data.status==='SUBMITTED'){clearActiveAttempt(submitId[1]);submittedResults.clear();submittedResults.set(submitId[1],{data:clone(data),user:session.user?.id,time:Date.now()});}
+ if(method==='POST'&&submitId&&data.status==='SUBMITTED'){submittedResults.clear();submittedResults.set(submitId[1],{data:clone(data),user:session.user?.id,time:Date.now()});}
  if(data.csrf)session.csrf=data.csrf;
  return browserData(data);
 }

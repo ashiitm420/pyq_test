@@ -2,7 +2,6 @@
 import {ref,onMounted,onUnmounted,computed,defineAsyncComponent} from 'vue';
 import {BookOpen,LayoutDashboard,History,Bookmark,Target,ShieldCheck,Search,ArrowUpRight,GraduationCap,LogOut,MessageSquare} from 'lucide-vue-next';
 import {api,session,loadSession,loadHome,go} from './api';
-import {activeAttempt} from './activeAttempt';
 const About=defineAsyncComponent(()=>import('./About.vue'));
 import Catalog from './Catalog.vue';
 const ExamBrowser=defineAsyncComponent(()=>import('./ExamBrowser.vue'));
@@ -14,6 +13,7 @@ document.documentElement.dataset.theme=theme.value;document.documentElement.data
 function toggleTheme(){theme.value=theme.value==='dark'?'light':'dark';document.documentElement.dataset.theme=theme.value;document.documentElement.dataset.bsTheme=theme.value;localStorage.setItem('pyq-theme',theme.value)}
 import {currentRoute,migrateLegacyRoute,installNavigation} from './navigation';
 migrateLegacyRoute();
+try{localStorage.removeItem('pyq-active-attempt')}catch{}
 const route=ref(currentRoute());
 const stopNavigation=installNavigation(path=>{route.value=path});onUnmounted(stopNavigation);
 const busy=ref(route.value.startsWith('/admin')),error=ref(''),auth=ref({name:'',email:'',password:''}),authBusy=ref(false);
@@ -33,7 +33,7 @@ const nav=[['/','Home',BookOpen,'Home'],['/progress','My progress',LayoutDashboa
 <div class="app-shell" :class="{'exam-shell':examPage}">
 <aside v-if="!examPage" class="sidebar"><a href="/" class="brand"><span class="brand-mark"><BookOpen :size="23"/></span><span>Maurya<span class="brand-light">Hub</span><small>PYQ PRACTICE</small></span></a><div class="nav-caption">YOUR WORKSPACE</div><nav><a v-for="[path,label,Icon,short] in nav" :href="path" :class="{active:route===path}" :aria-current="route===path?'page':undefined" ><component :is="Icon" :size="19" aria-hidden="true"/><span class="nav-full">{{label}}</span><span class="nav-short">{{short}}</span></a><a v-if="session.user?.role==='ADMIN'" href="/admin" :class="{active:route.startsWith('/admin')}"><ShieldCheck :size="19"/><span class="nav-full">Administration / Upload PYQ</span><span class="nav-short">Admin</span></a></nav><div class="sidebar-bottom"><a href="https://mauryahub.onrender.com/">← Back to MauryaHub</a></div></aside>
 <div class="workspace"><header v-if="!examPage" class="topbar" :class="{'guest-topbar':session.user?.role!=='ADMIN'}"><span class="top-context">IITM BS <span>/</span> Previous-year papers</span><div class="account" v-if="session.user?.role==='ADMIN'"><span class="avatar">{{session.user.name.slice(0,1)}}</span><span>{{session.user.name}}</span><button @click="logout" aria-label="Log out" class="icon-btn"><LogOut :size="17"/></button></div></header>
-<main :class="{'exam-main':examPage}"><div v-if="activeAttempt&&activeAttempt.expires_at>Date.now()/1000&&(!activeAttempt.deadline||activeAttempt.deadline>Date.now()/1000)&&!examPage&&!route.startsWith('/admin')" class="alert alert-info" role="status">Unfinished {{activeAttempt.mode==='exam'?'exam':'practice'}}: {{activeAttempt.title}} <a :href="'/attempt/'+activeAttempt.id" class="btn btn-sm btn-primary ms-2">Resume</a><small class="d-block">Your timer continues while you are away. Resume is available until the session expires.</small></div><p v-if="session.storageWarning" class="alert alert-warning" role="alert">{{session.storageWarning}}</p><div v-if="error" class="alert alert-danger" role="alert">{{error}}<button class="text-btn float-end" @click="error=''">Dismiss</button></div><p v-if="busy">Loading your workspace…</p>
+<main :class="{'exam-main':examPage}"><p v-if="session.storageWarning" class="alert alert-warning" role="alert">{{session.storageWarning}}</p><div v-if="error" class="alert alert-danger" role="alert">{{error}}<button class="text-btn float-end" @click="error=''">Dismiss</button></div><p v-if="busy">Loading your workspace…</p>
 <section v-else-if="['/admin/login','/login'].includes(route)" class="auth-panel panel"><div class="eyebrow">ADMINISTRATION</div><h1>Admin sign in</h1><p class="muted">Manage papers, source catalog and processing.</p><form @submit.prevent="authenticate"><label>Email<input class="form-control" type="email" v-model="auth.email" required autocomplete="username"></label><label>Password<input class="form-control" type="password" v-model="auth.password" required maxlength="128" autocomplete="current-password"></label><button class="btn btn-primary w-100 mt-4" :disabled="authBusy">{{authBusy?'Please wait…':'Sign in as admin'}}</button></form><a href="/" class="text-btn mt-4">Back to papers</a></section>
 <section v-else-if="route.startsWith('/admin')&&session.user?.role!=='ADMIN'" class="empty panel"><h1>Administrator access</h1><a href="/admin/login" class="btn btn-primary">Admin sign in</a></section>
 <Exam v-else-if="examPage" :id="Number(route.split('/')[2])" :key="route"/>

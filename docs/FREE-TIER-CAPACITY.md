@@ -21,13 +21,10 @@ This release adds no service, worker, persistent queue or larger cache budget.
   requests. Running work finishes normally. This switch is worker-local and
   resets on restart; it fits the existing single-worker service, not a future
   multi-worker deployment. It does not pause analytics or the deferred AI summary.
-- Leaving an exam page no longer deletes its active attempt. Pending-answer
-  journals survive within the same tab, and a browser-stored Resume pointer is
-  shown on other learner pages. Server ownership, expiry and deadlines remain
-  authoritative. Timers continue while away; a new test still replaces the old
-  active test. Pending unsent answers do not transfer to another tab/device.
-  Submission expires an overdue attempt before merging client drafts, so a
-  resumed browser cannot introduce unsent answers after the server deadline.
+- The active-attempt Resume banner and browser-stored pointer were removed on
+  request. Existing same-tab pending-answer journals, server ownership and
+  expiry remain intact; this UI removal does not delete student responses.
+  Submission still expires overdue attempts before merging client drafts.
 - Existing answer writes were already batched into a bounded read/commit; no
   extra autosave traffic, polling or browser-side exam answer keys are added.
 

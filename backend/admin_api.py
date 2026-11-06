@@ -10,6 +10,16 @@ from .engine import question_snapshot,validate_question,aggregate
 from .ingestion import store_upload,update_batch,root
 admin=Blueprint('admin',__name__,url_prefix='/api/admin')
 
+@admin.route('/exam-priority',methods=['GET','POST'])
+@require_user(True)
+def exam_priority():
+    if request.method=='POST':
+        enabled=body().get('enabled')
+        if type(enabled) is not bool:abort(400,description='enabled must be true or false')
+        current_app.extensions['exam_priority_mode']=enabled
+    return jsonify(enabled=current_app.extensions.get('exam_priority_mode',False),
+                   scope='Current worker; resets on restart. Running jobs are allowed to finish.')
+
 @admin.post('/catalog/repair-java-2025')
 @require_user(True)
 def repair_java_sources():

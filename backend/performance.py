@@ -27,6 +27,9 @@ def install(app, db):
     memory_lock=threading.Lock();last_memory_log=[0.0]
     processing=threading.BoundedSemaphore(1)
     app.extensions['processing_slots']=processing
+    starts=threading.BoundedSemaphore(max(1,app.config.get('EXAM_START_CONCURRENCY',2)))
+    app.extensions['exam_start_slots']=starts
+    app.extensions['exam_priority_mode']=False
     # Acquire before an endpoint parses uploads or claims a job. Competing admin
     # requests must not multiply PDF/workbook allocations in one web worker.
     heavy_endpoints={'admin.run_catalog_batch_next','admin.process_now','admin.upload',
@@ -36,7 +39,15 @@ def install(app, db):
     @app.before_request
     def begin():
         g.perf = {'start': time.perf_counter(), 'sql': 0, 'queries': 0}
+        if request.endpoint=='exams.start':
+            if not starts.acquire(blocking=False):
+                from flask import jsonify
+                return jsonify(error='Many students are starting now. Please retry in a few seconds.',code='START_BUSY'),503,{'Retry-After':'3'}
+            g.exam_start_slot=True
         if request.endpoint in heavy_endpoints:
+            if app.extensions['exam_priority_mode']:
+                from flask import jsonify
+                return jsonify(error='Exam priority mode is enabled. New import/processing jobs are paused.',code='EXAM_PRIORITY'),409
             if not processing.acquire(blocking=False):
                 from flask import jsonify
                 return jsonify(error='Another upload or processing request is running. Retry when it finishes.',code='PROCESSING_BUSY'),409,{'Retry-After':'5'}
@@ -45,6 +56,7 @@ def install(app, db):
     @app.teardown_request
     def release_processing(error):
         if g.pop('processing_slot',False):processing.release()
+        if g.pop('exam_start_slot',False):starts.release()
 
     def before(conn, cursor, statement, parameters, context, many):
         context._pyq_started = time.perf_counter()

@@ -13,12 +13,19 @@ from .models import db
 # (see client_ip.py) because a client can discard its cookie.
 limiter = Limiter(key_func=visitor_key, default_limits=['1200 per minute'])
 
+@limiter.request_filter
+def skip_public_asset_limit():
+    from .static_sessions import public_asset
+    return public_asset(request.path)
+
 def create_app(config=None):
     from .database_config import database_url,engine_options
     from dotenv import load_dotenv
     load_dotenv()
     root = Path(__file__).resolve().parent.parent
     app = Flask(__name__, static_folder=None, instance_path=str(root / 'instance'))
+    from .static_sessions import AssetSessionInterface
+    app.session_interface=AssetSessionInterface()
     Path(app.instance_path).mkdir(exist_ok=True)
     supplied=config or {}
     secret = os.getenv('SECRET_KEY')
@@ -62,6 +69,7 @@ def create_app(config=None):
     app.config.update(LOCAL_CONTENT_CACHE_BYTES=int(os.getenv('LOCAL_CONTENT_CACHE_BYTES',32*1024*1024)),
                       ANALYTICS_BACKGROUND_WRITES=int(os.getenv('ANALYTICS_BACKGROUND_WRITES','1')),
                       MEMORY_LOG_INTERVAL_SECONDS=int(os.getenv('MEMORY_LOG_INTERVAL_SECONDS','60')))
+    app.config['EXAM_START_CONCURRENCY']=int(os.getenv('EXAM_START_CONCURRENCY','2'))
     if config: app.config.update(config)
     from . import content_cache
     from .storage import configure_delivery

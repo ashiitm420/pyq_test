@@ -11,10 +11,9 @@ function dragMove(e){if(!drag)return;place(Math.max(0,Math.min(window.innerWidth
 function dragEnd(){drag=null;window.removeEventListener('pointermove',dragMove);window.removeEventListener('pointerup',dragEnd);window.removeEventListener('pointercancel',dragEnd)}
 let resizing=null;
 function defaultSize(){
- const ratio=1709/822;
- const width=Math.max(1,Math.min(1709,window.innerWidth-16,Math.min(window.innerHeight-16,window.innerHeight*.85)*ratio));
- const height=width/ratio;
- place(Math.max(8,(window.innerWidth-width)/2),Math.max(8,(window.innerHeight-height)/2));
+ const width=Math.max(1,Math.min(540,window.innerWidth-16));
+ const height=Math.max(1,Math.min(490,window.innerHeight-16,window.innerHeight*.85));
+ place(Math.max(8,Math.min(24,window.innerWidth-width-8)),Math.max(8,Math.min(110,window.innerHeight-height-8)));
  root.value.style.setProperty('width',width+'px','important');
  root.value.style.setProperty('height',height+'px','important');
 }

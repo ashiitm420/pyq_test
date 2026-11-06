@@ -18,8 +18,8 @@ It does not add workers, services, polling or a larger memory budget.
   automatic question warmup on paper-detail entry. Prepare the Exam module on
   Start-button pointer/focus intent only, after a brief idle delay. Skip optional
   prefetch on hidden pages, data saver and 2G/3G connections; cancel on unmount.
-- Calculator opens at a 1709:822 ratio, scaled to fit the viewport (up to the
-  reference dimensions). Its body scrolls when necessary. Manual resize remains
+- Calculator opens at a compact 540 by 490 CSS pixels, constrained to the
+  viewport. Its body scrolls when necessary. Manual resize remains
   available, and viewport changes clamp its size/position to the screen.
 
 No production latency percentage is claimed. Compare repeated catalog/course/

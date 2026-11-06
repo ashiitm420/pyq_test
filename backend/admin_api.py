@@ -3,7 +3,7 @@ import uuid,time,hashlib
 from pathlib import Path
 from .lazy import fitz
 from sqlalchemy import or_
-from flask import Blueprint,jsonify,request,g,abort,current_app,send_from_directory,redirect
+from flask import Blueprint,jsonify,request,session,g,abort,current_app,send_from_directory,redirect
 from .models import *
 from .api import integer_argument,require_user,body,paginate,paginate_rows,paper_json,paper_rows,course_json,user_json,PAPER_LOAD
 from .engine import question_snapshot,validate_question,aggregate
@@ -57,14 +57,16 @@ def google_drive_status():
 def google_drive_connect():
     from .google_drive import authorization_url
     try:return redirect(authorization_url())
-    except RuntimeError as exc:abort(409,description=str(exc))
+    except RuntimeError as exc:
+        session['google_oauth_error']=str(exc)
+        return redirect('/admin')
 
 @admin.get('/google-drive/callback')
 @require_user(True)
 def google_drive_callback():
     from .google_drive import complete_callback
-    try:complete_callback(request.args.get('code'),request.args.get('state'))
-    except RuntimeError as exc:abort(400,description=str(exc))
+    try:complete_callback(request.args.get('code'),request.args.get('state'),request.args.get('error'))
+    except RuntimeError as exc:session['google_oauth_error']=str(exc)
     return redirect('/admin')
 
 @admin.post('/google-drive/disconnect')

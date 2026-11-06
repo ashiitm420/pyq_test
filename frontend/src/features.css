@@ -296,3 +296,9 @@
 .exam-type-card.oppe-card{background:linear-gradient(135deg,#173452 0%,#285fd8 100%)}
 .exam-type-card.oppe-card:hover{background:linear-gradient(135deg,#1d4066 0%,#2f6ae6 100%)}
 @media(min-width:761px) and (max-width:1099px){.exam-type-cards.oppe-home-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Calculator: bounded pointer/touch and keyboard resizing. */
+.native-calculator{height:600px;max-width:calc(100vw - 16px);min-height:0;min-width:0;overflow:hidden}.native-calculator .calculator-body{flex:1;min-height:0;overflow:auto;padding-bottom:30px}.native-calculator .floating-tool-header{flex-shrink:0;touch-action:none}.calculator-resize{position:absolute;right:0;bottom:0;width:30px;height:30px;border:1px solid var(--line);border-radius:6px 0 0;background:var(--panel,#fff);color:var(--text,#172943);cursor:nwse-resize;touch-action:none;z-index:2}.calculator-resize:focus-visible{outline:2px solid #285fd8;outline-offset:-3px}
+
+.native-calculator{container-type:inline-size}
+@container (max-width:500px){.native-calculator .calc-keys{grid-template-columns:repeat(5,minmax(0,1fr))}}

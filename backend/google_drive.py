@@ -19,10 +19,18 @@ def configured():
 
 def redirect_uri():
     explicit=(current_app.config.get('GOOGLE_OAUTH_REDIRECT_URI') or '').strip()
-    if explicit:return explicit
-    scheme=request.headers.get('X-Forwarded-Proto',request.scheme).split(',')[0].strip()
-    host=request.headers.get('X-Forwarded-Host',request.host).split(',')[0].strip()
-    return scheme+'://'+host+'/api/admin/google-drive/callback'
+    from urllib.parse import urlsplit
+    # The request host owns the admin cookie. A callback on another host (even
+    # www versus apex) loses that cookie and cannot complete the connection.
+    scheme='https' if current_app.config.get('SESSION_COOKIE_SECURE') else request.scheme
+    suggested=scheme+'://'+request.host+'/api/admin/google-drive/callback'
+    if not explicit:return suggested
+    u=urlsplit(explicit)
+    if u.scheme not in ('http','https') or not u.netloc or u.username or u.password or u.query or u.fragment or u.path!='/api/admin/google-drive/callback':
+        raise RuntimeError('GOOGLE_OAUTH_REDIRECT_URI must be the full callback URL shown in Catalog Sync, without a query or fragment.')
+    if u.netloc.lower()!=request.host.lower() or u.scheme!=scheme:
+        raise RuntimeError('Google callback uses a different origin. Open Admin on '+u.scheme+'://'+u.netloc+' or set GOOGLE_OAUTH_REDIRECT_URI and the Google Cloud authorized redirect URI to '+suggested+'.')
+    return explicit
 
 def _fernet():
     material=(current_app.config['SECRET_KEY']+'|google-drive-oauth-v1').encode()
@@ -41,50 +49,78 @@ def credential():
 
 def status():
     row=credential()
+    error=None
+    try:callback=redirect_uri()
+    except RuntimeError as exc:callback=None;error=str(exc)
+    if row:
+        try:_decrypt(row.refresh_token_enc)
+        except RuntimeError as exc:error=str(exc)
     return {
         'configured':configured(),
         'connected':bool(row),
         'email':row.account_email if row else None,
         'scope':row.scope if row else None,
-        'redirect_uri':redirect_uri(),
+        'redirect_uri':callback,
+        'connection_error':error or session.get('google_oauth_error'),
+        'can_connect':configured() and not error,
     }
 
 def authorization_url():
     if not configured():raise RuntimeError('Google OAuth Client ID/Secret are not configured on the server.')
+    callback=redirect_uri()
     state=secrets.token_urlsafe(32);session['google_oauth_state']=state
+    session['google_oauth_started']=time.time()
+    session['google_oauth_redirect']=callback
+    session.pop('google_oauth_error',None)
     params={
         'client_id':current_app.config['GOOGLE_OAUTH_CLIENT_ID'],
-        'redirect_uri':redirect_uri(),
+        'redirect_uri':callback,
         'response_type':'code',
         'scope':ALL_SCOPES,
         'access_type':'offline',
-        'prompt':'consent',
+        'prompt':'consent select_account',
         'include_granted_scopes':'true',
         'state':state,
     }
     return AUTH_URL+'?'+urlencode(params)
 
-def complete_callback(code,state):
+def complete_callback(code,state,error=None):
     expected=session.pop('google_oauth_state',None)
+    started=session.pop('google_oauth_started',0)
+    callback=session.pop('google_oauth_redirect',None)
     if not expected or not secrets.compare_digest(expected,state or ''):
         raise RuntimeError('Google connection expired or state check failed. Start Connect Google Drive again.')
+    if time.time()-started>600 or not callback:
+        raise RuntimeError('Google connection expired. Start Connect Google Drive again.')
+    if error:
+        raise RuntimeError('Google permission was not granted. Choose the account that can open the PDFs and allow Drive read access. If Google says the app is in testing, add that account as an OAuth test user in Google Cloud.')
     if not code:raise RuntimeError('Google did not return an authorization code.')
-    response=requests.post(TOKEN_URL,data={
-        'client_id':current_app.config['GOOGLE_OAUTH_CLIENT_ID'],
-        'client_secret':current_app.config['GOOGLE_OAUTH_CLIENT_SECRET'],
-        'code':code,'grant_type':'authorization_code','redirect_uri':redirect_uri(),
-    },timeout=(10,30))
+    try:
+        response=requests.post(TOKEN_URL,data={
+            'client_id':current_app.config['GOOGLE_OAUTH_CLIENT_ID'],
+            'client_secret':current_app.config['GOOGLE_OAUTH_CLIENT_SECRET'],
+            'code':code,'grant_type':'authorization_code','redirect_uri':callback,
+        },timeout=(10,30))
+    except requests.RequestException:
+        raise RuntimeError('Google could not be reached. Retry Connect Google Drive.') from None
     try:data=response.json()
     except Exception:data={}
-    if response.status_code!=200:raise RuntimeError('Google token exchange failed. Check OAuth client settings and redirect URI.')
+    if response.status_code!=200:
+        messages={
+            'invalid_client':'Google rejected the OAuth client. Check the Web application Client ID and Client Secret configured on the server.',
+            'invalid_grant':'Google authorization expired or the callback URI differs. Retry Connect Google Drive and match the authorized redirect URI exactly.',
+            'redirect_uri_mismatch':'Add the exact callback URL shown in Catalog Sync to the Web OAuth client in Google Cloud.',
+        }
+        raise RuntimeError(messages.get(data.get('error'),'Google token exchange failed. Check OAuth client settings and the authorized redirect URI.'))
     refresh=data.get('refresh_token')
     row=credential()
-    if not refresh and row:refresh=_decrypt(row.refresh_token_enc)
+    # Never relabel a previous account's refresh token as a newly chosen account.
     if not refresh:raise RuntimeError('Google did not provide an offline refresh token. Revoke prior access and connect again.')
     access=data.get('access_token')
     email=None
     if access:
-        user=requests.get(USERINFO_URL,headers={'Authorization':'Bearer '+access},timeout=(10,20))
+        try:user=requests.get(USERINFO_URL,headers={'Authorization':'Bearer '+access},timeout=(10,20))
+        except requests.RequestException:raise RuntimeError('Google account lookup failed. Retry Connect Google Drive.') from None
         if user.status_code==200:
             try:email=user.json().get('email')
             except Exception:pass
@@ -92,7 +128,7 @@ def complete_callback(code,state):
         row=ExternalCredential(provider=PROVIDER,refresh_token_enc=_encrypt(refresh));db.session.add(row)
     else:row.refresh_token_enc=_encrypt(refresh)
     row.account_email=email;row.scope=data.get('scope') or ALL_SCOPES;row.updated_at=time.time()
-    db.session.commit()
+    db.session.commit();session.pop('google_oauth_error',None)
     return status()
 
 def disconnect():

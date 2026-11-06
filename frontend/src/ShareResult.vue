@@ -29,7 +29,7 @@ function download(){
  const a=document.createElement('a');a.href=preview.value;a.download='mauryahub-result.png';document.body.appendChild(a);a.click();a.remove();
  notice.value='Image downloaded. Attach it in WhatsApp or anywhere you like.';
 }
-function whatsapp(){window.open(whatsappUrl(shareText(summary())),'_blank','noopener')}
+function whatsapp(){notice.value='WhatsApp opens with text only. To send the image, download it and attach it in WhatsApp.';window.open(whatsappUrl(shareText(summary())),'_blank','noopener')}
 function close(){open.value=false}
 onUnmounted(()=>{if(preview.value)URL.revokeObjectURL(preview.value)});
 </script>
@@ -44,7 +44,7 @@ onUnmounted(()=>{if(preview.value)URL.revokeObjectURL(preview.value)});
   <p class="muted small mb-3">The image shows only the paper and your score — no name or answers.</p>
   <div class="share-actions" v-if="preview">
    <button v-if="nativeShare" type="button" class="btn btn-primary" @click="share">Share image</button>
-   <button type="button" class="btn" :class="nativeShare?'btn-outline-primary':'btn-primary'" @click="whatsapp">WhatsApp</button>
+   <button type="button" class="btn" :class="nativeShare?'btn-outline-primary':'btn-primary'" @click="whatsapp">WhatsApp text</button>
    <button type="button" class="btn btn-light" @click="download">Download image</button>
   </div>
   <p v-if="notice" class="alert alert-success mt-3 mb-0" role="status">{{notice}}</p>

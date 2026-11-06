@@ -31,6 +31,13 @@ def test_spa_canonical_and_private_routes(app,client):
     r=client.get('/');assert 'rel="canonical" href="https://mauryahub.in/"' in r.text and 'verify-token' in r.text
     assert client.get('/admin/login').headers['X-Robots-Tag']=='noindex, nofollow'
 
+def test_result_blob_preview_allowed_only_as_image(client):
+    policy=client.get('/').headers['Content-Security-Policy']
+    directives={part.strip().split()[0]:part.strip().split()[1:] for part in policy.split(';') if part.strip()}
+    assert 'blob:' in directives['img-src']
+    assert 'blob:' not in directives['script-src']
+    assert "'unsafe-eval'" not in directives['script-src']
+
 
 def test_home_rendering_resources_are_not_blocked(client):
     # Google's longest matching rule wins; $ anchors exact public endpoints.

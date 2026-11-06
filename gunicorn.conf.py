@@ -7,12 +7,10 @@ threads = int(os.getenv('GUNICORN_THREADS','8'))
 timeout = int(os.getenv('GUNICORN_TIMEOUT','60'))
 graceful_timeout = 30
 keepalive = 5
-# Periodic worker recycling wiped the in-process content cache every ~2,000
-# requests, forcing an expensive rebuild from Supabase on a 0.1 vCPU instance.
-# Memory stays flat in practice, so recycling is off; set GUNICORN_MAX_REQUESTS
-# (for example 50000) to re-enable it if memory ever grows.
-max_requests = int(os.getenv('GUNICORN_MAX_REQUESTS','0'))
-max_requests_jitter = int(os.getenv('GUNICORN_MAX_REQUESTS_JITTER','0'))
+# Slow native-library growth needs a safety net in addition to bounded caches.
+# This is not an OOM fix by itself; warmup still runs for the replacement worker.
+max_requests = int(os.getenv('GUNICORN_MAX_REQUESTS','10000'))
+max_requests_jitter = int(os.getenv('GUNICORN_MAX_REQUESTS_JITTER','1000'))
 accesslog = '-'
 errorlog = '-'
 # No query strings, signed URLs, headers or request bodies in access logs.

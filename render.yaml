@@ -41,6 +41,16 @@ services:
         value: pyq:content:v1
       - key: CONTENT_CACHE_TTL
         value: "86400"
+      - key: LOCAL_CONTENT_CACHE_BYTES
+        value: "33554432"
+      - key: ANALYTICS_BACKGROUND_WRITES
+        value: "1"
+      - key: MEMORY_LOG_INTERVAL_SECONDS
+        value: "60"
+      - key: GUNICORN_MAX_REQUESTS
+        value: "10000"
+      - key: GUNICORN_MAX_REQUESTS_JITTER
+        value: "1000"
       - key: WEB_CONCURRENCY
         value: "1"
       - key: GUNICORN_THREADS

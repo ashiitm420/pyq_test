@@ -18,10 +18,20 @@ def validate_pdf(data):
     if not data.startswith(b'%PDF-'):raise ValueError('Not a PDF: invalid signature')
     if len(data)>current_app.config['MAX_UPLOAD_SIZE']:raise ValueError('PDF exceeds configured byte limit')
     with fitz.open(stream=data,filetype='pdf') as doc:
-        if doc.needs_pass:raise ValueError('Encrypted PDF requires credentials; no bypass attempted')
-        if not 1<=len(doc)<=200:raise ValueError('PDF must have 1–200 pages')
-        if any(p.rect.width>3000 or p.rect.height>3000 for p in doc):raise ValueError('Page dimensions exceed rendering limit')
-        return len(doc)
+        return validate_document(doc)
+
+def validate_document(doc):
+    if doc.needs_pass:raise ValueError('Encrypted PDF requires credentials; no bypass attempted')
+    if not 1<=len(doc)<=200:raise ValueError('PDF must have 1–200 pages')
+    if any(p.rect.width>3000 or p.rect.height>3000 for p in doc):raise ValueError('Page dimensions exceed rendering limit')
+    return len(doc)
+
+def checked_pdf_path(name):
+    path=ensure_local(name)
+    if path.stat().st_size>current_app.config['MAX_UPLOAD_SIZE']:raise ValueError('PDF exceeds configured byte limit')
+    with path.open('rb') as source:
+        if source.read(5)!=b'%PDF-':raise ValueError('Not a PDF: invalid signature')
+    return path
 
 def store_upload(upload,paper,batch,replace=False):
     f=IngestionFile(batch_id=batch.id,paper_id=paper.id,filename=(upload.filename or 'upload.pdf')[:255],source_url=paper.source_url)
@@ -122,8 +132,13 @@ def extraction_failure_message(layout,records,available):
 def process_file(id):
     f=db.session.get(IngestionFile,id);paper=db.session.get(Paper,f.paper_id);f.status='PROCESSING';f.started_at=time.time();paper.status='PROCESSING';event(f,'PROCESSING','Automatic extraction started');db.session.commit()
     try:
-        data=ensure_local(f.path).read_bytes();f.pages=validate_pdf(data)
-        with fitz.open(stream=data,filetype='pdf') as doc:layout=layout_document(doc,root(),(f.file_hash or hashlib.sha256(data).hexdigest()),current_app.config['OCR_ENABLED'])
+        path=checked_pdf_path(f.path)
+        with path.open('rb') as source:sha=f.file_hash or hashlib.file_digest(source,'sha256').hexdigest()
+        # Open the file directly: retaining a Python bytes copy beside MuPDF's
+        # input buffer inflated every PDF/OCR processing request.
+        with fitz.open(str(path)) as doc:
+            f.pages=validate_document(doc)
+            layout=layout_document(doc,root(),sha,current_app.config['OCR_ENABLED'])
         event(f,'DETECTING_ANSWERS','PDF layout, images and green/red visual indicators extracted');db.session.commit()
         records,meta,issues=parse_document(layout)
         if not records:
@@ -226,14 +241,21 @@ def process_file(id):
     db.session.commit();update_batch(f.batch_id)
 
 def repair_question_image_asset(image):
+    slots=current_app.extensions['processing_slots']
+    if not slots.acquire(blocking=False):return False
+    try:return _repair_question_image_asset(image)
+    finally:slots.release()
+
+def _repair_question_image_asset(image):
     """Recreate one missing extracted image deterministically from its source PDF."""
     question=db.session.get(Question,image.question_id)
     if question is None or not question.ingestion_file_id:return False
     source=db.session.get(IngestionFile,question.ingestion_file_id)
     if source is None or not source.path or not source.file_hash:return False
     try:
-        data=ensure_local(source.path).read_bytes()
-        with fitz.open(stream=data,filetype='pdf') as doc:
+        path=checked_pdf_path(source.path)
+        with fitz.open(str(path)) as doc:
+            validate_document(doc)
             layout=layout_document(doc,root(),source.file_hash,False)
         generated={asset['path'] for asset in layout.get('assets',{}).values()}
         if image.path not in generated or not (root()/image.path).is_file():return False

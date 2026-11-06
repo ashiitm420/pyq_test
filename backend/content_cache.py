@@ -1,5 +1,5 @@
 """Shared content cache. Student/session state is never cached here."""
-import json, time, uuid, threading
+import json, time, uuid, threading, sys
 from collections import OrderedDict
 from flask import current_app, has_app_context
 from sqlalchemy import event
@@ -16,6 +16,36 @@ _local_lock = threading.RLock()
 _local_cache = OrderedDict()
 _local_inflight = {}
 _local_generation = 0
+_local_sizes = {}
+_local_bytes = 0
+
+
+def _byte_limit():
+    return max(0,int(current_app.config.get('LOCAL_CONTENT_CACHE_BYTES',32*1024*1024)))
+
+
+def _retained_size(value, limit):
+    """Estimate retained Python objects without allocating a JSON copy."""
+    seen=set();pending=[value];size=0
+    while pending:
+        item=pending.pop();identity=id(item)
+        if identity in seen:continue
+        seen.add(identity);size+=sys.getsizeof(item)
+        if size>limit:return size
+        if isinstance(item,dict):pending.extend(item.keys());pending.extend(item.values())
+        elif isinstance(item,(list,tuple,set,frozenset)):pending.extend(item)
+    return size
+
+
+def _local_drop(key):
+    global _local_bytes
+    _local_cache.pop(key,None)
+    _local_bytes-=_local_sizes.pop(key,0)
+
+
+def local_cache_usage():
+    with _local_lock:
+        return {'entries':len(_local_cache),'estimated_bytes':_local_bytes}
 
 
 def _local_limit():
@@ -33,23 +63,34 @@ def _local_get(key):
         if row is None:return None
         expires,value=row
         if expires<=now:
-            _local_cache.pop(key,None);return None
+            _local_drop(key);return None
         _local_cache.move_to_end(key)
         return value
 
 
 def _local_put(key,value):
+    global _local_bytes
+    budget=_byte_limit();size=_retained_size(value,budget)
     with _local_lock:
+        # TTL alone does not free objects until a key is looked up again.
+        now=time.monotonic()
+        for old,(expires,_) in list(_local_cache.items()):
+            if expires<=now:_local_drop(old)
+        _local_drop(key)
+        if not budget or size>budget:return
         _local_cache[key]=(time.monotonic()+_local_ttl(),value)
+        _local_sizes[key]=size;_local_bytes+=size
         _local_cache.move_to_end(key)
-        while len(_local_cache)>_local_limit():_local_cache.popitem(last=False)
+        while len(_local_cache)>_local_limit() or _local_bytes>budget:
+            _local_drop(next(iter(_local_cache)))
 
 
 def _local_clear():
-    global _local_generation
+    global _local_generation,_local_bytes
     with _local_lock:
         _local_generation += 1
         _local_cache.clear()
+        _local_sizes.clear();_local_bytes=0
 
 
 def _local_cached(key,loader):
@@ -115,7 +156,7 @@ def forget(key):
     single public post never forces every paper/course entry to be rebuilt.
     """
     with _local_lock:
-        _local_cache.pop(key, None)
+        _local_drop(key)
     try:
         r = client()
         if r is not None:

@@ -55,6 +55,13 @@ def checked_output(s,data):
 @bp.get('/admin/ai-solutions/summary')
 @require_user(True)
 def solution_summary():
+    from .content_cache import cached
+    key='admin-solution-summary:'+hashlib.sha256(json.dumps(sorted(request.args.items(multi=True))).encode()).hexdigest()
+    # Shared catalog counts only, behind admin auth. Content-table commits
+    # invalidate these summaries when questions or saved solutions change.
+    return jsonify(cached(key,_solution_summary_data))
+
+def _solution_summary_data():
     # Only processed, non-archived papers with available questions count.
     counts=db.session.query(Question.paper_id.label('paper_id'),func.count(Question.id).label('total')).filter(Question.status=='AVAILABLE').group_by(Question.paper_id).subquery()
     query=db.session.query(Paper,counts.c.total).join(counts,counts.c.paper_id==Paper.id).filter(Paper.status!='ARCHIVED')
@@ -78,14 +85,17 @@ def solution_summary():
     records=query.options(selectinload(Paper.term),selectinload(Paper.exam_type),selectinload(Paper.course)).order_by(Paper.id.desc()).all()
     papers={p.id:dict(id=p.id,name=p.name,course=p.course.name,term=p.term.name,exam=p.exam_type.name,exam_type_id=p.exam_type_id,session=p.session or '',questions=total,uploaded=0,published=0,review=0,outdated=0) for p,total in records}
     if papers:
-        rows=db.session.query(Question,AISolution).join(AISolution,AISolution.question_id==Question.id).filter(Question.status=='AVAILABLE',Question.paper_id.in_(papers)).options(selectinload(Question.options),selectinload(Question.images)).all()
-        for q,s in rows:
+        # Full solution text/final answers/checks are unnecessary for counts.
+        # Streaming preserves exact version checks without retaining the entire
+        # solved question library and its eager-loaded children in one request.
+        rows=db.session.query(Question,AISolution.version,AISolution.status).join(AISolution,AISolution.question_id==Question.id).filter(Question.status=='AVAILABLE',Question.paper_id.in_(papers)).options(selectinload(Question.options),selectinload(Question.images)).yield_per(500)
+        for q,solution_version,solution_status in rows:
             p=papers[q.paper_id]
-            if s.version!=version(snapshot(q)):
+            if solution_version!=version(snapshot(q)):
                 p['outdated']+=1
                 continue
             p['uploaded']+=1
-            if s.status=='PUBLISHED':p['published']+=1
+            if solution_status=='PUBLISHED':p['published']+=1
             else:p['review']+=1
     values=list(papers.values())
     for p in values:
@@ -98,7 +108,7 @@ def solution_summary():
     totals['papers_pending']=totals['papers_total']-totals['papers_complete']
     totals['papers_partial']=totals['papers_pending']-totals['papers_not_started']
     totals['questions_pending']=totals['questions_total']-totals['questions_uploaded']
-    return jsonify(papers=values,statistics=totals)
+    return dict(papers=values,statistics=totals)
 
 @bp.get('/admin/ai-solutions')
 @require_user(True)

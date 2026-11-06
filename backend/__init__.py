@@ -59,6 +59,9 @@ def create_app(config=None):
     app.config.update(CONTENT_CACHE_URL=os.getenv('REDIS_URL',''), CACHE_NAMESPACE=os.getenv('CACHE_NAMESPACE','pyq:content:v1'), CONTENT_CACHE_TTL=int(os.getenv('CONTENT_CACHE_TTL','86400')), LOCAL_CONTENT_CACHE_MAX=int(os.getenv('LOCAL_CONTENT_CACHE_MAX','256')), IMAGE_DELIVERY=image_delivery, IMAGE_CDN_BASE_URL=os.getenv('IMAGE_CDN_BASE_URL',''), IMAGE_CDN_MANIFEST=os.getenv('IMAGE_CDN_MANIFEST',''))
     app.config.update(ANALYTICS_ENABLED=os.getenv('ANALYTICS_ENABLED','true').lower()=='true',
                       ANALYTICS_EXCLUDE_TRAFFIC=os.getenv('ANALYTICS_EXCLUDE_TRAFFIC','false').lower()=='true')
+    app.config.update(LOCAL_CONTENT_CACHE_BYTES=int(os.getenv('LOCAL_CONTENT_CACHE_BYTES',32*1024*1024)),
+                      ANALYTICS_BACKGROUND_WRITES=int(os.getenv('ANALYTICS_BACKGROUND_WRITES','1')),
+                      MEMORY_LOG_INTERVAL_SECONDS=int(os.getenv('MEMORY_LOG_INTERVAL_SECONDS','60')))
     if config: app.config.update(config)
     from . import content_cache
     from .storage import configure_delivery
@@ -100,14 +103,14 @@ def create_app(config=None):
         response.headers['X-Content-Type-Options']='nosniff'
         response.headers['Referrer-Policy']='same-origin'
         response.headers['X-Frame-Options']='SAMEORIGIN'
-        response.headers['Content-Security-Policy']="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; frame-src 'self' https://tcsion.com https://www.tcsion.com; object-src 'none'; base-uri 'self'"
+        response.headers['Content-Security-Policy']="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; frame-src 'self' https://tcsion.com https://www.tcsion.com; object-src 'none'; base-uri 'self'"
         # Keep third-party ad permissions off every other route, including the SPA.
         if request.path.startswith('/study/papers/') and response.status_code==200:
             from flask import g
             if getattr(g,'study_ads_allowed',False):
-                response.headers['Content-Security-Policy']=response.headers['Content-Security-Policy'].replace("script-src 'self'", "script-src 'self' https://pagead2.googlesyndication.com https://fundingchoicesmessages.google.com").replace("frame-src 'self'", "frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://fundingchoicesmessages.google.com").replace("connect-src 'self'", "connect-src 'self' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net").replace("img-src 'self' data:", "img-src 'self' data: https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net")
+                response.headers['Content-Security-Policy']=response.headers['Content-Security-Policy'].replace("script-src 'self'", "script-src 'self' https://pagead2.googlesyndication.com https://fundingchoicesmessages.google.com").replace("frame-src 'self'", "frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://fundingchoicesmessages.google.com").replace("connect-src 'self'", "connect-src 'self' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net").replace("img-src 'self' data: blob:", "img-src 'self' data: blob: https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net")
         if app.extensions.get('image_origin'):
-            response.headers['Content-Security-Policy']=response.headers['Content-Security-Policy'].replace("img-src 'self' data:","img-src 'self' data: "+app.extensions['image_origin'])
+            response.headers['Content-Security-Policy']=response.headers['Content-Security-Policy'].replace("img-src 'self' data: blob:","img-src 'self' data: blob: "+app.extensions['image_origin'])
         if request.path.startswith('/api/') and not request.path.startswith('/api/images/'): response.headers['Cache-Control']='no-store'
         if request.path in ('/api/home','/api/session','/api/study-featured'):
             response.headers['X-Robots-Tag']='noindex'

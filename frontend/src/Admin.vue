@@ -190,9 +190,10 @@ async function toggleQuestion(q){await run(async()=>{const d=await api('/admin/q
   <span class="status" :class="{ready:driveStatus?.connected}">{{driveStatus?.connected?'CONNECTED':'NOT CONNECTED'}}</span>
  </div>
  <div v-if="driveStatus" class="mt-3">
-  <p class="small muted mb-2"><strong>Authorized redirect URI:</strong> {{driveStatus.redirect_uri}}</p>
+  <p v-if="driveStatus.connection_error" class="alert alert-danger" role="alert">{{driveStatus.connection_error}}</p>
+  <p v-if="driveStatus.redirect_uri" class="small muted mb-2"><strong>Authorized redirect URI:</strong> {{driveStatus.redirect_uri}}</p>
   <div class="d-flex gap-2 flex-wrap">
-   <button v-if="driveStatus.configured&&!driveStatus.connected" class="btn btn-primary" @click="connectDrive">Connect Google Drive</button>
+   <button v-if="driveStatus.configured&&!driveStatus.connected" :disabled="driveStatus.can_connect===false" class="btn btn-primary" @click="connectDrive">Connect Google Drive</button>
    <button v-if="driveStatus.connected" class="btn btn-outline-primary" @click="disconnectDrive">Disconnect</button>
    <button class="btn btn-light" @click="run(loadDriveStatus)">Refresh status</button>
   </div>

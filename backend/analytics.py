@@ -1,7 +1,7 @@
 """Permanent minimal analytics; reads and aggregation only in the admin dashboard.
 
-One insert/update is piggybacked on the existing transaction, in an isolated
-savepoint. No daemon queue, additional browser requests, or stored answer choices.
+Writes after learner commits use bounded background concurrency. Saturation
+applies backpressure in the request rather than accumulating threads or jobs.
 """
 import csv
 import hashlib
@@ -39,6 +39,7 @@ def paper_context(paper):
                 exam_name=paper.exam_type.name,device=device,browser_key=browser,initial_mode=paper and request.get_json().get('mode','practice'))
 
 def install(app):
+    app.extensions['analytics_slots']=threading.BoundedSemaphore(max(1,app.config.get('ANALYTICS_BACKGROUND_WRITES',1)))
     @app.before_request
     def reset_usage_cookie():
         g.pop('analytics_cookie',None)
@@ -90,11 +91,19 @@ def record(attempt,automatic=False,post_commit=False):
         rows=question_totals(attempt) if is_submitted else []
         if post_commit and not current_app.config.get('TESTING'):
             app=current_app._get_current_object()
+            slots=app.extensions['analytics_slots']
+            if not slots.acquire(blocking=False):
+                _write_analytics(values,is_submitted,rows)
+                return
             def _bg():
-                with app.app_context():
-                    try:_write_analytics(values,is_submitted,rows)
-                    finally:db.session.remove()
-            threading.Thread(target=_bg,daemon=True).start()
+                try:
+                    with app.app_context():
+                        try:_write_analytics(values,is_submitted,rows)
+                        finally:db.session.remove()
+                finally:slots.release()
+            try:threading.Thread(target=_bg,daemon=True,name='pyq-analytics').start()
+            except Exception:
+                slots.release();raise
             return
         if post_commit:
             _write_analytics(values,is_submitted,rows)

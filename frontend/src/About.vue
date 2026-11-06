@@ -1,6 +1,6 @@
 <script setup>
 import {ref,computed,onMounted} from 'vue';
-import {Linkedin,Instagram,Mail,GraduationCap,Timer,BookOpen,Bookmark,Sparkles,CodeXml,ArrowUpRight,ShieldCheck} from 'lucide-vue-next';
+import {Linkedin,Instagram,Mail,GraduationCap,Timer,BookOpen,Bookmark,Sparkles,ArrowUpRight,ShieldCheck} from 'lucide-vue-next';
 import {api,session} from './api';
 const page=ref(null),draft=ref({}),editing=ref(false),busy=ref(false),loading=ref(true),error=ref(''),message=ref(''),version=ref(Date.now());
 async function load(){loading.value=true;error.value='';try{page.value=await api('/about')}catch(e){error.value=e.message}finally{loading.value=false}}onMounted(load);
@@ -16,7 +16,6 @@ const features=[
  {icon:Timer,title:'Exam mode',text:'Timed attempts in a familiar computer-based exam layout.'},
  {icon:Sparkles,title:'Explained solutions',text:'Step-by-step explanations after you attempt a question.'},
  {icon:Bookmark,title:'Bookmarks & progress',text:'Save questions and track your latest score in your browser.'},
- {icon:CodeXml,title:'OPPE practice',text:'Coding practice on our partner site, one click from Home.',href:'https://oppe.rangalabs.cloud/'},
  {icon:ShieldCheck,title:'Free, no login',text:'Open a paper and start. No account or payment needed.'},
 ];
 </script>

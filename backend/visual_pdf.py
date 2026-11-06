@@ -1,7 +1,7 @@
 """Source layout, embedded diagrams and answer-indicator evidence.
 Green/red indicators are consumed during ingestion, never exposed in student assets.
 """
-import io,re,hashlib,subprocess,tempfile,shutil
+import io,re,hashlib,subprocess,tempfile,shutil,math
 from pathlib import Path
 from .lazy import fitz
 from .lazy import PIL_Image as Image
@@ -14,7 +14,10 @@ def color_kind(color):
     return None
 
 def pixels_kind(data):
-    a=np.asarray(Image.open(io.BytesIO(data)).convert('RGB'),dtype=np.float32)
+    with Image.open(io.BytesIO(data)) as source:
+        if source.width*source.height>16000000:return None
+        source.thumbnail((256,256))
+        a=np.asarray(source.convert('RGB'),dtype=np.float32)
     r,g,b=a[:,:,0],a[:,:,1],a[:,:,2]
     green=(g>55)&(g>r*1.35)&(g>b*1.2);red=(r>80)&(r>g*1.45)&(r>b*1.35)
     ng,nr=int(green.sum()),int(red.sum())
@@ -35,7 +38,7 @@ def join_items(items,bold_ranges=None):
     return result
 
 def layout_document(doc,asset_dir,sha,ocr=True):
-    texts=[];spans=[];assets={};indicators={};warnings=[];page_ranges=[];offset=0;bold_ranges=[]
+    texts=[];assets={};indicators={};warnings=[];page_ranges=[];offset=0;bold_ranges=[]
     for pn,page in enumerate(doc,1):
         try:
             data=page.get_text('dict');lines=[];images=[];ids=[]
@@ -52,7 +55,6 @@ def layout_document(doc,asset_dir,sha,ocr=True):
                             ids.append((key[1],bbox))
                             kind=color_kind(span['color'])
                             if kind:indicators.setdefault(key[1],[]).append({'kind':kind,'method':'pdf_text_color','color':hex(span['color']),'page':pn})
-                        spans.append({'text':text,'bbox':list(bbox),'page':pn,'color':span['color']})
                     lines.append({'bbox':fitz.Rect(line['bbox']),'items':items})
             # PDF option content may begin above the coloured ID (superscripts or tall images).
             # Bind by the shared visual baseline before linearizing reading order.
@@ -80,7 +82,12 @@ def layout_document(doc,asset_dir,sha,ocr=True):
                     indicators.setdefault(near[0],[]).append({'kind':indicator,'method':'embedded_indicator_pixels','page':pn});continue
                 # Keep diagrams and inline math, including small monochrome glyph images.
                 token=f'{sha[:16]}_{pn}_{len(assets)}';path=token+'.png'
-                Image.open(io.BytesIO(im['image'])).convert('RGBA').save(Path(asset_dir)/path)
+                with Image.open(io.BytesIO(im['image'])) as source:
+                    if source.width*source.height>16000000:
+                        raise ValueError('Embedded image exceeds 16 million pixels; process a reduced-resolution source')
+                    converted=source.convert('RGBA')
+                    try:converted.save(Path(asset_dir)/path)
+                    finally:converted.close()
                 assets[token]={'path':path,'page':pn,'bbox':list(rect),'width':rect.width/11,'height':rect.height/11}
                 marker=' [[IMAGE:'+token+']] '
                 option_target=next((option_lines[key] for key,b in ids if rect.x0>=b.x1 and abs(rect.y1-b.y1)<6),None)
@@ -109,9 +116,11 @@ def layout_document(doc,asset_dir,sha,ocr=True):
                     warnings.append(f'Page {pn}: OCR unavailable');text=f'[[PAGE_FAILED:{pn}]]'
                 else:
                     # OCR provides searchable text and word boxes for scanned answer indicators.
-                    pix=page.get_pixmap(matrix=fitz.Matrix(2,2))
+                    scale=min(2,math.sqrt(8000000/max(1,page.rect.width*page.rect.height)))
+                    pix=page.get_pixmap(matrix=fitz.Matrix(scale,scale))
                     with tempfile.TemporaryDirectory() as td:
                         src=Path(td)/'page.png';pix.save(src)
+                        del pix  # Tesseract runs in the same container memory budget.
                         r=subprocess.run(['tesseract',str(src),'stdout','-l','eng'],capture_output=True,text=True,timeout=60,check=True)
                         text=r.stdout
                         # For scans, inspect colored option-number lines from OCR boxes.
@@ -121,7 +130,7 @@ def layout_document(doc,asset_dir,sha,ocr=True):
                             key=re.fullmatch(r'(\d{7,})\.?',word.get('text','').strip())
                             if key:
                                 x,y,w,h=[int(word[k]) for k in ('left','top','width','height')]
-                                clip=fitz.Rect(max(0,x/2-2),max(0,y/2-2),min(page.rect.width,(x+w)/2+18),min(page.rect.height,(y+h)/2+2))
+                                clip=fitz.Rect(max(0,x/scale-2),max(0,y/scale-2),min(page.rect.width,(x+w)/scale+18),min(page.rect.height,(y+h)/scale+2))
                                 detected=pixels_kind(page.get_pixmap(matrix=fitz.Matrix(2,2),clip=clip).tobytes('png'))
                                 if detected:indicators.setdefault(key[1],[]).append({'kind':detected,'method':'ocr_marker_pixels','page':pn})
                     warnings.append(f'Page {pn}: OCR used; confidence reduced')

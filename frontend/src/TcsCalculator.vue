@@ -10,12 +10,25 @@ function dragStart(e){if(e.button>0||e.target.closest('button'))return;const r=r
 function dragMove(e){if(!drag)return;place(Math.max(0,Math.min(window.innerWidth-root.value.offsetWidth,e.clientX-drag.dx)),Math.max(0,Math.min(window.innerHeight-root.value.offsetHeight,e.clientY-drag.dy)))}
 function dragEnd(){drag=null;window.removeEventListener('pointermove',dragMove);window.removeEventListener('pointerup',dragEnd);window.removeEventListener('pointercancel',dragEnd)}
 let resizing=null;
+function defaultSize(){
+ const ratio=1709/822;
+ const width=Math.max(1,Math.min(1709,window.innerWidth-16,Math.min(window.innerHeight-16,window.innerHeight*.85)*ratio));
+ const height=width/ratio;
+ place(Math.max(8,(window.innerWidth-width)/2),Math.max(8,(window.innerHeight-height)/2));
+ root.value.style.setProperty('width',width+'px','important');
+ root.value.style.setProperty('height',height+'px','important');
+}
+function fitViewport(){
+ const r=root.value.getBoundingClientRect();
+ place(Math.max(8,Math.min(r.left,window.innerWidth-r.width-8)),Math.max(8,Math.min(r.top,window.innerHeight-r.height-8)));
+ size(r.width,r.height);
+}
 function size(width,height){const r=root.value.getBoundingClientRect(),s=root.value.style;const maxW=Math.max(1,window.innerWidth-r.left-8),maxH=Math.max(1,window.innerHeight-r.top-8);s.setProperty('width',Math.max(Math.min(280,maxW),Math.min(maxW,width))+'px','important');s.setProperty('height',Math.max(Math.min(260,maxH),Math.min(maxH,height))+'px','important')}
 function resizeStart(e){if(e.button>0)return;e.preventDefault();e.stopPropagation();const r=root.value.getBoundingClientRect();place(r.left,r.top);resizing={x:e.clientX,y:e.clientY,width:r.width,height:r.height};window.addEventListener('pointermove',resizeMove);window.addEventListener('pointerup',resizeEnd,{once:true});window.addEventListener('pointercancel',resizeEnd,{once:true})}
 function resizeMove(e){if(resizing)size(resizing.width+e.clientX-resizing.x,resizing.height+e.clientY-resizing.y)}
 function resizeEnd(){resizing=null;window.removeEventListener('pointermove',resizeMove);window.removeEventListener('pointerup',resizeEnd);window.removeEventListener('pointercancel',resizeEnd)}
 function resizeKey(e){if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))return;e.preventDefault();e.stopPropagation();const r=root.value.getBoundingClientRect();place(r.left,r.top);size(r.width+(e.key==='ArrowRight'?20:e.key==='ArrowLeft'?-20:0),r.height+(e.key==='ArrowDown'?20:e.key==='ArrowUp'?-20:0))}
 onUnmounted(resizeEnd);
-onMounted(()=>{previous=document.activeElement;root.value.focus()});onUnmounted(()=>{dragEnd();window.removeEventListener('pointerup',dragEnd);previous?.focus()});
+onMounted(()=>{previous=document.activeElement;defaultSize();root.value.focus();window.addEventListener('resize',fitViewport)});onUnmounted(()=>{dragEnd();window.removeEventListener('resize',fitViewport);window.removeEventListener('pointerup',dragEnd);previous?.focus()});
 </script>
 <template><section ref="root" class="floating-tool calculator-tool native-calculator" tabindex="-1" role="dialog" aria-label="Scientific calculator" @keydown="keyboard"><header class="floating-tool-header" @pointerdown="dragStart"><strong>Scientific Calculator</strong><span>Drag</span><div class="floating-tool-actions"><button type="button" aria-label="Close calculator" @click="emit('close')"><X :size="17"/></button></div></header><div class="calculator-body"><input class="calc-expression" aria-label="Calculator expression" v-model="expression" maxlength="500" @keydown.enter.prevent="press('equal')"><output class="calc-result" aria-label="Calculator result">{{result}}</output><p v-if="error" class="calc-error" role="alert">{{error}}</p><div class="calc-modes"><label><input type="radio" :value="true" v-model="degrees"> Deg</label><label><input type="radio" :value="false" v-model="degrees"> Rad</label><span>{{memory!==0?'M':''}}</span><button v-for="m in ['MC','MR','MS','M+','M-']" @click="useMemory(m)">{{m}}</button></div><div class="calc-keys"><button v-for="[label,value] in keys" :key="label" :class="{equals:value==='equal',clear:value==='clear'||value==='back'}" @click="press(value)">{{label}}</button></div><div class="calc-extra"><button @click="press(' mod ')">mod</button><button @click="press('/100')">%</button><button @click="expression='1/('+expression+')'">1/x</button></div><p class="calculator-help">Functions: sin(30). Two inputs: logbase(2,8), root(3,27). Use × between numbers and constants. Enter = calculate. Drag the bottom-right corner to resize.</p></div><button type="button" class="calculator-resize" aria-label="Resize calculator" title="Drag to resize; arrow keys adjust size" @pointerdown="resizeStart" @keydown="resizeKey">↘</button></section></template>

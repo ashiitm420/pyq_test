@@ -2,12 +2,27 @@
 import json, time, uuid, threading, sys
 from collections import OrderedDict
 from flask import current_app, has_app_context
-from sqlalchemy import event
+from sqlalchemy import event, inspect
 from sqlalchemy.orm import Session
 from .performance import count
 
 CONTENT_TABLES = {'course', 'term', 'exam_type', 'paper', 'question', 'question_option',
-                  'question_image', 'ingestion_file', 'source_entry', 'ai_solution'}
+                  'question_image', 'ingestion_file', 'ai_solution'}
+
+CACHE_SCOPES = ('catalog', 'snapshots', 'solutions', 'other')
+
+def _scope(key):
+    if key.startswith('paper:'):return 'snapshots'
+    if key.startswith(('paper-published-solutions:', 'admin-solution-summary:')):return 'solutions'
+    if key == 'site-feedback':return 'other'
+    return 'catalog'
+
+def _changed_scopes(table):
+    # Import progress does not change questions. Source-entry bookkeeping is
+    # not read by public caches; changes to actual Paper rows still invalidate.
+    if table == 'ingestion_file':return {'catalog'}
+    if table == 'ai_solution':return {'catalog', 'solutions'}
+    return set(CACHE_SCOPES) if table in CONTENT_TABLES else set()
 
 # A small per-process fallback matters on Render even before Redis is provisioned:
 # the same paper should not be rebuilt from PostgreSQL for every student. Redis
@@ -85,12 +100,16 @@ def _local_put(key,value):
             _local_drop(next(iter(_local_cache)))
 
 
-def _local_clear():
+def _local_clear(scopes=None):
     global _local_generation,_local_bytes
     with _local_lock:
         _local_generation += 1
-        _local_cache.clear()
-        _local_sizes.clear();_local_bytes=0
+        if scopes is None:
+            _local_cache.clear()
+            _local_sizes.clear();_local_bytes=0
+        else:
+            for key in list(_local_cache):
+                if _scope(key) in scopes:_local_drop(key)
 
 
 def _local_cached(key,loader):
@@ -138,11 +157,13 @@ def prefix():
     return current_app.config.get('CACHE_NAMESPACE', 'pyq:content:v1')
 
 
-def invalidate():
-    _local_clear()
+def invalidate(scopes=None):
+    _local_clear(scopes)
     try:
         r = client()
-        if r is not None:r.set(prefix()+':epoch', uuid.uuid4().hex)
+        if r is not None:
+            for scope in (CACHE_SCOPES if scopes is None else scopes):
+                r.set(prefix()+':epoch:'+scope, uuid.uuid4().hex)
     except Exception:
         current_app.logger.warning('content_cache_invalidation_failed; entries expire within configured TTL')
 
@@ -160,7 +181,7 @@ def forget(key):
     try:
         r = client()
         if r is not None:
-            epoch = r.get(prefix()+':epoch')
+            epoch = r.get(prefix()+':epoch:'+_scope(key))
             if epoch:
                 r.delete(prefix()+':'+str(epoch)+':'+key)
     except Exception:
@@ -175,7 +196,7 @@ def cached(key, loader):
         count('cache_error');return _local_cached(key,loader)
     if r is None:return _local_cached(key,loader)
     try:
-        epoch_key = prefix()+':epoch'
+        epoch_key = prefix()+':epoch:'+_scope(key)
         r.set(epoch_key, uuid.uuid4().hex, nx=True)
         epoch = r.get(epoch_key)
         full = prefix()+':'+str(epoch)+':'+key
@@ -211,25 +232,33 @@ def cached(key, loader):
 
 @event.listens_for(Session, 'before_flush')
 def changed(session, context, instances):
-    if any(getattr(obj, '__tablename__', '') in CONTENT_TABLES
-           for obj in session.new.union(session.dirty).union(session.deleted)):
-        session.info['content_changed'] = True
+    scopes=set()
+    for obj in session.new.union(session.dirty).union(session.deleted):
+        table=getattr(obj, '__tablename__', '')
+        if table=='ingestion_file' and obj in session.dirty:
+            # Only download availability depends on this row. Status, retry
+            # counters and extraction events are admin bookkeeping.
+            state=inspect(obj)
+            if not any(state.attrs[name].history.has_changes() for name in ('path','paper_id')):continue
+        scopes.update(_changed_scopes(table))
+    if scopes:session.info.setdefault('content_changed',set()).update(scopes)
 
 
 @event.listens_for(Session, 'do_orm_execute')
 def bulk_changed(state):
     if state.is_update or state.is_delete or state.is_insert:
         table = getattr(state.statement, 'table', None)
-        if getattr(table, 'name', None) in CONTENT_TABLES:
-            state.session.info['content_changed'] = True
+        scopes=_changed_scopes(getattr(table, 'name', None))
+        if scopes:state.session.info.setdefault('content_changed',set()).update(scopes)
 
 
 @event.listens_for(Session, 'after_commit')
 def committed(session):
     if session.in_nested_transaction():
         return
-    if session.info.pop('content_changed', False) and has_app_context():
-        invalidate()
+    scopes=session.info.pop('content_changed', None)
+    if scopes and has_app_context():
+        invalidate(scopes)
 
 
 @event.listens_for(Session, 'after_soft_rollback')

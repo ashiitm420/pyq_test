@@ -19,7 +19,7 @@ const busy=ref(route.value.startsWith('/admin')),error=ref(''),auth=ref({name:''
 const examPage=computed(()=>route.value.startsWith('/attempt/'));
 // The admin console has its own full-screen layout (sidebar, top bar, theme toggle).
 const adminConsole=computed(()=>!busy.value&&route.value.startsWith('/admin')&&route.value!=='/admin/login'&&session.user?.role==='ADMIN');
-onMounted(async()=>{if(!route.value.startsWith('/admin')&&!route.value.startsWith('/attempt/'))void loadHome().catch(()=>{});setTimeout(()=>{void import('./Exam.vue').catch(()=>{});void import('./Records.vue').catch(()=>{})},1500);try{await loadSession()}catch(e){error.value=e.message}finally{busy.value=false}});
+onMounted(async()=>{if(!route.value.startsWith('/admin')&&!route.value.startsWith('/attempt/'))void loadHome().catch(()=>{});try{await loadSession()}catch(e){error.value=e.message}finally{busy.value=false}});
 async function authenticate(){authBusy.value=true;error.value='';try{const d=await api('/auth/login',{method:'POST',body:auth.value});session.user=d.user;auth.value.password='';go('/admin')}catch(e){error.value=e.message}finally{authBusy.value=false}}
 async function logout(){await api('/auth/logout',{method:'POST'});await loadSession();go('/')}
 // [path, full label, icon, short label for the phone bottom bar]

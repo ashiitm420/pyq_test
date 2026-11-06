@@ -5,6 +5,18 @@ from sqlalchemy import event
 from sqlalchemy.engine import Engine
 
 db = SQLAlchemy()
+
+class SupportOrder(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.String(80), unique=True, nullable=False)
+    receipt = db.Column(db.String(40), unique=True, nullable=False)
+    guest_hash = db.Column(db.String(64), nullable=False)
+    key_id = db.Column(db.String(80), nullable=False)
+    amount = db.Column(db.Integer, nullable=False)
+    currency = db.Column(db.String(3), nullable=False, default='INR')
+    status = db.Column(db.String(16), nullable=False, default='created')
+    payment_id = db.Column(db.String(80), unique=True)
+    created_at = db.Column(db.Float, nullable=False, default=time.time)
 @event.listens_for(Engine, 'connect')
 def sqlite_foreign_keys(connection, _):
     if connection.__class__.__module__.startswith('sqlite3'):

@@ -2,6 +2,7 @@
 import {ref,computed,onMounted} from 'vue';
 import {Linkedin,Instagram,Mail,GraduationCap,Timer,BookOpen,Bookmark,Sparkles,ArrowUpRight,ShieldCheck} from 'lucide-vue-next';
 import {api,session} from './api';
+import SupportEntry from './SupportEntry.vue';
 const page=ref(null),draft=ref({}),editing=ref(false),busy=ref(false),loading=ref(true),error=ref(''),message=ref(''),version=ref(Date.now());
 async function load(){loading.value=true;error.value='';try{page.value=await api('/about')}catch(e){error.value=e.message}finally{loading.value=false}}onMounted(load);
 function edit(){draft.value=Object.fromEntries(['headline','description','name','bio','contact_email'].map(k=>[k,page.value[k]]));editing.value=true;message.value=''}
@@ -83,6 +84,7 @@ const features=[
 </section>
 
 <p class="about-disclaimer">Independent student-built platform. Not affiliated with IIT Madras.</p>
+<SupportEntry/>
 </template>
 </template></section>
 </template>

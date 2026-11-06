@@ -71,6 +71,8 @@ def create_app(config=None):
                       MEMORY_LOG_INTERVAL_SECONDS=int(os.getenv('MEMORY_LOG_INTERVAL_SECONDS','60')))
     app.config['EXAM_START_CONCURRENCY']=int(os.getenv('EXAM_START_CONCURRENCY','2'))
     if config: app.config.update(config)
+    app.config.setdefault('RAZORPAY_KEY_ID',os.getenv('RAZORPAY_KEY_ID',''))
+    app.config.setdefault('RAZORPAY_KEY_SECRET',os.getenv('RAZORPAY_KEY_SECRET',''))
     from . import content_cache
     from .storage import configure_delivery
     configure_delivery(app)
@@ -112,6 +114,14 @@ def create_app(config=None):
         response.headers['Referrer-Policy']='same-origin'
         response.headers['X-Frame-Options']='SAMEORIGIN'
         response.headers['Content-Security-Policy']="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; frame-src 'self' https://tcsion.com https://www.tcsion.com; object-src 'none'; base-uri 'self'"
+        # SPA navigation does not reload response headers. Permit the payment
+        # provider on SPA shells, but load its SDK only on an explicit click.
+        if request.endpoint=='frontend' and response.mimetype=='text/html':
+            policy=response.headers['Content-Security-Policy']
+            policy=policy.replace("script-src 'self'", "script-src 'self' https://checkout.razorpay.com https://checkout-static-next.razorpay.com https://checkout-static.razorpay.com https://api.razorpay.com")
+            policy=policy.replace("frame-src 'self'", "frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com")
+            policy=policy.replace("connect-src 'self'", "connect-src 'self' https://api.razorpay.com https://checkout.razorpay.com")
+            response.headers['Content-Security-Policy']=policy
         # Keep third-party ad permissions off every other route, including the SPA.
         if request.path.startswith('/study/papers/') and response.status_code==200:
             from flask import g
@@ -177,6 +187,8 @@ def create_app(config=None):
     app.register_blueprint(about)
     from .api import api
     app.register_blueprint(api)
+    from .support import support
+    app.register_blueprint(support)
     try:
         from .exam_api import exams
         app.register_blueprint(exams)

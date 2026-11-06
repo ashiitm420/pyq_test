@@ -1,5 +1,6 @@
 <script setup>
 import SavedAISolution from './SavedAISolution.vue';
+import SupportEntry from './SupportEntry.vue';
 import PaperProgress from './PaperProgress.vue';
 import {displayExamTitle} from './displayTitle';
 // Loaded only on the result page; the image itself is drawn only on click.
@@ -191,6 +192,7 @@ async function remove(id){await api('/questions/'+id+'/bookmark',{method:'DELETE
   <div class="mt-3"><button type="submit" class="btn btn-primary" :disabled="fbBusy">{{fbBusy?'Posting…':'Post feedback'}}</button></div>
  </form>
 </section>
+<SupportEntry/>
 </template>
 <BookmarksPage v-else-if="collection"/>
 <section v-else-if="result" class="empty panel"><p v-if="!error">Loading result…</p><p v-else>Open My progress to see your latest paper score or retake a paper.</p><a class="btn btn-primary" href="/progress">My progress</a></section>

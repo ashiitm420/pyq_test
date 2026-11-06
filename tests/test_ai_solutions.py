@@ -187,6 +187,42 @@ def test_solution_summary_counts_current_uploads_and_published_separately(app,cl
     assert client.get(path+'?course_id=bad').status_code==400
     assert app.test_client().get(path).status_code==401
 
+def test_summary_streams_without_loading_solution_bodies_and_reuses_counts(app,client):
+    from sqlalchemy import event
+    from backend import content_cache
+    p=seed();h=login(client,True)
+    q=Question.query.filter_by(paper_id=p.id).first()
+    db.session.add(AISolution(question_id=q.id,version=version(snapshot(q)),text='Large explanation '*1000,status='PUBLISHED'))
+    db.session.commit();db.session.expire_all();content_cache._local_clear()
+    statements=[];loaded=[]
+    def sql(conn,cursor,statement,parameters,context,many):statements.append(statement.lower())
+    def capture(obj,context):loaded.append(obj)
+    event.listen(db.engine,'before_cursor_execute',sql)
+    event.listen(AISolution,'load',capture)
+    try:
+        first=client.get('/api/admin/ai-solutions/summary')
+        assert first.status_code==200 and first.json['statistics']['questions_published']==1
+        assert not loaded
+        assert not any('ai_solution.text' in s for s in statements)
+        statements.clear()
+        assert client.get('/api/admin/ai-solutions/summary').json==first.json
+        assert not any('question' in s or 'ai_solution' in s for s in statements)
+    finally:
+        event.remove(db.engine,'before_cursor_execute',sql)
+        event.remove(AISolution,'load',capture)
+
+def test_summary_counts_across_stream_batches_with_current_and_stale_versions(app,client):
+    p=seed();h=login(client,True)
+    rows=[Question(paper_id=p.id,number=str(100+n),kind='NAT',text='Question '+str(n),answers=1,answer_status='ANSWER_AVAILABLE',marks=1,negative_marks=0,status='AVAILABLE') for n in range(510)]
+    db.session.add_all(rows);db.session.flush()
+    db.session.add_all([AISolution(question_id=q.id,version='stale' if n==509 else version(snapshot(q)),text='Explanation',status='PUBLISHED') for n,q in enumerate(rows)])
+    db.session.commit()
+    stats=client.get('/api/admin/ai-solutions/summary').json['statistics']
+    assert stats['questions_total']==515
+    assert stats['questions_published']==stats['questions_uploaded']==509
+    assert stats['questions_outdated']==1
+    assert stats['questions_pending']==6
+
 def test_import_saves_and_publishes_checked_solutions_atomically(app,client):
     p=seed();h=login(client,True)
     qs=Question.query.filter_by(paper_id=p.id).order_by(Question.id).all()

@@ -89,3 +89,33 @@ traffic spike to the live student service to diagnose this incident.
 
 Do not consider the OOM incident resolved until normal production workload
 remains below its actual memory limit and the incident's activity is understood.
+
+## Verified Render observations — 6 November 2026
+
+Read-only inspection in the confirmed workspace found:
+
+- pyq_test-1 is one Docker web-service instance on the Free plan in Singapore,
+  tracking main with automatic deploys. The memory limit reported by metrics is
+  536,870,900 bytes (approximately 512 MiB).
+- The live deploy is still commit 3024930 from 4 November. Draft PR #5 and its
+  safeguards are not live. The configured HTTP health-check path is empty.
+- At 17:34 UTC on 5 November, sampled memory reached 536,711,170 bytes
+  (511.85 MiB, about 99.97% of the limit). Restart was logged at 17:35:35 UTC.
+  Memory was 160,333,820 bytes (152.91 MiB) at 17:36 UTC.
+- At 17:38 UTC memory reached 475,881,470 bytes (453.84 MiB). Nearby logs show
+  repeated AI Solutions summary requests taking 28.6–38.5 seconds and 44 SQL
+  queries. The endpoint loaded all matching Question and AISolution objects,
+  including entire explanation texts, to calculate counts. This is a concrete
+  excessive-allocation path correlated with memory growth, not definitive
+  attribution of every restart.
+- Another restart was logged at 05:48:53 UTC on 6 November (11:18:53 IST);
+  sampled memory in that window again reached almost 512 MiB.
+- Latest inspected hour (11:00–12:00 UTC on 6 November) was roughly 266–269 MiB,
+  about 52% of the limit. Low current usage does not eliminate earlier spikes.
+
+The summary endpoint is additionally changed to select only solution version
+and status, stream question data in batches of 500, preserve exact stale-version
+checks, and cache the computed counts with content-change invalidation. This
+avoids materializing all solution explanations during every dashboard refresh.
+The connection and inspection made no Render configuration, deploy, scaling or
+database changes.

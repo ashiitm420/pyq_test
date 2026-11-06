@@ -26,6 +26,7 @@ async function pay(){
   testMode.value=order.test_mode;phase.value='checkout';
   checkout=new Razorpay({key:order.key_id,amount:order.amount,currency:order.currency,order_id:order.order_id,
    name:'MauryaHub',description:'Optional support for hosting and maintenance',theme:{color:'#285fd8'},
+   hidden:{contact:true,email:true},
    handler:async response=>{if(stopped)return;verification={razorpay_payment_id:response.razorpay_payment_id,razorpay_order_id:response.razorpay_order_id,razorpay_signature:response.razorpay_signature};await verify()},
    modal:{ondismiss:()=>{if(!stopped&&phase.value==='checkout'){phase.value='idle';message.value='Checkout closed. You can continue using MauryaHub for free.'}}},
   });

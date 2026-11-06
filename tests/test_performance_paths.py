@@ -23,6 +23,7 @@ def test_import_and_solution_changes_preserve_unrelated_cache(app,use_redis):
         app.config['CONTENT_CACHE_URL']='redis://test.invalid/0'
         app.extensions['content_redis']=FakeRedis(decode_responses=True)
     else:app.config['CONTENT_CACHE_URL']=''
+    invalidate()
     keys=['paper:1:snapshots:msq-proportional-v1','paper-published-solutions:1',
           'admin-solution-summary:test','all-visible-papers','site-feedback']
     for key in keys:assert cached(key,lambda:'warm')=='warm'

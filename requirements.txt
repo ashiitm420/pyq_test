@@ -8,6 +8,7 @@ python-dotenv==1.2.3
 openpyxl>=3.1,<4
 PyMuPDF>=1.25,<2
 requests==2.34.2
+razorpay==2.0.1
 pydantic>=2.10,<3
 gunicorn==26.2.0
 pytest==9.1.1

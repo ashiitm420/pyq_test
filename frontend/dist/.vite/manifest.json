@@ -1,21 +1,21 @@
 {
-  "_Exam-CJAq0iYB.js": {
-    "file": "assets/Exam-CJAq0iYB.js",
+  "_Exam-COwBQk8c.js": {
+    "file": "assets/Exam-COwBQk8c.js",
     "name": "Exam",
     "isDynamicEntry": true,
     "imports": [
       "index.html",
-      "_SavedAISolution-BWCeHUik.js",
-      "_QuestionContent-Bhyk5GjP.js",
-      "_flag-DluL1jNx.js"
+      "_SavedAISolution-CX7WZa9D.js",
+      "_QuestionContent-C41n7LHV.js",
+      "_flag-Bdt34261.js"
     ],
     "dynamicImports": [
       "src/ScratchBoard.vue",
       "src/TcsCalculator.vue"
     ]
   },
-  "_QuestionContent-Bhyk5GjP.js": {
-    "file": "assets/QuestionContent-Bhyk5GjP.js",
+  "_QuestionContent-C41n7LHV.js": {
+    "file": "assets/QuestionContent-C41n7LHV.js",
     "name": "QuestionContent",
     "imports": [
       "_textFormatting-CeK4VE6o.js",
@@ -26,49 +26,66 @@
     "file": "assets/SavedAISolution-B8fdOjHx.css",
     "src": "_SavedAISolution-B8fdOjHx.css"
   },
-  "_SavedAISolution-BWCeHUik.js": {
-    "file": "assets/SavedAISolution-BWCeHUik.js",
+  "_SavedAISolution-CX7WZa9D.js": {
+    "file": "assets/SavedAISolution-CX7WZa9D.js",
     "name": "SavedAISolution",
     "imports": [
       "index.html",
-      "_QuestionContent-Bhyk5GjP.js"
+      "_QuestionContent-C41n7LHV.js"
     ],
     "css": [
       "assets/SavedAISolution-B8fdOjHx.css"
     ]
   },
-  "_SearchableSelect-DjOeiL1I.js": {
-    "file": "assets/SearchableSelect-DjOeiL1I.js",
+  "_SearchableSelect-BiykzRql.js": {
+    "file": "assets/SearchableSelect-BiykzRql.js",
     "name": "SearchableSelect",
     "imports": [
       "index.html",
-      "_x-DtECrzGc.js",
-      "_search-BMnwEQIZ.js"
+      "_x-c-PTxbRd.js",
+      "_search-DpB7p3Js.js"
     ]
   },
-  "_external-link-DufSvjFz.js": {
-    "file": "assets/external-link-DufSvjFz.js",
+  "_SupportEntry-B_RuCwQR.css": {
+    "file": "assets/SupportEntry-B_RuCwQR.css",
+    "src": "_SupportEntry-B_RuCwQR.css"
+  },
+  "_SupportEntry-DWtBMFqg.js": {
+    "file": "assets/SupportEntry-DWtBMFqg.js",
+    "name": "SupportEntry",
+    "imports": [
+      "index.html"
+    ],
+    "dynamicImports": [
+      "src/SupportCheckout.vue"
+    ],
+    "css": [
+      "assets/SupportEntry-B_RuCwQR.css"
+    ]
+  },
+  "_external-link-DLZOqAuI.js": {
+    "file": "assets/external-link-DLZOqAuI.js",
     "name": "external-link",
     "imports": [
       "index.html"
     ]
   },
-  "_flag-DluL1jNx.js": {
-    "file": "assets/flag-DluL1jNx.js",
+  "_flag-Bdt34261.js": {
+    "file": "assets/flag-Bdt34261.js",
     "name": "flag",
     "imports": [
       "index.html"
     ]
   },
-  "_search-BMnwEQIZ.js": {
-    "file": "assets/search-BMnwEQIZ.js",
+  "_search-DpB7p3Js.js": {
+    "file": "assets/search-DpB7p3Js.js",
     "name": "search",
     "imports": [
       "index.html"
     ]
   },
-  "_sparkles-CcYI2boA.js": {
-    "file": "assets/sparkles-CcYI2boA.js",
+  "_sparkles-D7qKZya0.js": {
+    "file": "assets/sparkles-D7qKZya0.js",
     "name": "sparkles",
     "imports": [
       "index.html"
@@ -146,36 +163,36 @@
       "assets/KaTeX_Typewriter-Regular-D3Ib7_Hf.ttf"
     ]
   },
-  "_trash-2-D0S0AlUD.js": {
-    "file": "assets/trash-2-D0S0AlUD.js",
+  "_trash-2-CciUjb7F.js": {
+    "file": "assets/trash-2-CciUjb7F.js",
     "name": "trash-2",
     "imports": [
       "index.html"
     ]
   },
-  "_x-DtECrzGc.js": {
-    "file": "assets/x-DtECrzGc.js",
+  "_x-c-PTxbRd.js": {
+    "file": "assets/x-c-PTxbRd.js",
     "name": "x",
     "imports": [
       "index.html"
     ]
   },
   "index.html": {
-    "file": "assets/app-ChYL9QDU.js",
+    "file": "assets/app-CaIT8OfT.js",
     "name": "app",
     "src": "index.html",
     "isEntry": true,
     "dynamicImports": [
-      "_Exam-CJAq0iYB.js",
+      "_Exam-COwBQk8c.js",
       "src/FeaturedStudy.vue",
       "src/About.vue",
       "src/ExamBrowser.vue",
-      "_Exam-CJAq0iYB.js",
+      "_Exam-COwBQk8c.js",
       "src/Records.vue",
       "src/Admin.vue"
     ],
     "css": [
-      "assets/app-CYCII5HT.css"
+      "assets/app-DLkGo2i5.css"
     ]
   },
   "node_modules/katex/dist/fonts/KaTeX_AMS-Regular.ttf": {
@@ -415,47 +432,48 @@
     "src": "node_modules/katex/dist/fonts/KaTeX_Typewriter-Regular.woff2"
   },
   "src/AISolutions.vue": {
-    "file": "assets/AISolutions-B5UV6gaj.js",
+    "file": "assets/AISolutions-Bmhhu7T4.js",
     "name": "AISolutions",
     "src": "src/AISolutions.vue",
     "isDynamicEntry": true,
     "imports": [
       "index.html",
-      "_QuestionContent-Bhyk5GjP.js",
-      "_SearchableSelect-DjOeiL1I.js",
+      "_QuestionContent-C41n7LHV.js",
+      "_SearchableSelect-BiykzRql.js",
       "_textFormatting-CeK4VE6o.js",
-      "_x-DtECrzGc.js",
-      "_search-BMnwEQIZ.js"
+      "_x-c-PTxbRd.js",
+      "_search-DpB7p3Js.js"
     ],
     "css": [
       "assets/AISolutions-T_MWcirr.css"
     ]
   },
   "src/About.vue": {
-    "file": "assets/About-BtZgCOoQ.js",
+    "file": "assets/About-BtPl6KwP.js",
     "name": "About",
     "src": "src/About.vue",
     "isDynamicEntry": true,
     "imports": [
       "index.html",
-      "_sparkles-CcYI2boA.js"
+      "_SupportEntry-DWtBMFqg.js",
+      "_sparkles-D7qKZya0.js"
     ],
     "css": [
-      "assets/About-CTonZuL2.css"
+      "assets/About-jWsLvOAf.css"
     ]
   },
   "src/Admin.vue": {
-    "file": "assets/Admin-Lgw_8Enl.js",
+    "file": "assets/Admin-CJFZ07GX.js",
     "name": "Admin",
     "src": "src/Admin.vue",
     "isDynamicEntry": true,
     "imports": [
       "index.html",
-      "_external-link-DufSvjFz.js",
-      "_sparkles-CcYI2boA.js",
-      "_flag-DluL1jNx.js",
-      "_QuestionContent-Bhyk5GjP.js",
-      "_x-DtECrzGc.js",
+      "_external-link-DLZOqAuI.js",
+      "_sparkles-D7qKZya0.js",
+      "_flag-Bdt34261.js",
+      "_QuestionContent-C41n7LHV.js",
+      "_x-c-PTxbRd.js",
       "_textFormatting-CeK4VE6o.js"
     ],
     "dynamicImports": [
@@ -469,22 +487,22 @@
     ]
   },
   "src/AdminAnalytics.vue": {
-    "file": "assets/AdminAnalytics-jwpr40Xe.js",
+    "file": "assets/AdminAnalytics-CoWetsUI.js",
     "name": "AdminAnalytics",
     "src": "src/AdminAnalytics.vue",
     "isDynamicEntry": true,
     "imports": [
       "index.html",
-      "_SearchableSelect-DjOeiL1I.js",
-      "_x-DtECrzGc.js",
-      "_search-BMnwEQIZ.js"
+      "_SearchableSelect-BiykzRql.js",
+      "_x-c-PTxbRd.js",
+      "_search-DpB7p3Js.js"
     ],
     "css": [
       "assets/AdminAnalytics-BsYC5-OZ.css"
     ]
   },
   "src/ContactInbox.vue": {
-    "file": "assets/ContactInbox-X4tnLtat.js",
+    "file": "assets/ContactInbox-CKzQie-B.js",
     "name": "ContactInbox",
     "src": "src/ContactInbox.vue",
     "isDynamicEntry": true,
@@ -496,16 +514,16 @@
     ]
   },
   "src/ContentQuality.vue": {
-    "file": "assets/ContentQuality-Dy1cTu4H.js",
+    "file": "assets/ContentQuality-0m4872NT.js",
     "name": "ContentQuality",
     "src": "src/ContentQuality.vue",
     "isDynamicEntry": true,
     "imports": [
       "index.html",
-      "_SearchableSelect-DjOeiL1I.js",
-      "_QuestionContent-Bhyk5GjP.js",
-      "_x-DtECrzGc.js",
-      "_search-BMnwEQIZ.js",
+      "_SearchableSelect-BiykzRql.js",
+      "_QuestionContent-C41n7LHV.js",
+      "_x-c-PTxbRd.js",
+      "_search-DpB7p3Js.js",
       "_textFormatting-CeK4VE6o.js"
     ],
     "css": [
@@ -513,19 +531,19 @@
     ]
   },
   "src/ExamBrowser.vue": {
-    "file": "assets/ExamBrowser-BKF_9Gex.js",
+    "file": "assets/ExamBrowser-DGWhP_sA.js",
     "name": "ExamBrowser",
     "src": "src/ExamBrowser.vue",
     "isDynamicEntry": true,
     "imports": [
       "index.html",
-      "_SearchableSelect-DjOeiL1I.js",
-      "_x-DtECrzGc.js",
-      "_search-BMnwEQIZ.js"
+      "_SearchableSelect-BiykzRql.js",
+      "_x-c-PTxbRd.js",
+      "_search-DpB7p3Js.js"
     ]
   },
   "src/FeaturedStudy.vue": {
-    "file": "assets/FeaturedStudy-BCmJlPtM.js",
+    "file": "assets/FeaturedStudy-BfNoe5n8.js",
     "name": "FeaturedStudy",
     "src": "src/FeaturedStudy.vue",
     "isDynamicEntry": true,
@@ -534,17 +552,18 @@
     ]
   },
   "src/Records.vue": {
-    "file": "assets/Records-CMtwVz5_.js",
+    "file": "assets/Records-BYGX7Djc.js",
     "name": "Records",
     "src": "src/Records.vue",
     "isDynamicEntry": true,
     "imports": [
       "index.html",
-      "_SavedAISolution-BWCeHUik.js",
-      "_QuestionContent-Bhyk5GjP.js",
-      "_external-link-DufSvjFz.js",
-      "_search-BMnwEQIZ.js",
-      "_trash-2-D0S0AlUD.js",
+      "_SavedAISolution-CX7WZa9D.js",
+      "_SupportEntry-DWtBMFqg.js",
+      "_QuestionContent-C41n7LHV.js",
+      "_external-link-DLZOqAuI.js",
+      "_search-DpB7p3Js.js",
+      "_trash-2-CciUjb7F.js",
       "_textFormatting-CeK4VE6o.js"
     ],
     "dynamicImports": [
@@ -555,44 +574,56 @@
     ]
   },
   "src/ScratchBoard.vue": {
-    "file": "assets/ScratchBoard-DEy8exSw.js",
+    "file": "assets/ScratchBoard-BraxKJoS.js",
     "name": "ScratchBoard",
     "src": "src/ScratchBoard.vue",
     "isDynamicEntry": true,
     "imports": [
       "index.html",
-      "_x-DtECrzGc.js",
-      "_trash-2-D0S0AlUD.js",
-      "_Exam-CJAq0iYB.js",
-      "_SavedAISolution-BWCeHUik.js",
-      "_QuestionContent-Bhyk5GjP.js",
+      "_x-c-PTxbRd.js",
+      "_trash-2-CciUjb7F.js",
+      "_Exam-COwBQk8c.js",
+      "_SavedAISolution-CX7WZa9D.js",
+      "_QuestionContent-C41n7LHV.js",
       "_textFormatting-CeK4VE6o.js",
-      "_flag-DluL1jNx.js"
+      "_flag-Bdt34261.js"
     ]
   },
   "src/ShareResult.vue": {
-    "file": "assets/ShareResult-BpAUQUSK.js",
+    "file": "assets/ShareResult-BN_2lRVZ.js",
     "name": "ShareResult",
     "src": "src/ShareResult.vue",
     "isDynamicEntry": true,
     "imports": [
       "index.html",
-      "_SavedAISolution-BWCeHUik.js",
-      "_QuestionContent-Bhyk5GjP.js",
+      "_SavedAISolution-CX7WZa9D.js",
+      "_QuestionContent-C41n7LHV.js",
       "_textFormatting-CeK4VE6o.js"
     ],
     "css": [
       "assets/ShareResult-LHejzPrp.css"
     ]
   },
+  "src/SupportCheckout.vue": {
+    "file": "assets/SupportCheckout-Dku9sHEI.js",
+    "name": "SupportCheckout",
+    "src": "src/SupportCheckout.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html"
+    ],
+    "css": [
+      "assets/SupportCheckout-BorUe4Zd.css"
+    ]
+  },
   "src/TcsCalculator.vue": {
-    "file": "assets/TcsCalculator-C-Z3SN1t.js",
+    "file": "assets/TcsCalculator-CkdQAp3l.js",
     "name": "TcsCalculator",
     "src": "src/TcsCalculator.vue",
     "isDynamicEntry": true,
     "imports": [
       "index.html",
-      "_x-DtECrzGc.js"
+      "_x-c-PTxbRd.js"
     ]
   },
   "src/study.js": {

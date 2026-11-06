@@ -3,6 +3,14 @@ import {mount} from '@vue/test-utils';
 import Calculator from '../src/TcsCalculator.vue';
 
 describe('calculator resize',()=>{
+ it('opens at the requested ratio within the viewport',()=>{
+  const w=mount(Calculator);
+  const width=parseFloat(w.element.style.width),height=parseFloat(w.element.style.height);
+  expect(width/height).toBeCloseTo(1709/822,5);
+  expect(width).toBeLessThanOrEqual(window.innerWidth-16);
+  expect(height).toBeLessThanOrEqual(window.innerHeight*.85);
+  w.unmount();
+ });
  it('resizes from the keyboard, clamps to the viewport and preserves the expression',async()=>{
   const w=mount(Calculator,{attachTo:document.body});
   let width=600,height=500;

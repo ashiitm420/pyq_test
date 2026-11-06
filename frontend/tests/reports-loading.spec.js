@@ -6,7 +6,7 @@ import Catalog from '../src/Catalog.vue';
 vi.mock('../src/api',()=>({api:vi.fn(),go:vi.fn(),session:{user:{role:'GUEST'}}}));
 afterEach(()=>vi.clearAllMocks());
 it('shows loading immediately, blocks duplicate starts and restores controls on failure',async()=>{
- api.mockResolvedValueOnce({id:1,practice_available:true,name:'Paper',question_count:1}).mockResolvedValueOnce({items:[]});
+ api.mockResolvedValueOnce({id:1,practice_available:true,name:'Paper',question_count:1});
  const w=mount(Catalog,{props:{route:'/paper/1'}});await flushPromises();
  let reject;api.mockImplementation(()=>new Promise((_,r)=>reject=r));
  const button=w.findAll('button').find(b=>b.text()==='Start exam');await button.trigger('click');

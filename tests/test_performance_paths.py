@@ -16,6 +16,61 @@ def redis_cache(app):
     return r
 
 
+@pytest.mark.parametrize('use_redis',[False,True])
+def test_import_and_solution_changes_preserve_unrelated_cache(app,use_redis):
+    from backend.content_cache import invalidate, _changed_scopes
+    if use_redis:
+        app.config['CONTENT_CACHE_URL']='redis://test.invalid/0'
+        app.extensions['content_redis']=FakeRedis(decode_responses=True)
+    else:app.config['CONTENT_CACHE_URL']=''
+    invalidate()
+    keys=['paper:1:snapshots:msq-proportional-v1','paper-published-solutions:1',
+          'admin-solution-summary:test','all-visible-papers','site-feedback']
+    for key in keys:assert cached(key,lambda:'warm')=='warm'
+    invalidate(_changed_scopes('ingestion_file'))
+    assert cached('all-visible-papers',lambda:'new-download')=='new-download'
+    for key in keys[:3]+keys[4:]:assert cached(key,lambda:'unnecessary-reload')=='warm'
+    assert _changed_scopes('source_entry')==set()
+    invalidate(_changed_scopes('ai_solution'))
+    assert cached(keys[0],lambda:'unnecessary-reload')=='warm'
+    assert cached(keys[1],lambda:'new-solution')=='new-solution'
+    assert cached(keys[2],lambda:'new-count')=='new-count'
+    invalidate(_changed_scopes('question'))
+    assert cached(keys[0],lambda:'edited-question')=='edited-question'
+
+
+def test_bulk_import_bookkeeping_keeps_question_cache(app):
+    from backend.models import IngestionFile, SourceEntry
+    from sqlalchemy import update
+    from backend.content_cache import _local_clear
+    app.config['CONTENT_CACHE_URL']='';_local_clear()
+    key='paper:1:snapshots:msq-proportional-v1'
+    cached(key,lambda:'warm')
+    # Even a bulk progress update must use the correct invalidation scope.
+    db.session.execute(update(IngestionFile).values(status='PENDING'))
+    db.session.commit()
+    assert cached(key,lambda:'unnecessary-reload')=='warm'
+
+    db.session.execute(update(SourceEntry).values(raw_text='progress'))
+    db.session.commit()
+    assert cached(key,lambda:'unnecessary-reload')=='warm'
+
+
+def test_import_status_keeps_catalog_but_new_download_invalidates_it(app,client):
+    from backend.models import IngestionBatch, IngestionFile, User
+    pid=seed(1)[0];login(client)
+    batch=IngestionBatch(user_id=User.query.filter_by(role='ADMIN').one().id)
+    db.session.add(batch);db.session.flush()
+    file=IngestionFile(batch_id=batch.id,paper_id=pid,filename='paper.pdf')
+    db.session.add(file);db.session.commit()
+    app.config['CONTENT_CACHE_URL']=''
+    key='all-visible-papers';cached(key,lambda:'warm')
+    file.status='PROCESSING';file.extracted=1;db.session.commit()
+    assert cached(key,lambda:'unnecessary-reload')=='warm'
+    file.path='paper.pdf';db.session.commit()
+    assert cached(key,lambda:'download-available')=='download-available'
+
+
 def test_cache_hits_invalidation_rollback_and_no_personal_state(app,client,redis_cache):
     pid=seed(1)[0]
     first=client.get('/api/catalog');second=client.get('/api/catalog')

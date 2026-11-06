@@ -7,7 +7,7 @@ const submittedResults=new Map();
 const publicReads=new Map();
 let publicGeneration=0;
 const clone=value=>JSON.parse(JSON.stringify(value));
-const publicPath=path=>/^\/(?:home|catalog|stats|metadata|papers(?:\/\d+)?)$/.test(path.split('?')[0]);
+const publicPath=path=>/^\/(?:home|catalog|stats|metadata|papers(?:\/\d+)?|courses(?:\/\d+(?:\/topics)?)?)$/.test(path.split('?')[0]);
 function clearPublicReads(){publicGeneration++;publicReads.clear();catalogPromise=null}
 
 export async function api(path,options={}){

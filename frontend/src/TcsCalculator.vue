@@ -13,7 +13,7 @@ let resizing=null;
 function defaultSize(){
  const width=Math.max(1,Math.min(540,window.innerWidth-16));
  const height=Math.max(1,Math.min(490,window.innerHeight-16,window.innerHeight*.85));
- place(Math.max(8,Math.min(24,window.innerWidth-width-8)),Math.max(8,Math.min(110,window.innerHeight-height-8)));
+ place(Math.max(8,window.innerWidth-width-24),Math.max(8,Math.min(110,window.innerHeight-height-8)));
  root.value.style.setProperty('width',width+'px','important');
  root.value.style.setProperty('height',height+'px','important');
 }

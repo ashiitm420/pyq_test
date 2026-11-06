@@ -9,6 +9,9 @@ const props=defineProps({stats:{type:Object,default:()=>({})},busy:Boolean});
 const emit=defineEmits(['navigate','queue']);
 const reports=ref(null),messages=ref(null),solutions=ref(null),usage=ref(null),loading=ref(true);let stopped=false;
 const optional=p=>api(p).catch(()=>null);
+const examPriority=ref(false),priorityBusy=ref(false),priorityError=ref('');
+async function togglePriority(){priorityBusy.value=true;priorityError.value='';try{const d=await api('/admin/exam-priority',{method:'POST',body:{enabled:!examPriority.value}});examPriority.value=d.enabled}catch(e){priorityError.value=e.message}finally{priorityBusy.value=false}}
+onMounted(()=>{optional('/admin/exam-priority').then(d=>{if(!stopped&&d)examPriority.value=d.enabled})});
 async function load(){
  loading.value=true;
  const [r,m,s,a]=await Promise.all([
@@ -41,6 +44,7 @@ const coverage=computed(()=>{const s=solutions.value;if(!s||!s.questions_total)r
 const day=iso=>new Date(iso+'T00:00:00').toLocaleDateString('en-IN',{weekday:'short'});
 </script>
 <template>
+<div class="alert alert-info"><strong>Exam priority: {{examPriority?'ON':'OFF'}}</strong> · Pause new heavy imports during student rush. Running jobs finish normally. Resets on restart. <button class="btn btn-sm btn-outline-primary" :disabled="priorityBusy" @click="togglePriority">{{priorityBusy?'Updating…':examPriority?'Allow imports':'Pause imports'}}</button><p v-if="priorityError" role="alert">{{priorityError}}</p></div>
 <div class="adm-overview">
  <section aria-labelledby="attention-title">
   <div class="adm-section-head"><h2 id="attention-title">Needs attention</h2><button type="button" class="adm-link" @click="load">Refresh</button></div>

@@ -326,6 +326,9 @@ def submit(id):
     if a.guest_hash!=g.guest_hash:abort(404)
     if a.expires_at<=time.time():
         cleanup_sessions(guest_hash=g.guest_hash);abort(410,description='This temporary session has expired. Your latest paper score is retained; you can retake the paper.')
+    # A resumed browser can still hold unsent drafts after the deadline. Grade
+    # only previously saved answers before considering a final client payload.
+    expire_attempt(a)
     payload=request.get_json(silent=True)
     if a.status=='ACTIVE' and isinstance(payload,dict) and isinstance(payload.get('items'),list) and 1<=len(payload['items'])<=50:
         by_qid={i.question_id:i for i in a.items}

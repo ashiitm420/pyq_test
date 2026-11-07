@@ -27,16 +27,19 @@ def test_admin_scores_question_totals_and_double_submit_survive_cleanup(app,clie
     assert AnalyticsEvent.query.one().score_percent==20 and AnalyticsQuestionDay.query.count()==5
     r=report('all');assert r['totals']['scored_exams']==1 and r['totals']['average_score']==20
 
-def test_assisted_and_practice_scores_are_not_exam_scores(app,client):
+def test_final_exam_mode_records_assisted_score(app,client):
     p=seed();h=login(client)
     a=start(client,p,h)
     client.post(f"/api/attempts/{a['id']}/switch-mode",headers=h,json={'mode':'practice'})
     client.post(f"/api/attempts/{a['id']}/switch-mode",headers=h,json={'mode':'exam','duration_seconds':60})
     client.post(f"/api/attempts/{a['id']}/submit",headers=h,json={})
     b=start(client,p,h,'practice');client.post(f"/api/attempts/{b['id']}/submit",headers=h,json={})
-    assert all(r.score_percent is None for r in AnalyticsEvent.query.all())
+    assert AnalyticsEvent.query.filter_by(completion_mode='assisted_exam').one().score_percent==0
+    assert AnalyticsEvent.query.filter_by(completion_mode='practice').one().score_percent is None
     assert {r.mode for r in AnalyticsQuestionDay.query.all()}=={'practice'}
-    assert report('all')['totals']['scored_exams']==0
+    assert report('all')['totals']['scored_exams']==1
+    assert report('all',mode='exam')['totals']['exam_completions']==1
+    assert report('all',mode='practice')['totals']['completions']==1
 
 def test_question_write_failure_keeps_main_submission(app,client):
     p=seed();h=login(client);a=start(client,p,h)
@@ -112,3 +115,13 @@ def test_submit_uses_one_bulk_question_write_not_one_per_question(app,client):
     try:assert client.post(f"/api/attempts/{a['id']}/submit",headers=h,json={}).status_code==200
     finally:sql_event.remove(db.engine,'before_cursor_execute',capture)
     assert len(writes)==1 and AnalyticsQuestionDay.query.count()==5
+
+
+def test_practice_to_exam_is_counted_by_final_mode(app,client):
+    p=seed();h=login(client);a=start(client,p,h,'practice')
+    assert client.post(f"/api/attempts/{a['id']}/switch-mode",headers=h,json={'mode':'exam','duration_seconds':60}).status_code==200
+    for _ in range(2):
+        assert client.post(f"/api/attempts/{a['id']}/submit",headers=h,json={}).status_code==200
+    r=report('all',mode='exam')['totals']
+    assert r['completions']==1 and r['exam_completions']==1 and r['scored_exams']==1
+    assert report('all',mode='practice')['totals']['completions']==0

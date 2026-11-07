@@ -84,7 +84,7 @@ def record(attempt,automatic=False,post_commit=False):
         values={k:e[k] for k in ('paper_key','paper_name','course_key','course_name','device','browser_key','initial_mode')}
         values['exam_name']=e.get('exam_name')
         is_submitted=attempt.submitted_at is not None
-        values['score_percent']=(attempt.result or {}).get('percentage') if is_submitted and e.get('initial_mode')=='exam' and attempt.mode=='exam' and not e.get('assisted') else None
+        values['score_percent']=(attempt.result or {}).get('percentage') if is_submitted and attempt.mode=='exam' else None
         values.update(key=event_key(attempt),started_at=attempt.started_at,start_day=day(attempt.started_at),
                       expires_at=attempt.expires_at,automatic=automatic,
                       completed_at=attempt.submitted_at,completion_mode=('assisted_exam' if e.get('assisted') and attempt.mode=='exam' else attempt.mode) if is_submitted else None)
@@ -193,12 +193,13 @@ def report(period,start=None,end=None,now=None,course=None,mode=None):
     if course is not None and (not isinstance(course,str) or len(course)>64):raise ValueError('Invalid course filter')
     if mode not in (None,'','exam','practice'):raise ValueError('Choose exam or practice')
     E=AnalyticsEvent
-    score=case(((E.completion_mode=='exam')&(E.initial_mode=='exam'),E.score_percent),else_=None)
+    score=case((E.completion_mode.in_(['exam','assisted_exam']),E.score_percent),else_=None)
+    final_mode=case((E.completion_mode=='assisted_exam','exam'),else_=func.coalesce(E.completion_mode,E.initial_mode))
     cols=[func.count(E.key).label('starts'),func.count(E.completed_at).label('completions'),
           func.count(func.distinct(E.browser_key)).label('active_browsers'),
           func.sum(case((E.initial_mode=='exam',1),else_=0)).label('exam_starts'),
           func.sum(case((E.initial_mode=='practice',1),else_=0)).label('practice_starts'),
-          func.sum(case(((E.initial_mode=='exam')&(E.completion_mode=='exam'),1),else_=0)).label('exam_completions'),
+          func.sum(case((E.completion_mode.in_(['exam','assisted_exam']),1),else_=0)).label('exam_completions'),
           func.sum(case(((E.initial_mode=='exam')&(E.completion_mode.in_(['practice','assisted_exam'])),1),else_=0)).label('switched_completions'),
           func.sum(case((E.automatic.is_(True),1),else_=0)).label('automatic'),
           func.sum(case((E.completed_at.is_(None)&(E.expires_at<=now),1),else_=0)).label('abandoned'),
@@ -208,7 +209,7 @@ def report(period,start=None,end=None,now=None,course=None,mode=None):
         query=query.filter(E.start_day<=hi)
         if lo:query=query.filter(E.start_day>=lo)
         if course:query=query.filter(E.course_key==course)
-        if mode:query=query.filter(E.initial_mode==mode)
+        if mode:query=query.filter(final_mode==mode)
         return query
     def metrics(row):
         m=dict(row._mapping)

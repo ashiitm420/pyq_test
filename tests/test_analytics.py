@@ -82,4 +82,4 @@ def test_restart_and_mode_switch_back_do_not_inflate_exam_completions(app,client
     db.session.remove();db.engine.dispose() # reopen connections: no in-memory queue needed
     totals=report('all')['totals']
     assert totals['starts']==totals['completions']==totals['switched_completions']==1
-    assert totals['exam_completions']==0
+    assert totals['exam_completions']==1

@@ -267,3 +267,22 @@ def test_practice_prefetch_is_bounded_owned_and_never_exposes_exam_keys(app,clie
     assert app.test_client().get(url).status_code==404
     e=client.post('/api/attempts?bootstrap=1',headers=h,json={'paper_id':p.id,'mode':'exam','duration_seconds':5400}).json
     assert client.get(f"/api/attempts/{e['id']}/practice-feedback?ids={e['palette'][0]['question_id']}").status_code==403
+
+
+def test_bulk_publish_review_confirmation_stale_missing_and_idempotency(app,client):
+    p=seed();h=login(client,True);j=queued(client,p,h);qid=j['question']['id']
+    assert finish(client,j,h,output(['B'])).status_code==200
+    path='/api/admin/ai-solutions/bulk-publish'
+    r=client.post(path,headers=h,json={'question_ids':[qid]})
+    assert r.status_code==200 and not r.json['published'] and len(r.json['skipped'])==1
+    r=client.post(path,headers=h,json={'question_ids':[qid,qid,999999],'review_confirmed':True})
+    assert r.json['published']==[qid] and len(r.json['skipped'])==1
+    assert db.session.get(Question,qid).answers==['A']
+    assert not client.post(path,headers=h,json={'question_ids':[qid],'review_confirmed':True}).json['published']
+    sol=AISolution.query.filter_by(question_id=qid).one();sol.status='DRAFT';sol.text='';db.session.commit()
+    assert client.post(path,headers=h,json={'question_ids':[qid]}).json['skipped'][0]['reason']=='Incomplete solution text'
+    sol.text='Valid text';q=db.session.get(Question,qid);q.text+=' changed';db.session.commit()
+    assert client.post(path,headers=h,json={'question_ids':[qid]}).json['skipped'][0]['reason']=='Outdated solution'
+    assert client.post(path,headers=h,json={'question_ids':[qid]*51}).status_code==400
+    guest=app.test_client();gh=login(guest)
+    assert guest.post(path,headers=gh,json={'question_ids':[qid]}).status_code==401

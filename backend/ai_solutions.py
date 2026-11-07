@@ -197,6 +197,34 @@ def edit(qid):
     else:abort(400)
     s.updated_at=time.time();db.session.commit();return jsonify(ok=True)
 
+@bp.post('/admin/ai-solutions/bulk-publish')
+@require_user(True)
+def bulk_publish():
+    b=body();ids=b.get('question_ids')
+    if not isinstance(ids,list) or not 1<=len(ids)<=50 or any(type(i)!=int for i in ids):
+        abort(400,description='Select 1–50 question IDs per batch')
+    ids=list(dict.fromkeys(ids))
+    questions={q.id:q for q in Question.query.options(selectinload(Question.options),selectinload(Question.images)).join(Paper).filter(Question.id.in_(ids),Question.status=='AVAILABLE',Paper.status!='ARCHIVED')}
+    solutions={s.question_id:s for s in AISolution.query.filter(AISolution.question_id.in_(ids)).with_for_update()}
+    published=[];skipped=[]
+    for qid in ids:
+        q=questions.get(qid);sol=solutions.get(qid);reason=None
+        if not q or not sol:reason='Question or solution unavailable'
+        elif sol.version!=version(snapshot(q)):reason='Outdated solution'
+        elif sol.status=='PUBLISHED':reason='Already published'
+        elif sol.status not in ('CHECKS_PASSED','DRAFT','NEEDS_REVIEW'):reason='Solution is not ready'
+        elif sol.status=='NEEDS_REVIEW' and b.get('review_confirmed') is not True:reason='Confirm review of flagged solutions first'
+        elif not sol.text or not sol.text.strip() or len(sol.text)>14000:reason='Incomplete solution text'
+        elif q.answer_status!='ANSWER_AVAILABLE' or q.answers is None or q.answers==[]:reason='Source answer missing'
+        elif not sol.final_answer:reason='Final answer missing'
+        elif q.kind in ('MCQ','MSQ','TRUE_FALSE') and (not isinstance(sol.final_answer,list) or any(not isinstance(k,str) for k in sol.final_answer) or not set(sol.final_answer)<={o.key for o in q.options}):reason='Invalid final option keys'
+        elif 'Non-solution response' in (sol.checks or []):reason='Non-solution response'
+        elif '<script' in sol.text.lower() or '<img' in sol.text.lower():reason='Invalid solution markup'
+        if reason:skipped.append(dict(question_id=qid,reason=reason));continue
+        sol.status='PUBLISHED';sol.updated_at=time.time();published.append(qid)
+    db.session.commit()
+    return jsonify(published=published,skipped=skipped)
+
 @bp.post('/admin/ai-solutions/worker/claim')
 @require_user(True)
 def claim():

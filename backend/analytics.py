@@ -79,6 +79,7 @@ def _write_analytics(values, is_submitted, rows):
 def record(attempt,automatic=False,post_commit=False):
     if not current_app.config.get('ANALYTICS_ENABLED',True) or not attempt.analytics_context:
         return
+    if attempt.analytics_context.get('custom_exam'):return
     try:
         e=attempt.analytics_context
         values={k:e[k] for k in ('paper_key','paper_name','course_key','course_name','device','browser_key','initial_mode')}

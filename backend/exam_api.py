@@ -9,11 +9,13 @@ from .client_ip import ip_key
 from .api import integer_argument,require_visitor,body,paginate,visible_papers
 from .engine import *
 from .performance import span
+from .custom_exam import metadata as custom_metadata,check_access as check_custom_access
 exams=Blueprint('exams',__name__,url_prefix='/api')
 
 def owned(id):
     a=db.get_or_404(Attempt,id)
     if a.guest_hash!=g.guest_hash:abort(404)
+    check_custom_access(a)
     expire_attempt(a)
     if a.expires_at<=time.time():
         cleanup_sessions(guest_hash=g.guest_hash);abort(410,description='This temporary session has expired. Your latest paper score is retained; you can retake the paper.')
@@ -25,7 +27,7 @@ def build_review_items(a,items=None):
     from .ai_solutions import review_solutions
     rows=[{'question':i.snapshot,'answer':i.answer,'outcome':i.outcome,'awarded':i.awarded,'manual_note':i.manual_note} for i in ordered]
     rows=review_solutions(rows)
-    use_paper_image_delivery(a.paper_id)
+    use_attempt_image_delivery(a)
     prepare_image_paths([r['question'] for r in rows],attempt_image_ttl(a))
     for item in rows:
         images=question_with_image_urls(item['question'])['images']
@@ -33,12 +35,13 @@ def build_review_items(a,items=None):
     return rows
 
 def attempt_json(a,include_review=False):
+    check_custom_access(a)
     items=list(a.items)
     review_index={item.question_id:n for n,item in enumerate(sorted(items,key=lambda i:i.position))}
-    out={'id':a.id,'paper_id':a.paper_id,'title':a.title,'mode':a.mode,'status':a.status,'started_at':a.started_at,'deadline':a.deadline,'submitted_at':a.submitted_at,'server_time':time.time(),'result':a.result,'expires_at':a.expires_at,'records_progress':a.records_progress,
-        'palette':[{'question_id':i.question_id,'number':i.snapshot['number'],'state':palette_state(i),'visited':i.visited,'marked':i.marked,
+    out={'id':a.id,'paper_id':a.paper_id,'title':a.title,'mode':a.mode,'status':a.status,'started_at':a.started_at,'deadline':a.deadline,'submitted_at':a.submitted_at,'server_time':time.time(),'result':a.result,'expires_at':a.expires_at,'records_progress':a.records_progress,'custom_exam':bool(custom_metadata(a)),'papers':(custom_metadata(a) or {}).get('papers',[]),
+        'palette':[{'question_id':i.question_id,'paper_id':i.snapshot.get('paper_id'),'number':i.snapshot['number'],'state':palette_state(i),'visited':i.visited,'marked':i.marked,
                     'outcome':i.outcome if a.status!='ACTIVE' else None,'review_index':review_index[i.question_id]}
-                   for i in sorted(items,key=lambda i:(i.snapshot.get('paper_id',0),question_order(i.snapshot['number']),i.position))]}
+                   for i in sorted(items,key=lambda i:(i.position,) if custom_metadata(a) else (i.snapshot.get('paper_id',0),question_order(i.snapshot['number']),i.position))]}
     if include_review and a.status!='ACTIVE':
         out['review_items']=build_review_items(a,items)
     return out
@@ -68,6 +71,12 @@ def use_paper_image_delivery(paper_id,paper=None):
     meta=(paper.source_metadata or {}) if paper else {}
     g.force_proxy_images=not bool(meta.get('question_assets_verified_r2'))
 
+def use_attempt_image_delivery(a,paper=None):
+    custom=custom_metadata(a)
+    if custom and current_app.config.get('IMAGE_DELIVERY')=='signed':
+        g.force_proxy_images=not custom.get('direct_images',False)
+    else:use_paper_image_delivery(a.paper_id,paper=paper)
+
 def question_with_image_urls(snapshot):
     result=public_question(snapshot)
     paths=getattr(g,'image_paths',{})
@@ -89,23 +98,23 @@ def prepare_image_paths(snapshots,signed_ttl=None):
     g.image_paths=paths
 
 def bootstrap_json(a):
-    items=sorted(a.items,key=lambda i:(i.snapshot.get('paper_id',0),question_order(i.snapshot['number']),i.position))
-    use_paper_image_delivery(a.paper_id)
+    items=sorted(a.items,key=lambda i:(i.position,) if custom_metadata(a) else (i.snapshot.get('paper_id',0),question_order(i.snapshot['number']),i.position))
+    use_attempt_image_delivery(a)
     prepare_image_paths([i.snapshot for i in items],attempt_image_ttl(a))
     bookmarks=set()
     return {**attempt_json(a),'items':[item_json(a,i,bookmarks) for i in items]}
 
 def start_payload(a,snapshots,images_prepared=False):
     """Build a newly-created attempt response without re-reading its answer rows."""
-    ordered=sorted(snapshots,key=lambda s:(s.get('paper_id',0),question_order(s['number']),s['id']))
-    palette=[{'question_id':s['id'],'number':s['number'],'state':'NOT_VISITED','visited':False,'marked':False} for s in ordered]
+    ordered=snapshots if custom_metadata(a) else sorted(snapshots,key=lambda s:(s.get('paper_id',0),question_order(s['number']),s['id']))
+    palette=[{'question_id':s['id'],'paper_id':s.get('paper_id'),'number':s['number'],'state':'NOT_VISITED','visited':False,'marked':False} for s in ordered]
     result={'id':a.id,'paper_id':a.paper_id,'title':a.title,'mode':a.mode,'status':a.status,
             'started_at':a.started_at,'deadline':a.deadline,'submitted_at':a.submitted_at,
             'server_time':time.time(),'result':a.result,'expires_at':a.expires_at,
-            'records_progress':a.records_progress,'palette':palette}
+            'records_progress':a.records_progress,'palette':palette,'custom_exam':bool(custom_metadata(a)),'papers':(custom_metadata(a) or {}).get('papers',[])}
     if request.args.get('bootstrap')=='1':
         if not images_prepared:
-            use_paper_image_delivery(a.paper_id)
+            use_attempt_image_delivery(a)
             prepare_image_paths(ordered,attempt_image_ttl(a))
         bookmarks=set()
         result['items']=[{'question':question_with_image_urls(s),'answer':None,'marked':False,
@@ -139,12 +148,12 @@ def finish_new_attempt(a,snapshots,paper=None):
     # Resolve DB-backed delivery metadata before releasing the transaction.
     if request.args.get('bootstrap')=='1':
         with span('image_metadata'):
-            use_paper_image_delivery(a.paper_id,paper=paper)
+            use_attempt_image_delivery(a,paper=paper)
             prepare_image_paths(snapshots,attempt_image_ttl(a))
     from types import SimpleNamespace
     state=SimpleNamespace(**{name:getattr(a,name) for name in (
         'id','paper_id','title','mode','status','started_at','deadline',
-        'submitted_at','result','expires_at','records_progress')})
+        'submitted_at','result','expires_at','records_progress','analytics_context')})
     with span('commit'):
         db.session.commit()
     from .analytics import record
@@ -171,11 +180,16 @@ def collection_query(kind):
 @exams.post('/attempts')
 @require_visitor
 def start():
+    b=body()
+    if 'paper_ids' in b:
+        from .custom_exam import start as start_custom
+        return start_custom(b)
     maintain_temporary_sessions()
-    b=body();mode=b.get('mode','practice')
+    mode=b.get('mode','practice')
     if mode not in ('practice','exam'):abort(400,description='Choose practice or exam')
     if b.get('collection')=='mistakes' and b.get('attempt_id'):
         source=owned(b['attempt_id'])
+        if custom_metadata(source):abort(409,description='Use the custom exam builder to start a new test.')
         if source.status!='SUBMITTED' or mode!='practice':abort(409,description='Submit this attempt before practising its wrong answers')
         wrong=[i for i in source.items if i.outcome in ('INCORRECT','PARTIAL')]
         if not wrong:abort(409,description='No incorrect answers in this attempt')
@@ -230,6 +244,7 @@ def history():
 @require_visitor
 def abandon(id):
     a=Attempt.query.filter_by(id=id,guest_hash=g.guest_hash).first()
+    if a:check_custom_access(a)
     if a and a.status=='ACTIVE':
         db.session.delete(a);db.session.commit()
     return jsonify({'ok':True})
@@ -239,6 +254,7 @@ def abandon(id):
 def attempt(id):
     a=Attempt.query.options(selectinload(Attempt.items)).filter_by(id=id).first_or_404()
     if a.guest_hash!=g.guest_hash:abort(404)
+    check_custom_access(a)
     expire_attempt(a)
     if a.expires_at<=time.time():
         cleanup_sessions(guest_hash=g.guest_hash);abort(410,description='This temporary session has expired. Your latest paper score is retained; you can retake the paper.')
@@ -253,7 +269,7 @@ def attempt_status(id):
 @require_visitor
 def attempt_question(id,qid):
     a=owned(id);i=AttemptAnswer.query.filter_by(attempt_id=a.id,question_id=qid).first_or_404()
-    use_paper_image_delivery(a.paper_id)
+    use_attempt_image_delivery(a)
     prepare_image_paths([i.snapshot],attempt_image_ttl(a))
     return jsonify(item_json(a,i,set()))
 
@@ -261,9 +277,9 @@ def attempt_question(id,qid):
 @require_visitor
 def attempt_questions(id):
     a=owned(id)
-    use_paper_image_delivery(a.paper_id)
+    use_attempt_image_delivery(a)
     bookmarks=set()
-    items=sorted(a.items,key=lambda i:(i.snapshot.get('paper_id',0),question_order(i.snapshot['number']),i.position))
+    items=sorted(a.items,key=lambda i:(i.position,) if custom_metadata(a) else (i.snapshot.get('paper_id',0),question_order(i.snapshot['number']),i.position))
     prepare_image_paths([i.snapshot for i in items],attempt_image_ttl(a))
     return jsonify(items=[item_json(a,i,bookmarks) for i in items],status=a.status)
 
@@ -295,7 +311,7 @@ def answer(id):
           .filter(Attempt.id==id,Attempt.guest_hash==g.guest_hash,
                   AttemptAnswer.question_id.in_(qids)).all())
     if not rows or len(rows)!=len(qids):abort(404)
-    a=rows[0][0];by_qid={i.question_id:i for _,i in rows}
+    a=rows[0][0];check_custom_access(a);by_qid={i.question_id:i for _,i in rows}
     expire_attempt(a)
     if a.expires_at<=time.time():
         cleanup_sessions(guest_hash=g.guest_hash);abort(410,description='This temporary session has expired. Your latest paper score is retained; you can retake the paper.')
@@ -324,6 +340,7 @@ def answer(id):
 def submit(id):
     a=Attempt.query.options(selectinload(Attempt.items)).filter_by(id=id).first_or_404()
     if a.guest_hash!=g.guest_hash:abort(404)
+    check_custom_access(a)
     if a.expires_at<=time.time():
         cleanup_sessions(guest_hash=g.guest_hash);abort(410,description='This temporary session has expired. Your latest paper score is retained; you can retake the paper.')
     # A resumed browser can still hold unsent drafts after the deadline. Grade
@@ -348,6 +365,7 @@ def submit(id):
 def review(id):
     a=Attempt.query.options(selectinload(Attempt.items)).filter_by(id=id).first_or_404()
     if a.guest_hash!=g.guest_hash:abort(404)
+    check_custom_access(a)
     expire_attempt(a)
     if a.expires_at<=time.time():
         cleanup_sessions(guest_hash=g.guest_hash);abort(410,description='This temporary session has expired. Your latest paper score is retained; you can retake the paper.')
@@ -465,6 +483,7 @@ def source_pdf(id):
 @require_visitor
 def switch_mode(id):
     source=owned(id);b=body();mode=b.get('mode')
+    if custom_metadata(source):abort(409,description='Custom exams use one fixed exam mode and deadline.')
     if source.status!='ACTIVE':abort(409,description='This attempt has ended')
     if mode not in ('practice','exam') or mode==source.mode:abort(400,description='Select the other mode')
     deadline=None

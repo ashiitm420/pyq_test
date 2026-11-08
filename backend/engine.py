@@ -145,7 +145,14 @@ def submit_attempt(a,now=None,record_progress=True):
     now=now or time.time();a.submitted_at=min(now,a.deadline) if a.deadline else now
     for item in a.items:
         result=grade(item.snapshot,item.answer);item.outcome=result['outcome'];item.awarded=result['awarded']
-    a.status='SUBMITTED';a.result=aggregate(a)
+    a.status='SUBMITTED';result=aggregate(a)
+    custom=(a.analytics_context or {}).get('custom_exam')
+    if custom:
+        from types import SimpleNamespace
+        grouped={p['source_paper_id']:[] for p in custom['papers']}
+        for item in a.items:grouped[item.snapshot['paper_id']].append(item)
+        result['papers']=[{**p,**aggregate(SimpleNamespace(items=grouped[p['source_paper_id']],started_at=a.started_at,submitted_at=a.submitted_at))} for p in custom['papers']]
+    a.result=result
     # Timed-out exams expire relative to their deadline, including worker downtime.
     a.expires_at=a.submitted_at+RESULT_TTL_SECONDS
     db.session.flush()

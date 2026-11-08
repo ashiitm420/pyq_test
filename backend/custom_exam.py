@@ -32,7 +32,8 @@ def _start(b):
     if not isinstance(ids,list) or not 1<=len(ids)<=MAX_PAPERS or any(type(x)!=int or x<1 for x in ids) or len(set(ids))!=len(ids):
         abort(400,description='Choose 1–4 unique papers.')
     if type(duration)!=int or not 60<=duration<=28800:abort(400,description='Choose 1–480 whole minutes.')
-    if b.get('mode','exam')!='exam' or b.get('collection'):abort(400,description='Custom exams are timed exam-only.')
+    mode=b.get('mode','exam')
+    if mode not in ('exam','practice') or b.get('collection'):abort(400,description='Choose exam or practice.')
     papers={p.id:p for p in Paper.query.options(joinedload(Paper.course),joinedload(Paper.term),joinedload(Paper.exam_type)).filter(Paper.id.in_(ids),Paper.status!='ARCHIVED')}
     if len(papers)!=len(ids):abort(404,description='A selected paper is unavailable.')
     effective=[papers[i].canonical_paper_id or i for i in ids]
@@ -52,7 +53,26 @@ def _start(b):
         all_snapshots.extend(rows)
         sections.append(dict(id=pid,source_paper_id=eid,title=f'{p.course.name} · {p.exam_type.name} · {p.term.name} · {p.name}',questions=len(rows)))
     # Cached snapshots are never modified. One bulk insert, one timer, no new queue.
-    deadline=time.time()+duration
-    a=Attempt(guest_hash=g.guest_hash,user_id=None,paper_id=None,mode='exam',title=f'Custom exam · {len(sections)} papers · admin test',deadline=deadline,expires_at=deadline+RESULT_TTL_SECONDS,records_progress=False,analytics_context={'custom_exam':{'admin_id':g.user.id,'direct_images':all((sources[i].source_metadata or {}).get('question_assets_verified_r2') for i in effective),'papers':sections}})
+    deadline=time.time()+duration if mode=='exam' else None
+    a=Attempt(guest_hash=g.guest_hash,user_id=None,paper_id=None,mode=mode,title=f'Custom exam · {len(sections)} papers · admin test',deadline=deadline,expires_at=deadline+RESULT_TTL_SECONDS if deadline else time.time()+86400,records_progress=False,analytics_context={'custom_exam':{'admin_id':g.user.id,'duration_seconds':duration,'remaining_seconds':duration,'direct_images':all((sources[i].source_metadata or {}).get('question_assets_verified_r2') for i in effective),'papers':sections}})
     from .exam_api import finish_new_attempt
     return finish_new_attempt(a,all_snapshots)
+
+def switch_mode(a,b):
+    from .engine import ACTIVE_TTL_SECONDS,grade
+    from .exam_api import attempt_status_json
+    mode=b.get('mode')
+    if a.status!='ACTIVE':abort(409,description='This attempt has ended')
+    if mode not in ('practice','exam') or mode==a.mode:abort(400,description='Select the other mode')
+    now=time.time();context=dict(a.analytics_context);meta=dict(context['custom_exam'])
+    if mode=='practice':
+        meta['remaining_seconds']=max(0,(a.deadline or now)-now)
+        a.deadline=None;a.expires_at=now+ACTIVE_TTL_SECONDS
+    else:
+        remaining=meta.get('remaining_seconds',meta.get('duration_seconds',5400))
+        if remaining<=0:abort(409,description='The exam time has expired')
+        a.deadline=now+remaining;a.expires_at=a.deadline+RESULT_TTL_SECONDS
+    context['custom_exam']=meta;context['assisted']=True;a.analytics_context=context;a.mode=mode
+    feedback=[{'question_id':i.question_id,'feedback':{**grade(i.snapshot,i.answer),'answers':i.snapshot['answers'],'explanation':i.snapshot['explanation'],'answer_status':i.snapshot['answer_status']}} for i in a.items if i.answer is not None] if mode=='practice' else []
+    db.session.commit()
+    return jsonify({**attempt_status_json(a),'mode':mode,'title':a.title,'feedback':feedback})

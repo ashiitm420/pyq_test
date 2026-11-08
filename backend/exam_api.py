@@ -483,7 +483,9 @@ def source_pdf(id):
 @require_visitor
 def switch_mode(id):
     source=owned(id);b=body();mode=b.get('mode')
-    if custom_metadata(source):abort(409,description='Custom exams use one fixed exam mode and deadline.')
+    if custom_metadata(source):
+        from .custom_exam import switch_mode as switch_custom
+        return switch_custom(source,b)
     if source.status!='ACTIVE':abort(409,description='This attempt has ended')
     if mode not in ('practice','exam') or mode==source.mode:abort(400,description='Select the other mode')
     deadline=None

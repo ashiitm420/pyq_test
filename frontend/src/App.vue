@@ -7,6 +7,7 @@ import Catalog from './Catalog.vue';
 const ExamBrowser=defineAsyncComponent(()=>import('./ExamBrowser.vue'));
 const Exam=defineAsyncComponent(()=>import('./Exam.vue'));
 const Records=defineAsyncComponent(()=>import('./Records.vue'));
+const CustomExamBuilder=defineAsyncComponent(()=>import('./CustomExamBuilder.vue'));
 const Admin=defineAsyncComponent(()=>import('./Admin.vue'));
 const theme=ref(localStorage.getItem('pyq-theme')||(window.matchMedia?.('(prefers-color-scheme: dark)').matches?'dark':'light'));
 document.documentElement.dataset.theme=theme.value;document.documentElement.dataset.bsTheme=theme.value;
@@ -37,7 +38,7 @@ const nav=[['/','Home',BookOpen,'Home'],['/progress','My progress',LayoutDashboa
 <section v-else-if="['/admin/login','/login'].includes(route)" class="auth-panel panel"><div class="eyebrow">ADMINISTRATION</div><h1>Admin sign in</h1><p class="muted">Manage papers, source catalog and processing.</p><form @submit.prevent="authenticate"><label>Email<input class="form-control" type="email" v-model="auth.email" required autocomplete="username"></label><label>Password<input class="form-control" type="password" v-model="auth.password" required maxlength="128" autocomplete="current-password"></label><button class="btn btn-primary w-100 mt-4" :disabled="authBusy">{{authBusy?'Please wait…':'Sign in as admin'}}</button></form><a href="/" class="text-btn mt-4">Back to papers</a></section>
 <section v-else-if="route.startsWith('/admin')&&session.user?.role!=='ADMIN'" class="empty panel"><h1>Administrator access</h1><a href="/admin/login" class="btn btn-primary">Admin sign in</a></section>
 <Exam v-else-if="examPage" :id="Number(route.split('/')[2])" :key="route"/>
-<About v-else-if="route==='/about'"/>
+<CustomExamBuilder v-else-if="route==='/custom-exam'&&session.user?.role==='ADMIN'"/><section v-else-if="route==='/custom-exam'" class="panel"><h1>Admin test only</h1><p>Custom exams are currently available to administrators only.</p><a href="/admin/login">Admin sign in</a></section><About v-else-if="route==='/about'"/>
 <Records v-else-if="['/progress','/history','/dashboard','/bookmarks','/mistakes','/feedback'].includes(route)||route.startsWith('/result/')" :route="route" :key="route"/>
 <ExamBrowser v-else-if="route.startsWith('/exam/')" :route="route" :key="route"/><Catalog v-else :route="route" :key="route"/>
 </main><footer v-if="!examPage" class="site-footer"><nav class="footer-links" aria-label="Site links"><a href="/study">Study library</a><a href="/contact">Contact</a><a href="/privacy">Privacy</a><a href="/content-policy">Content policy</a><a href="/about">About</a></nav><span class="footer-brand">MauryaHub · PYQ Practice</span></footer></div></div>

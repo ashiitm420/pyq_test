@@ -227,7 +227,7 @@ def create_app(config=None):
         for name,key in [('google-site-verification','site_verification'),('google-adsense-account','adsense_account')]:
             if meta[key]:tags+='<meta name="'+name+'" content="'+str(escape(meta[key]))+'">'
         response=app.response_class(html.replace('</head>',tags+'</head>',1),mimetype='text/html');response.headers['Cache-Control']='no-cache'
-        if path.startswith(('admin','attempt/','result/','login','progress','bookmarks','history','dashboard','mistakes')):response.headers['X-Robots-Tag']='noindex, nofollow'
+        if path.startswith(('admin','custom-exam','attempt/','result/','login','progress','bookmarks','history','dashboard','mistakes')):response.headers['X-Robots-Tag']='noindex, nofollow'
         return response
     from .cli import register_cli
     register_cli(app)

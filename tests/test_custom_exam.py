@@ -19,7 +19,8 @@ def test_custom_exam_admin_only_order_grading_deadline_and_no_analytics(app,clie
     assert a['papers'][0]['id']==q.id and a['palette'][0]['paper_id']==q.id
     assert all('answers' not in row['question'] and 'explanation' not in row['question'] and 'feedback' not in row for row in a['items'])
     assert client.get(f'/api/attempts/{aid}?bootstrap=1').json['palette'][0]['paper_id']==q.id
-    assert client.post(f'/api/attempts/{aid}/switch-mode',headers=h,json={'mode':'practice'}).status_code==409
+    assert client.post(f'/api/attempts/{aid}/switch-mode',headers=h,json={'mode':'practice'}).status_code==200
+    assert client.post(f'/api/attempts/{aid}/switch-mode',headers=h,json={'mode':'exam'}).status_code==200
     qid=a['palette'][0]['question_id']
     assert client.post(f'/api/attempts/{aid}/answers',headers=h,json={'question_id':qid,'answer':['B']}).status_code==200
     d=client.post(f'/api/attempts/{aid}/submit',headers=h).json
@@ -72,3 +73,21 @@ def test_custom_content_limit_and_cached_snapshots_unchanged(app,client):
     question=Question.query.filter_by(paper_id=q.id).one();question.text='x'*(1024*1024+1);db.session.commit()
     assert client.post('/api/attempts',headers=h,json={'paper_ids':[q.id],'duration_seconds':60}).status_code==400
     assert db.session.get(Attempt,aid).status=='ACTIVE'
+
+
+def test_custom_practice_switch_preserves_time_budget_and_answers(app,client,monkeypatch):
+    p,q=papers();h=login(client,True)
+    a=client.post('/api/attempts?bootstrap=1',headers=h,json={'paper_ids':[q.id],'mode':'practice','duration_seconds':600}).json
+    aid=a['id'];qid=a['palette'][0]['question_id'];assert a['mode']=='practice' and a['deadline'] is None
+    assert client.post(f'/api/attempts/{aid}/answers',headers=h,json={'question_id':qid,'answer':['B']}).status_code==200
+    timed=client.post(f'/api/attempts/{aid}/switch-mode',headers=h,json={'mode':'exam','duration_seconds':28800}).json
+    assert 598<=timed['deadline']-timed['server_time']<=600
+    row=db.session.get(Attempt,aid);row.deadline=time.time()+120;db.session.commit()
+    paused=client.post(f'/api/attempts/{aid}/switch-mode',headers=h,json={'mode':'practice'}).json
+    assert paused['deadline'] is None and paused['feedback'][0]['feedback']['outcome']=='CORRECT'
+    resumed=client.post(f'/api/attempts/{aid}/switch-mode',headers=h,json={'mode':'exam','duration_seconds':28800}).json
+    assert 118<=resumed['deadline']-resumed['server_time']<=120
+    assert client.get(f'/api/attempts/{aid}/questions/{qid}').json['answer']==['B']
+    assert 'feedback' not in client.get(f'/api/attempts/{aid}/questions/{qid}').json
+    assert client.post(f'/api/attempts/{aid}/submit',headers=h).json['result']['score']==2
+    assert AnalyticsEvent.query.count()==0

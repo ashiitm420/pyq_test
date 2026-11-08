@@ -34,7 +34,10 @@ it('switches source papers locally, retains answers, and remembers the previous 
  await w.findAll('.palette button')[0].trigger('click');expect(w.get('.option').attributes('aria-pressed')).toBe('true');
  await w.findAll('button').find(b=>b.text()==='Mark for review').trigger('click');
  await w.findAll('button').find(b=>b.text()==='Submit exam').trigger('click');
- expect(w.get('[aria-labelledby=submit-title]').text()).toContain('1 marked for review');
+ const summary=w.get('[aria-label="Paper-wise submission summary"]');
+ expect(summary.findAll('thead th').map(c=>c.text())).toEqual(['Paper','Answered','Unanswered','Marked for review']);
+ expect(summary.findAll('tbody tr')[0].findAll('th,td').map(c=>c.text())).toEqual(['Finance','1','1','1']);
+ expect(summary.findAll('tbody tr')[1].findAll('th,td').map(c=>c.text())).toEqual(['Industry','0','1','0']);
  expect(w.text()).not.toContain('.pdf');
  expect(mocks.api).toHaveBeenCalledTimes(1);w.unmount();
 });

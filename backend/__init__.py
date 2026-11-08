@@ -217,7 +217,7 @@ def create_app(config=None):
             elif re.fullmatch(r'assets/[^/]+-[A-Za-z0-9_-]{8,}\.(js|css|woff2?|ttf)',path):
                 response.headers['Cache-Control']='public, max-age=31536000, immutable'
             return response
-        if path and not re.fullmatch(r'(?:about|feedback|bookmarks|progress|history|dashboard|mistakes|login|admin(?:/login)?|(?:course|paper|attempt|result)/[0-9]+|exam/[^/]+)',path):
+        if path and not re.fullmatch(r'(?:custom-exam|about|feedback|bookmarks|progress|history|dashboard|mistakes|login|admin(?:/login)?|(?:course|paper|attempt|result)/[0-9]+|exam/[^/]+)',path):
             abort(404)
         if not (dist/'index.html').exists(): return jsonify(message='Build frontend with npm run build'),503
         html=(dist/'index.html').read_text()

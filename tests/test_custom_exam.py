@@ -91,3 +91,11 @@ def test_custom_practice_switch_preserves_time_budget_and_answers(app,client,mon
     assert 'feedback' not in client.get(f'/api/attempts/{aid}/questions/{qid}').json
     assert client.post(f'/api/attempts/{aid}/submit',headers=h).json['result']['score']==2
     assert AnalyticsEvent.query.count()==0
+
+
+def test_custom_exam_direct_route_loads_spa_shell(app,client):
+    r=client.get('/custom-exam')
+    assert r.status_code==200
+    assert 'noindex' in r.headers['X-Robots-Tag']
+    assert b'id="app"' in r.data
+    assert client.get('/custom-exam-invalid').status_code==404

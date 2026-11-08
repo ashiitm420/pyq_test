@@ -24,3 +24,8 @@ it('intercepts app links but preserves new tabs downloads and public pages',()=>
 it('preserves encoded exam routes and rejects external navigation',()=>{
  navigate('/exam/Quiz%201');expect(currentRoute()).toBe('/exam/Quiz%201');expect(()=>navigate('https://example.com/')).toThrow();
 });
+it('opens the custom exam shortcut through SPA navigation',()=>{
+ const update=vi.fn();stop=installNavigation(update);document.body.innerHTML='<a href="/custom-exam">Create my exam</a>';
+ const e=new MouseEvent('click',{bubbles:true,cancelable:true,button:0});document.querySelector('a').dispatchEvent(e);
+ expect(e.defaultPrevented).toBe(true);expect(currentRoute()).toBe('/custom-exam');expect(update).toHaveBeenLastCalledWith('/custom-exam');
+});

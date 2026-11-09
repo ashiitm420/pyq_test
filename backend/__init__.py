@@ -210,7 +210,7 @@ def create_app(config=None):
             if path=='manifest.webmanifest':
                 response.mimetype='application/manifest+json'
                 response.headers['Cache-Control']='public, max-age=86400'
-            elif path in ('favicon.svg','icon-192.png','icon-512.png'):
+            elif path in ('favicon.svg','icon-192.png','icon-512.png','favicon-peacock.svg','icon-peacock-192.png','icon-peacock-512.png'):
                 response.headers['Cache-Control']='public, max-age=86400'
             elif path=='sw.js':
                 response.headers['Cache-Control']='no-cache'

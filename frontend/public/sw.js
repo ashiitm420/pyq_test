@@ -1,7 +1,7 @@
 // Bump when non-hashed files (study.css, study-theme.js) change, so returning
 // visitors drop the old cached copy on the next visit.
-const CACHE_NAME = 'mauryahub-static-v2';
-const STATIC_ASSET_RE = /^\/(?:assets\/[^/]+-[A-Za-z0-9_-]{8,}\.(?:js|css|woff2?|ttf)|favicon\.svg|icon-(?:192|512)\.png|study\.css|study-theme\.js)$/;
+const CACHE_NAME = 'mauryahub-static-v3';
+const STATIC_ASSET_RE = /^\/(?:assets\/[^/]+-[A-Za-z0-9_-]{8,}\.(?:js|css|woff2?|ttf)|favicon(?:-peacock)?\.svg|icon-(?:peacock-)?(?:192|512)\.png|study\.css|study-theme\.js)$/;
 
 self.addEventListener('install', () => {
   self.skipWaiting();

@@ -1,6 +1,6 @@
 {
   "name": "MauryaHub PYQ Practice",
-  "short_name": "MauryaHub PYQ",
+  "short_name": "MauryaHub",
   "description": "Browse IITM BS previous-year papers, practice verified questions, and review your progress.",
   "start_url": "/",
   "scope": "/",
@@ -9,19 +9,13 @@
   "theme_color": "#152d57",
   "icons": [
     {
-      "src": "/favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "/icon-192.png",
+      "src": "/icon-peacock-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icon-512.png",
+      "src": "/icon-peacock-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"

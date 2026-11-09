@@ -58,7 +58,7 @@ function idle(fn,timeout=1800){
  return later(fn,900)
 }
 function prefetchNext(n){
- const p=attempt.value?.palette;if(!p||attempt.value.custom_exam)return;
+ const p=attempt.value?.palette;if(!p)return;
  const connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
  // Respect explicit data-saving and very slow mobile connections.
  const constrained=connection?.saveData||['slow-2g','2g'].includes(connection?.effectiveType);

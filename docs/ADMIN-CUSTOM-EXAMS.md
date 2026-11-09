@@ -22,3 +22,11 @@ This is restricted on the server to the creating administrator AND originating v
 The local budget fixture compares one 80-question paper against four 20-question papers, with warm source caches, SQLite, no images and isolated test data. In one run both used 9 SQL statements for start and 4 for one answer save; response sizes were 36.6 and 37.1 KiB. Python traced allocation peaks were 829 and 577 KiB respectively. These are allocation traces, not process RSS or the Render instance's RAM; timings are not representative of production latency. The test asserts bounded query growth, not timing or memory ratios.
 
 Manual admin check: select two different courses, set a short duration, answer and mark questions in both sections, switch back, refresh, submit, inspect per-paper scores; then sign out and verify the same attempt URL is denied. A guest's POST with `paper_ids` must return 403. Never use production traffic for capacity tests.
+
+## Personal paper insights
+
+Custom exam results show a paper table with server marks, active time, server review-mark counts and explicitly unsure answered-question counts. An optional Mark unsure toggle appears beside the question tools. Timing/confidence are local personal aids, never authoritative scores or analytics.
+
+Only the visible source paper accrues time, using a monotonic browser clock. Hidden tabs, submission confirmation, submission requests and closed-page gaps do not accrue time. Exam-mode accumulation is capped at the server-derived deadline; practice time is included. Visible idle time can count: this is not exact thinking time. The existing exam ticker checkpoints at most every 30 seconds; paper changes, visibility, pagehide/unmount and submit also checkpoint. No extra timer or API is added. Abrupt browser/process crashes can lose the latest uncheckpointed interval.
+
+Tiny per-attempt records (four time totals and at most 125 unsure IDs) live in sessionStorage, bounded to ten temporary attempts. They survive same-tab refresh but may disappear when closing the tab or clearing site data; they are not synced to other tabs/devices. Missing historical data shows —, not invented zero measurements. Tracking that starts late is labelled partial.

@@ -1,9 +1,10 @@
 <script setup>
+import {createPaperInsights} from './paperInsights';
 import {practiceFeedback} from './practiceFeedback';
 import {displayExamTitle} from './displayTitle';
 import BusyFeedback from './BusyFeedback.vue';
 import ComprehensionLayout from './ComprehensionLayout.vue';
-import {ref,reactive,onMounted,onUnmounted,computed,nextTick,defineAsyncComponent} from 'vue';import {Clock,Bookmark,ChevronLeft,ChevronRight,Flag,Check,WifiOff,BookOpen,NotebookPen,Calculator} from 'lucide-vue-next';
+import {ref,reactive,onMounted,onUnmounted,computed,nextTick,defineAsyncComponent,watch} from 'vue';import {Clock,Bookmark,ChevronLeft,ChevronRight,Flag,Check,WifiOff,BookOpen,NotebookPen,Calculator} from 'lucide-vue-next';
 import SavedAISolution from './SavedAISolution.vue';
 import ReportFormat from './ReportFormat.vue';import LoadingState from './LoadingState.vue';
 import {api,go,session} from './api';import {clock,paletteLabel,answerText} from './utils';import MathText from './MathText.vue';import QuestionContent from './QuestionContent.vue';import AnswerValue from './AnswerValue.vue';const ScratchBoard=defineAsyncComponent(()=>import('./ScratchBoard.vue'));const TcsCalculator=defineAsyncComponent(()=>import('./TcsCalculator.vue'));
@@ -24,6 +25,11 @@ function prefetchPractice(n){
 }
 const current=computed(()=>attempt.value?.palette[index.value]);
 const sectionPositions=new Map();
+let insights=null;const unsureQuestions=ref([]),insightsWarning=ref('');
+function trackPaper(){insights?.active(current.value?.paper_id,document.visibilityState!=='hidden'&&!confirm.value&&!submitting.value)}
+function toggleUnsure(){if(!insights)return;insights.toggle(current.value.question_id);unsureQuestions.value=insights.unsure()}
+watch(confirm,trackPaper);
+function pageHidden(){insights?.active(null,false)}
 const paperTabs=computed(()=>(attempt.value?.papers||[]).map(p=>{const entries=attempt.value.palette.map((q,n)=>({...q,n})).filter(q=>q.paper_id===p.source_paper_id);return {...p,entries,answered:entries.filter(q=>q.state.startsWith('ANSWERED')).length}}));
 const activePaper=computed(()=>paperTabs.value.find(p=>p.source_paper_id===current.value?.paper_id));
 const visiblePalette=computed(()=>activePaper.value?.entries||attempt.value?.palette.map((p,n)=>({...p,n}))||[]);
@@ -34,9 +40,9 @@ function journal(){if(stopped)return;const entries=[...inflightEntries(),...queu
 function saveVisited(){sessionStorage.setItem(visitedKey,JSON.stringify([...cache.values()].filter(d=>d.visited).map(d=>d.question.id)))}
 function markVisited(qid){const d=cache.get(qid);if(!d||d.visited)return;d.visited=true;localState(qid);saveVisited()}
 function localState(qid){const d=cache.get(qid),p=attempt.value?.palette.find(p=>p.question_id===qid);if(!p||!d)return;const answered=d.answer!==null&&d.answer!==''&&d.answer!==undefined&&(!Array.isArray(d.answer)||d.answer.length>0);p.state=d.marked?(answered?'ANSWERED_AND_MARKED_FOR_REVIEW':'MARKED_FOR_REVIEW'):answered?'ANSWERED':d.touched?'NOT_ANSWERED':d.visited?'VISITED':p.state}
-async function sync(initial=false){try{const a=await api('/attempts/'+props.id+(initial?'?bootstrap=1':'/status'));if(stopped)return;if(initial)attempt.value=a;else if(attempt.value){attempt.value.status=a.status;attempt.value.deadline=a.deadline;attempt.value.submitted_at=a.submitted_at;attempt.value.expires_at=a.expires_at}serverNow=a.server_time;received=performance.now();if(initial)for(const qid of cache.keys())localState(qid);if(a.status!=='ACTIVE'){sessionStorage.removeItem(key);sessionStorage.removeItem(draftKey);sessionStorage.removeItem(visitedKey);go('/result/'+a.id)}return a}catch(e){error.value=e.message}}
+async function sync(initial=false){try{const a=await api('/attempts/'+props.id+(initial?'?bootstrap=1':'/status'));if(stopped)return;if(initial)attempt.value=a;else if(attempt.value){attempt.value.status=a.status;attempt.value.deadline=a.deadline;attempt.value.submitted_at=a.submitted_at;attempt.value.expires_at=a.expires_at}serverNow=a.server_time;received=performance.now();insights?.deadline(a.deadline?Math.max(0,a.deadline-a.server_time):null);if(initial)for(const qid of cache.keys())localState(qid);if(a.status!=='ACTIVE'){sessionStorage.removeItem(key);sessionStorage.removeItem(draftKey);sessionStorage.removeItem(visitedKey);insights?.finish();go('/result/'+a.id)}return a}catch(e){error.value=e.message}}
 function scheduleHeartbeat(){clearTimeout(poller);if(stopped||!attempt.value?.deadline)return;const delay=600000+Math.floor(Math.random()*300000);poller=setTimeout(async()=>{await sync();scheduleHeartbeat()},delay)}
-function show(n){index.value=n;item.value=cache.get(current.value.question_id);value.value=item.value.answer;feedback.value=checked.has(current.value.question_id)?item.value.feedback||null:null;sessionStorage.setItem('pyq-position-'+props.id,String(n));if(item.value?.question.kind==='NAT')nextTick(()=>natInput.value?.focus({preventScroll:true}))}
+function show(n){index.value=n;trackPaper();item.value=cache.get(current.value.question_id);value.value=item.value.answer;feedback.value=checked.has(current.value.question_id)?item.value.feedback||null:null;sessionStorage.setItem('pyq-position-'+props.id,String(n));if(item.value?.question.kind==='NAT')nextTick(()=>natInput.value?.focus({preventScroll:true}))}
 function prefetchImages(qid){
  const images=cache.get(qid)?.question.images||[];
  for(const img of images){
@@ -153,7 +159,7 @@ async function natEnter(){
 }
 async function bookmark(){const target=item.value,qid=current.value.question_id,old=target.bookmarked;target.bookmarked=!old;try{await api('/questions/'+qid+'/bookmark',{method:old?'DELETE':'POST',body:old?undefined:{question:target.question,paper_title:attempt.value?.paper_id?displayExamTitle(attempt.value.title):''}})}catch(e){target.bookmarked=old;error.value=e.message}}
 async function submit(){
- if(submitting.value)return;submitting.value=true;clearTimeout(draftTimer);
+ if(submitting.value)return;submitting.value=true;trackPaper();clearTimeout(draftTimer);
  try{
   if(saveTask)await saveTask;
   let bodyPayload=undefined;
@@ -163,8 +169,8 @@ async function submit(){
    const ok=await flushText();if(!ok&&seconds.value!==0){error.value='Save pending responses before submitting.';return}
   }
   await api(`/attempts/${props.id}/submit`,{method:'POST',body:bodyPayload});
-  queued.clear();sessionStorage.removeItem(key);sessionStorage.removeItem(draftKey);sessionStorage.removeItem(visitedKey);go('/result/'+props.id);
- }catch(e){error.value=e.message}finally{submitting.value=false}
+  queued.clear();sessionStorage.removeItem(key);sessionStorage.removeItem(draftKey);sessionStorage.removeItem(visitedKey);insights?.finish();go('/result/'+props.id);
+ }catch(e){error.value=e.message}finally{submitting.value=false;trackPaper()}
 }
 function markNext(){persist({question_id:current.value.question_id,marked:true});if(index.value<attempt.value.palette.length-1)open(index.value+1)}
 function keyboard(e){if(!['ArrowLeft','ArrowRight'].includes(e.key)||e.altKey||e.ctrlKey||e.metaKey||e.shiftKey||confirm.value||switching.value||instructions.value||reportQuestion.value||e.target?.closest?.('input,textarea,select,[contenteditable="true"],[role="dialog"]'))return;e.preventDefault();open(index.value+(e.key==='ArrowRight'?1:-1))}
@@ -178,18 +184,19 @@ async function switchMode(){
   for(const d of cache.values())d.feedback=null;
   for(const row of next.feedback||[]){const d=cache.get(row.question_id);if(d)d.feedback=row.feedback}
   checked.clear();feedback.value=null;practiceGeneration++;practiceCache.clear();practicePending.clear();if(next.mode==='practice')prefetchPractice(index.value);
-  serverNow=next.server_time;received=performance.now();timeoutRequested=false;
+  serverNow=next.server_time;received=performance.now();insights?.deadline(next.deadline?Math.max(0,next.deadline-next.server_time):null);timeoutRequested=false;
   seconds.value=next.deadline?Math.max(0,Math.ceil(next.deadline-next.server_time)):null;
   scheduleHeartbeat();error.value='';
- }catch(e){error.value=e.message}finally{submitting.value=false;switching.value=false}
+ }catch(e){error.value=e.message}finally{submitting.value=false;switching.value=false;trackPaper()}
 }
 
 async function online(){retry();await sync();scheduleHeartbeat()}
-async function visible(){if(document.visibilityState==='visible'&&performance.now()-received>120000){await sync();scheduleHeartbeat()}}
-function leaving(e){if(queued.size||inflight){journal();e.preventDefault();e.returnValue=''}}
+async function visible(){trackPaper();if(document.visibilityState==='visible'&&performance.now()-received>120000){await sync();scheduleHeartbeat()}}
+function leaving(e){insights?.checkpoint();if(queued.size||inflight){journal();e.preventDefault();e.returnValue=''}}
 onMounted(async()=>{try{
  const bundle=await sync(true);if(stopped||!attempt.value||attempt.value.status!=='ACTIVE')return;
  if(stopped)return;if(bundle.status!=='ACTIVE')return go('/result/'+props.id);
+ if(bundle.custom_exam){insights=createPaperInsights(attempt.value,{onError:message=>insightsWarning.value=message});insights.deadline(bundle.deadline?Math.max(0,bundle.deadline-bundle.server_time):null);unsureQuestions.value=insights.unsure()}
  for(const d of bundle.items){cache.set(d.question.id,d)}
  let localVisited=[];try{localVisited=JSON.parse(sessionStorage.getItem(visitedKey)||'[]')}catch{};if(!Array.isArray(localVisited))localVisited=[];
  for(const qid of localVisited){const d=cache.get(qid);if(d)d.visited=true}
@@ -199,12 +206,12 @@ onMounted(async()=>{try{
  if(queued.size){const latest=[...queued.values()].at(-1);pending.value=latest;saved.value='Responses pending — retry to save';error.value='Response pending — retry to save';}
  sessionStorage.removeItem(draftKey);
  open(Math.max(0,Math.min(Number(sessionStorage.getItem('pyq-position-'+props.id))||0,attempt.value.palette.length-1)));
- const tick=()=>{seconds.value=attempt.value?.deadline?Math.max(0,Math.ceil(attempt.value.deadline-serverNow-(performance.now()-received)/1000)):null;if(seconds.value===0&&!timeoutRequested){timeoutRequested=true;submit()}};tick();ticker=setInterval(tick,1000);scheduleHeartbeat();
- window.addEventListener('keydown',keyboard);window.addEventListener('online',online);window.addEventListener('beforeunload',leaving);document.addEventListener('visibilitychange',visible);
+ const tick=()=>{insights?.pulse();seconds.value=attempt.value?.deadline?Math.max(0,Math.ceil(attempt.value.deadline-serverNow-(performance.now()-received)/1000)):null;if(seconds.value===0&&!timeoutRequested){timeoutRequested=true;submit()}};tick();ticker=setInterval(tick,1000);scheduleHeartbeat();
+ window.addEventListener('keydown',keyboard);window.addEventListener('online',online);window.addEventListener('beforeunload',leaving);window.addEventListener('pagehide',pageHidden);window.addEventListener('pageshow',trackPaper);document.addEventListener('visibilitychange',visible);
 }catch(e){error.value=e.message}});
-onUnmounted(()=>{if(attempt.value?.status==='ACTIVE')journal();stopped=true;practiceGeneration++;practiceCache.clear();practicePending.clear();clearInterval(ticker);clearTimeout(poller);clearTimeout(draftTimer);for(const id of prefetchTimers)clearTimeout(id);prefetchTimers.clear();prefetchAssets.clear();window.removeEventListener('online',online);window.removeEventListener('keydown',keyboard);window.removeEventListener('beforeunload',leaving);document.removeEventListener('visibilitychange',visible)});
+onUnmounted(()=>{insights?.active(null,false);if(attempt.value?.status==='ACTIVE')journal();stopped=true;practiceGeneration++;practiceCache.clear();practicePending.clear();clearInterval(ticker);clearTimeout(poller);clearTimeout(draftTimer);for(const id of prefetchTimers)clearTimeout(id);prefetchTimers.clear();prefetchAssets.clear();window.removeEventListener('online',online);window.removeEventListener('keydown',keyboard);window.removeEventListener('beforeunload',leaving);window.removeEventListener('pagehide',pageHidden);window.removeEventListener('pageshow',trackPaper);document.removeEventListener('visibilitychange',visible)});
 </script>
-<template><template v-if="attempt"><header class="exam-header"><a class="exam-logo" href="/progress"><BookOpen/> MauryaHub PYQ</a><div><span class="eyebrow">{{attempt.mode==='exam'?'TIMED EXAM':'PRACTICE SESSION'}}</span><h1>{{displayExamTitle(attempt.title)}}</h1></div><button class="btn btn-light mode-switch" @click="switchMode" :disabled="submitting">{{switching?'Switching…':('Switch to '+(attempt.mode==='exam'?'practice':'exam'))}}</button><button class="btn btn-light exam-tool-button mobile-hide-tool" @click="scratchOpen=!scratchOpen"><NotebookPen :size="15"/>Scratch</button><button class="btn btn-light exam-tool-button" aria-label="Open calculator" @click="calculatorOpen=!calculatorOpen"><Calculator :size="15"/>Calculator</button><button class="btn btn-light mobile-hide-tool" @click="instructions=true">Instructions</button><div class="timer" :class="{urgent:seconds!==null&&seconds<120}"><Clock :size="19"/>{{seconds===null?'Untimed':clock(seconds)}}</div></header><div class="cbt-section-bar"><strong v-if="!attempt.custom_exam">Section 1 · Question paper</strong><nav v-if="attempt.custom_exam" class="custom-paper-tabs" aria-label="Exam papers"><button v-for="(p,n) in paperTabs" :key="p.id" class="btn" :class="activePaper?.id===p.id?'btn-primary':'btn-light'" :disabled="submitting" :aria-pressed="activePaper?.id===p.id" @click="chooseSection(p)">{{n+1}}. {{displayExamTitle(p.title)}} · {{p.answered}}/{{p.questions}}</button></nav><span class="section-user">{{session.user?.name||'Guest'}} · {{attempt.mode==='exam'?'Exam mode':'Practice mode'}}</span></div><div v-if="error" class="alert alert-danger" role="alert">{{error}}<button v-if="pending" class="btn btn-light ms-3" @click="retry" :disabled="saving">Retry save</button></div><div class="exam-layout"><section class="question-panel panel" v-if="item"><div class="section-row"><span class="eyebrow current-question-label">Question {{index+1}} of {{attempt.palette.length}}<small v-if="String(item.question.number)!==String(index+1)"> · Paper Q{{item.question.number}}</small></span><div class="question-tools"><button @click="bookmark" class="btn btn-light btn-sm"><Bookmark :size="17" :fill="item.bookmarked?'currentColor':'none'"/>{{item.bookmarked?'Bookmarked':'Bookmark'}}</button><button class="btn btn-light btn-sm" @click="reportQuestion={id:item.question.id,number:String(item.question.number)}"><Flag :size="16"/>Report Broken Format</button></div></div><ComprehensionLayout :passage="item.question.passage" :images="item.question.images.filter(i=>!i.option_key)"><div class="question-content"><div class="question-meta"><span>{{item.question.kind.replace('_',' / ')}}</span><span>{{item.question.marks===null?'Marks not specified':'+'+item.question.marks+' marks'}}</span><span v-if="item.question.negative_marks">−{{item.question.negative_marks}} incorrect</span></div>
+<template><template v-if="attempt"><header class="exam-header"><a class="exam-logo" href="/progress"><BookOpen/> MauryaHub PYQ</a><div><span class="eyebrow">{{attempt.mode==='exam'?'TIMED EXAM':'PRACTICE SESSION'}}</span><h1>{{displayExamTitle(attempt.title)}}</h1></div><button class="btn btn-light mode-switch" @click="switchMode" :disabled="submitting">{{switching?'Switching…':('Switch to '+(attempt.mode==='exam'?'practice':'exam'))}}</button><button class="btn btn-light exam-tool-button mobile-hide-tool" @click="scratchOpen=!scratchOpen"><NotebookPen :size="15"/>Scratch</button><button class="btn btn-light exam-tool-button" aria-label="Open calculator" @click="calculatorOpen=!calculatorOpen"><Calculator :size="15"/>Calculator</button><button class="btn btn-light mobile-hide-tool" @click="instructions=true">Instructions</button><div class="timer" :class="{urgent:seconds!==null&&seconds<120}"><Clock :size="19"/>{{seconds===null?'Untimed':clock(seconds)}}</div></header><div class="cbt-section-bar"><strong v-if="!attempt.custom_exam">Section 1 · Question paper</strong><nav v-if="attempt.custom_exam" class="custom-paper-tabs" aria-label="Exam papers"><button v-for="(p,n) in paperTabs" :key="p.id" class="btn" :class="activePaper?.id===p.id?'btn-primary':'btn-light'" :disabled="submitting" :aria-pressed="activePaper?.id===p.id" @click="chooseSection(p)">{{n+1}}. {{displayExamTitle(p.title)}} · {{p.answered}}/{{p.questions}}</button></nav><span class="section-user">{{session.user?.name||'Guest'}} · {{attempt.mode==='exam'?'Exam mode':'Practice mode'}}</span></div><div v-if="error" class="alert alert-danger" role="alert">{{error}}<button v-if="pending" class="btn btn-light ms-3" @click="retry" :disabled="saving">Retry save</button></div><p v-if="insightsWarning" class="alert alert-warning" role="status">{{insightsWarning}}</p><div class="exam-layout"><section class="question-panel panel" v-if="item"><div class="section-row"><span class="eyebrow current-question-label">Question {{index+1}} of {{attempt.palette.length}}<small v-if="String(item.question.number)!==String(index+1)"> · Paper Q{{item.question.number}}</small></span><div class="question-tools"><button v-if="attempt.custom_exam" class="btn btn-light btn-sm" :aria-pressed="unsureQuestions.includes(current.question_id)" :disabled="submitting" @click="toggleUnsure">{{unsureQuestions.includes(current.question_id)?'Unsure ✓':'Mark unsure'}}</button><button @click="bookmark" class="btn btn-light btn-sm"><Bookmark :size="17" :fill="item.bookmarked?'currentColor':'none'"/>{{item.bookmarked?'Bookmarked':'Bookmark'}}</button><button class="btn btn-light btn-sm" @click="reportQuestion={id:item.question.id,number:String(item.question.number)}"><Flag :size="16"/>Report Broken Format</button></div></div><ComprehensionLayout :passage="item.question.passage" :images="item.question.images.filter(i=>!i.option_key)"><div class="question-content"><div class="question-meta"><span>{{item.question.kind.replace('_',' / ')}}</span><span>{{item.question.marks===null?'Marks not specified':'+'+item.question.marks+' marks'}}</span><span v-if="item.question.negative_marks">−{{item.question.negative_marks}} incorrect</span></div>
 <div>
   <QuestionContent :text="item.question.text" :images="item.question.images.filter(i=>!i.option_key && !(item.question.passage && i.token && item.question.passage.includes('[[IMAGE:'+i.token+']]')))" class="question-stem"/>
   <div v-if="['MCQ','MSQ','TRUE_FALSE'].includes(item.question.kind)" class="options"><button v-for="(o,oi) in item.question.options" class="option" :class="{chosen:Array.isArray(value)&&value.includes(o.key),...choiceFeedback(o.key)}" :aria-pressed="Array.isArray(value)&&value.includes(o.key)" :disabled="submitting" @click="option(o.key)"><span class="option-key" :class="{'option-key-square':item.question.kind==='MSQ'}">{{String.fromCharCode(65+oi)}}</span><div><QuestionContent :text="o.text" :images="item.question.images.filter(i=>i.option_key===o.key)"/></div><Check v-if="Array.isArray(value)&&value.includes(o.key)" :size="20" class="ms-auto"/></button><p v-if="item.question.kind==='MSQ'" class="muted small">Select all correct options. Correct subsets earn proportional marks; any wrong option earns zero. No negative marking.</p></div>

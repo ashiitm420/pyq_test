@@ -22,12 +22,14 @@ it('switches source papers locally, retains answers, and remembers the previous 
  const papers=[{id:1,source_paper_id:1,title:'Finance · Quiz 1 · Jan 2026 · ms3034_2026T1_Q1_NA.pdf',questions:2},{id:2,source_paper_id:2,title:'Industry · Quiz 1 · Jan 2026 · ms4001_2026T1_Q1_NA.pdf',questions:1}];
  const palette=[{question_id:11,paper_id:1,number:'1',state:'NOT_VISITED'},{question_id:12,paper_id:1,number:'2',state:'NOT_VISITED'},{question_id:21,paper_id:2,number:'1',state:'NOT_VISITED'}];
  const items=palette.map(p=>({question:{id:p.question_id,paper_id:p.paper_id,number:p.number,text:'Question '+p.question_id,kind:'MCQ',marks:2,negative_marks:0,options:[{key:'A',text:'Answer'}],images:[]},answer:null,visited:false,marked:false}));
- mocks.api.mockResolvedValue({id:88,status:'ACTIVE',mode:'exam',title:'Custom exam',custom_exam:true,papers,palette,items,server_time:Date.now()/1000,deadline:Date.now()/1000+3600});
+ mocks.api.mockResolvedValue({id:88,status:'ACTIVE',mode:'exam',title:'Custom exam',custom_exam:true,papers,palette,items,started_at:Date.now()/1000,expires_at:Date.now()/1000+7200,server_time:Date.now()/1000,deadline:Date.now()/1000+3600});
  const w=mount(Exam,{props:{id:88},global:{stubs:{QuestionContent:true,ComprehensionLayout:{template:'<div><slot/></div>'},SavedAISolution:true,ReportFormat:true}}});await flushPromises();
  expect(w.find('.mode-switch').exists()).toBe(true);
  expect(w.get('.cbt-section-bar [aria-label="Exam papers"]').exists()).toBe(true);
  const tabs=w.get('[aria-label="Exam papers"]');
  await w.get('.option').trigger('click');
+ await w.findAll('button').find(b=>b.text()==='Mark unsure').trigger('click');
+ expect(JSON.parse(sessionStorage.getItem('pyq-paper-insights-v1-88')).unsure).toEqual([11]);
  await w.findAll('.palette button')[1].trigger('click');
  await tabs.findAll('button')[1].trigger('click');expect(w.text()).toContain('Industry');
  await tabs.findAll('button')[0].trigger('click');expect(w.get('.current-question-label').text()).toContain('Question 2');

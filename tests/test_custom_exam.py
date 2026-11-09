@@ -43,7 +43,7 @@ def test_custom_limits_reject_without_replacing_active_attempt(app,client):
     assert db.session.get(Attempt,active).status=='ACTIVE'
     alias=Paper(identity='alias',course_id=p.course_id,term_id=p.term_id,exam_type_id=p.exam_type_id,name='Alias',status='AVAILABLE',canonical_paper_id=p.id);db.session.add(alias);db.session.commit()
     assert client.post('/api/attempts',headers=h,json={'paper_ids':[p.id,alias.id],'duration_seconds':60}).status_code==400
-    for n in range(100):db.session.add(Question(paper_id=q.id,number=str(n+2),kind='NAT',text='x',status='AVAILABLE'))
+    for n in range(125):db.session.add(Question(paper_id=q.id,number=str(n+2),kind='NAT',text='x',status='AVAILABLE'))
     db.session.commit()
     assert client.post('/api/attempts',headers=h,json={'paper_ids':[q.id],'duration_seconds':60}).status_code==400
     assert db.session.get(Attempt,active).status=='ACTIVE'
@@ -99,3 +99,12 @@ def test_custom_exam_direct_route_loads_spa_shell(app,client):
     assert 'noindex' in r.headers['X-Robots-Tag']
     assert b'id="app"' in r.data
     assert client.get('/custom-exam-invalid').status_code==404
+
+
+def test_custom_exam_accepts_125_questions(app,client):
+    p,q=papers();h=login(client,True)
+    for n in range(124):db.session.add(Question(paper_id=q.id,number=str(n+2),kind='NAT',text='Boundary question',answers=2,answer_status='ANSWER_AVAILABLE',marks=1,negative_marks=0,status='AVAILABLE'))
+    db.session.commit()
+    r=client.post('/api/attempts?bootstrap=1',headers=h,json={'paper_ids':[q.id],'duration_seconds':600})
+    assert r.status_code==201,r.json
+    assert len(r.json['items'])==125 and r.json['papers'][0]['questions']==125

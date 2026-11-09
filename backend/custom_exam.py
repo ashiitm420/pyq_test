@@ -7,7 +7,7 @@ from .models import db,Paper,Question,Attempt
 from .engine import RESULT_TTL_SECONDS
 
 MAX_PAPERS=4
-MAX_QUESTIONS=100
+MAX_QUESTIONS=125
 MAX_SNAPSHOT_BYTES=1024*1024
 _start_slot=threading.BoundedSemaphore(1)
 
@@ -42,7 +42,7 @@ def _start(b):
     if len(sources)!=len(effective) or any(p.status=='ARCHIVED' for p in sources.values()):abort(409,description='A source paper is archived.')
     counts=dict(db.session.query(Question.paper_id,func.count(Question.id)).filter(Question.paper_id.in_(effective),Question.status=='AVAILABLE').group_by(Question.paper_id))
     if any(not counts.get(i) for i in effective):abort(409,description='Every selected paper must have available questions.')
-    if sum(counts.values())>MAX_QUESTIONS:abort(400,description='Custom exams are limited to 100 total questions during testing. No paper will be truncated.')
+    if sum(counts.values())>MAX_QUESTIONS:abort(400,description='Custom exams are limited to 125 total questions during testing. No paper will be truncated.')
     from .paper_content import snapshots
     all_snapshots=[];sections=[];size=0
     for pid,eid in zip(ids,effective):

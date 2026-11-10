@@ -38,10 +38,10 @@ def content_parts(text, images, used=None, append_unused=True):
 def paper_title(p):
     return ' · '.join(filter(None,[p.course.name,p.exam_type.name,p.term.name,p.session]))
 
-def paper_items(questions, solutions):
+def paper_items(questions, solutions, snapshots=None):
     items=[]
     for q in questions:
-        snap=question_snapshot(q); s=solutions.get(q.id)
+        snap=snapshots[q.id] if snapshots is not None else question_snapshot(q); s=solutions.get(q.id)
         images=[i for i in snap['images'] if not i.get('option_key')]; used=set()
         passage=content_parts(snap.get('passage'),images,used,False)
         parts=content_parts(snap['text'],images,used)

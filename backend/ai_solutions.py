@@ -2,7 +2,7 @@
 import hashlib,json,secrets,time
 from flask import Blueprint,jsonify,request,abort,send_file
 from sqlalchemy import func
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, load_only
 from .models import db,Question,QuestionOption,QuestionImage,Paper,AISolution,SolutionBatch,SolutionJob,Attempt,AttemptAnswer,IngestionFile,Course,Term
 from .api import require_user,require_visitor,body,integer_argument
 from .engine import question_snapshot,grade
@@ -280,7 +280,7 @@ def _cached_paper_solutions(paper_id):
     def load():
         snaps={s['id']:version(s) for s in snapshots(paper_id)}
         if not snaps:return {}
-        rows=AISolution.query.filter(AISolution.question_id.in_(list(snaps)),AISolution.status=='PUBLISHED').all()
+        rows=AISolution.query.options(load_only(AISolution.question_id,AISolution.version,AISolution.text)).filter(AISolution.question_id.in_(list(snaps)),AISolution.status=='PUBLISHED').all()
         return {str(s.question_id):{'version':s.version,'text':s.text} for s in rows if snaps.get(s.question_id)==s.version}
     return cached('paper-published-solutions:'+str(paper_id),load)
 
@@ -303,12 +303,12 @@ def practice_feedback(aid):
     if a.status!='ACTIVE' or a.mode!='practice':abort(403,description='Practice feedback is only available in active practice mode')
     items=[r[1] for r in rows if r[1] is not None]
     if len(items)!=len(ids):abort(404)
-    eff_id=items[0].snapshot.get('paper_id') or a.paper_id
-    if eff_id:
-        pub_map=_cached_paper_solutions(eff_id)
+    paper_ids={i.snapshot.get('paper_id') or a.paper_id for i in items}
+    if None not in paper_ids:
+        pub_maps={pid:_cached_paper_solutions(pid) for pid in paper_ids}
         result=[]
         for i in items:
-            snap=i.snapshot;entry=pub_map.get(str(i.question_id))
+            snap=i.snapshot;entry=pub_maps[snap.get('paper_id') or a.paper_id].get(str(i.question_id))
             saved=dict(available=True,text=entry['text'],label='AI-generated explanation') if entry and entry['version']==version(snap) else dict(available=False)
             result.append(dict(question_id=i.question_id,key={k:snap.get(k) for k in ('kind','answers','explanation','answer_status','marks','negative_marks','tolerance','msq_scoring')},solution=saved))
     else:
@@ -327,9 +327,15 @@ def student_solution(aid,qid):
     a=owned(aid)
     if a.status=='ACTIVE' and a.mode!='practice':abort(403,description='Solutions are available after submission')
     i=AttemptAnswer.query.filter_by(attempt_id=aid,question_id=qid).first_or_404()
+    pid=i.snapshot.get('paper_id')
+    if pid:
+        entry=_cached_paper_solutions(pid).get(str(qid))
+        if not entry or entry['version']!=version(i.snapshot):return jsonify(available=False)
+        return jsonify(available=True,text=entry['text'],label='AI-generated explanation')
     s=AISolution.query.filter_by(question_id=qid,status='PUBLISHED').first();q=db.session.get(Question,qid)
     if not s or not q or q.status!='AVAILABLE' or s.version!=version(i.snapshot) or s.version!=version(snapshot(q)):return jsonify(available=False)
     return jsonify(available=True,text=s.text,label='AI-generated explanation')
+
 
 
 def review_solutions(items):
@@ -337,11 +343,12 @@ def review_solutions(items):
     ids=[i['question']['id'] for i in items]
     if not ids:return items
     paper_ids={i['question'].get('paper_id') for i in items if i['question'].get('paper_id')}
-    if len(paper_ids)==1:
-        pid=next(iter(paper_ids))
-        pub_map=_cached_paper_solutions(pid)
+    if paper_ids and all(i['question'].get('paper_id') for i in items):
+        # Custom exams can contain several papers. Reuse each paper's current,
+        # version-checked solution cache instead of re-reading full Questions.
+        maps={pid:_cached_paper_solutions(pid) for pid in paper_ids}
         for i in items:
-            entry=pub_map.get(str(i['question']['id']))
+            entry=maps[i['question']['paper_id']].get(str(i['question']['id']))
             i['ai_solution']=dict(available=True,text=entry['text'],label='AI-generated explanation') if entry and entry['version']==version(i['question']) else dict(available=False)
         return items
     solutions={s.question_id:s for s in AISolution.query.filter(AISolution.question_id.in_(ids),AISolution.status=='PUBLISHED')}

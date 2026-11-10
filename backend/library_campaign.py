@@ -85,7 +85,7 @@ def reset_library(user_id,cleanup_storage=True,cancel_active=False):
 
 def diploma_reset_inventory():
     papers=[p.id for p in Paper.query.join(Course).filter(Course.level=='Diploma').all()]
-    questions=[q.id for q in Question.query.filter(Question.paper_id.in_(papers)).all()]
+    questions=[qid for qid, in db.session.query(Question.id).filter(Question.paper_id.in_(papers))]
     files=[f.id for f in IngestionFile.query.filter(IngestionFile.paper_id.in_(papers)).all()]
     blockers=[]
     if IngestionFile.query.filter(IngestionFile.paper_id.in_(papers),IngestionFile.status.in_(['FETCHING','PROCESSING'])).count():
@@ -110,7 +110,7 @@ def reset_diploma(user_id):
     IngestionFile.query.filter(IngestionFile.paper_id.in_(papers)).with_for_update().all()
     preview=diploma_reset_inventory()
     if preview['blockers']:raise RuntimeError(' '.join(preview['blockers']))
-    questions=[q.id for q in Question.query.filter(Question.paper_id.in_(papers)).all()]
+    questions=[qid for qid, in db.session.query(Question.id).filter(Question.paper_id.in_(papers))]
     files=[f.id for f in IngestionFile.query.filter(IngestionFile.paper_id.in_(papers)).all()]
     attempts=[a.id for a in Attempt.query.filter(Attempt.paper_id.in_(papers)).all()]
     ingestion_batches=[bid for bid, in db.session.query(IngestionFile.batch_id).filter(IngestionFile.paper_id.in_(papers)).distinct()]

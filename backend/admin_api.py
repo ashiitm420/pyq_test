@@ -435,7 +435,8 @@ def imports():return jsonify(paginate(ImportRun.query.order_by(ImportRun.id.desc
 @admin.get('/questions')
 @require_user(True)
 def questions():
-    q=Question.query
+    from sqlalchemy.orm import selectinload
+    q=Question.query.options(selectinload(Question.options),selectinload(Question.images))
     if request.args.get('paper_id'):q=q.filter_by(paper_id=integer_argument('paper_id'))
     if request.args.get('status'):q=q.filter_by(status=request.args['status'])
     else:q=q.filter(Question.status!='SUPERSEDED')

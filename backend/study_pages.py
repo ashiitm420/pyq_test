@@ -46,25 +46,41 @@ def course(id):
 def paper(id):
     p = Paper.query.options(selectinload(Paper.course), selectinload(Paper.term), selectinload(Paper.exam_type)).filter(Paper.id == id, Paper.status != 'ARCHIVED').first()
     if not p: abort(404)
-    questions = Question.query.options(selectinload(Question.options), selectinload(Question.images)).filter_by(paper_id=id, status='AVAILABLE').all()
-    if not questions: abort(404)
-    questions.sort(key=lambda q: question_order(q.number))
-    solutions = {s.question_id:s for s in AISolution.query.filter(AISolution.question_id.in_([q.id for q in questions]), AISolution.status == 'PUBLISHED').all()}
-    items=paper_items(questions,solutions)
+    from types import SimpleNamespace
+    from .paper_content import snapshots
+    from .ai_solutions import _cached_paper_solutions
+    from .site_pages import setting
+    # Share the bounded, invalidated quiz cache; never cache ORM objects or a
+    # rendered page containing request-specific settings / advertising consent.
+    snaps=snapshots(id)
+    if not snaps: abort(404)
+    snap_by_id={s['id']:s for s in snaps}
+    questions=[SimpleNamespace(**s) for s in snaps]
+    solutions={int(qid):SimpleNamespace(**s,status='PUBLISHED') for qid,s in _cached_paper_solutions(id).items()}
+    advertising=dict(enabled=False,publisher='',slot='')
+    if setting('STUDY_ADS_ENABLED','false').lower()=='true':
+        # Editorial checks also read warnings, review fingerprints and final
+        # answers. Keep their complete, current validation on the opt-in path.
+        reviewed=Question.query.options(selectinload(Question.options),selectinload(Question.images)).filter_by(paper_id=id,status='AVAILABLE').all()
+        reviewed_solutions={s.question_id:s for s in AISolution.query.filter(AISolution.question_id.in_(list(snap_by_id)),AISolution.status=='PUBLISHED')}
+        from .advertising import ad_context
+        advertising=ad_context(p,reviewed,reviewed_solutions)
+    items=paper_items(questions,solutions,snap_by_id)
     published=sum(bool(i['solution']) for i in items)
-    from .advertising import ad_context
-    return page(paper_title(p), f'{p.course.name}: {p.exam_type.name}, {p.term.name}. {len(items)} questions and {published} published explanations.', section='paper', paper=p, items=items, published_count=published, advertising=ad_context(p,questions,solutions))
+    return page(paper_title(p), f'{p.course.name}: {p.exam_type.name}, {p.term.name}. {len(items)} questions and {published} published explanations.', section='paper', paper=p, items=items, published_count=published, advertising=advertising)
 
 @study.get('/study/images/<int:id>')
 def image(id):
-    row = db.session.query(QuestionImage, Question).join(Question).join(Paper, Paper.id==Question.paper_id).filter(QuestionImage.id==id, Question.status=='AVAILABLE', Paper.status!='ARCHIVED').first()
+    # Only image permission metadata is needed here. Loading a full Question
+    # and snapshot also fetched all options, all images and extraction evidence.
+    row = db.session.query(QuestionImage.path,Question.evidence['_active_image_ids']).join(Question,Question.id==QuestionImage.question_id).join(Paper,Paper.id==Question.paper_id).filter(QuestionImage.id==id,Question.status=='AVAILABLE',Paper.status!='ARCHIVED').first()
     if not row: abort(404)
-    image,q=row
-    if not any(i['id']==id for i in question_snapshot(q)['images']): abort(404)
-    url=image_url(image.path,image.id)
+    path,active_ids=row
+    if active_ids is not None and id not in active_ids: abort(404)
+    url=image_url(path,id)
     if not url.startswith('/api/images/'):
         return redirect(url,302)
-    return send_asset(image.path,mimetype='image/png',conditional=True)
+    return send_asset(path,mimetype='image/png',conditional=True)
 
 from . import limiter
 from .client_ip import ip_key

@@ -236,7 +236,7 @@ def search():
     if len(text)<2:return jsonify(courses=[],papers=[],questions=[])
     like='%'+text+'%'
     visible_effective=db.session.query(func.coalesce(Paper.canonical_paper_id,Paper.id).label('paper_id')).filter(Paper.status!='ARCHIVED').distinct().subquery()
-    return jsonify(courses=[{'id':c.id,'name':c.name} for c in Course.query.filter(or_(Course.name.ilike(like),Course.code.ilike(like))).limit(20)],papers=paper_rows(visible_papers(Paper.query).options(*PAPER_LOAD).filter(Paper.name.ilike(like)).limit(20).all()),questions=[{'id':q.id,'text':q.text[:300],'paper_id':q.paper_id,'topic':q.topic} for q in Question.query.filter(Question.status=='AVAILABLE',Question.paper_id.in_(visible_effective),Question.text.ilike(like)).limit(20)])
+    return jsonify(courses=[{'id':c.id,'name':c.name} for c in Course.query.filter(or_(Course.name.ilike(like),Course.code.ilike(like))).limit(20)],papers=paper_rows(visible_papers(Paper.query).options(*PAPER_LOAD).filter(Paper.name.ilike(like)).limit(20).all()),questions=[{'id':q.id,'text':q.text[:300],'paper_id':q.paper_id,'topic':q.topic} for q in db.session.query(Question.id,func.substr(Question.text,1,300).label('text'),Question.paper_id,Question.topic).filter(Question.status=='AVAILABLE',Question.paper_id.in_(visible_effective),Question.text.ilike(like)).limit(20)])
 
 @api.get('/demo-papers')
 def demo_papers():

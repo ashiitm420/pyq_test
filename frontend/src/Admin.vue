@@ -1,4 +1,5 @@
 <script setup>
+import {createAdminPoller} from './adminPolling';
 import BusyFeedback from './BusyFeedback.vue';
 import './admin.css';
 import AdminOverview from './AdminOverview.vue';
@@ -50,9 +51,10 @@ function settingLabel(k){return SETTING_LABELS[k]||k.replaceAll('_',' ').replace
 
 const editingQuestion=ref(null),replacement=ref(null),questionStatus=ref('');
 const reports=ref([]),reportStatus=ref('OPEN'),reportDetail=ref(null);
-const stats=ref({}),jobs=ref([]),questions=ref([]),courses=ref([]),papers=ref([]),adminPapers=ref([]),meta=ref({terms:[],exams:[]}),course=ref(''),paper=ref(''),files=ref([]),error=ref(''),notice=ref(''),busy=ref(false),page=ref(1),total=ref(0),settings=ref({}),detail=ref(null),paperSearch=ref(''),paperStatus=ref(''),editPaper=ref(null),manageCourse=ref(''),syncFile=ref(null),syncPreview=ref(null),syncBatch=ref(null),batchLimit=ref(20),selectedChanged=ref([]),processNew=ref(true),processUnprocessed=ref(true),campaign=ref(null),diplomaResetPreview=ref(null), diplomaResetPhrase=ref(''), resetPreview=ref(null),resetPhrase=ref(''),cleanupStorage=ref(true),catalogLevel=ref('Degree'),masterPreview=ref(null),masterFile=ref(null),driveStatus=ref(null),webRunnerActive=ref(false),webRunnerStop=ref(false),newPaper=ref({name:'',term_id:'',exam_type_id:'',session:''}),newTerm=ref({kind:'term',name:'',year:2026,month:9});let timer;
+const stats=ref({}),jobs=ref([]),questions=ref([]),courses=ref([]),papers=ref([]),adminPapers=ref([]),meta=ref({terms:[],exams:[]}),course=ref(''),paper=ref(''),files=ref([]),error=ref(''),notice=ref(''),busy=ref(false),page=ref(1),total=ref(0),settings=ref({}),detail=ref(null),paperSearch=ref(''),paperStatus=ref(''),editPaper=ref(null),manageCourse=ref(''),syncFile=ref(null),syncPreview=ref(null),syncBatch=ref(null),batchLimit=ref(20),selectedChanged=ref([]),processNew=ref(true),processUnprocessed=ref(true),campaign=ref(null),diplomaResetPreview=ref(null), diplomaResetPhrase=ref(''), resetPreview=ref(null),resetPhrase=ref(''),cleanupStorage=ref(true),catalogLevel=ref('Degree'),masterPreview=ref(null),masterFile=ref(null),driveStatus=ref(null),webRunnerActive=ref(false),webRunnerStop=ref(false),newPaper=ref({name:'',term_id:'',exam_type_id:'',session:''}),newTerm=ref({kind:'term',name:'',year:2026,month:9});let poller,refreshPromise,disposed=false;
 async function run(fn){if(busy.value)return;busy.value=true;error.value='';notice.value='';try{await fn()}catch(e){error.value=e.message}finally{busy.value=false}}
-async function refresh(){if(tab.value==='Custom exam')return;stats.value=await api('/admin/stats');if(tab.value==='Content Reports'){const d=await api('/admin/content-reports?'+new URLSearchParams({status:reportStatus.value,page:page.value,limit:24}));reports.value=d.items;total.value=d.total}else if(tab.value==='Processing'){const d=await api('/admin/ingestion?page='+page.value);jobs.value=d.items;total.value=d.total}else if(tab.value==='Papers'){const d=await api('/admin/papers?'+new URLSearchParams({page:page.value,limit:24,q:paperSearch.value,status:paperStatus.value,course_id:manageCourse.value}));adminPapers.value=d.items;total.value=d.total}else if(tab.value==='Question bank'){const d=await api('/admin/questions?'+new URLSearchParams({page:page.value,paper_id:paper.value,status:questionStatus.value}));questions.value=d.items;total.value=d.total}else if(tab.value==='Settings')settings.value=await api('/admin/settings')}
+function refresh(){if(refreshPromise)return refreshPromise;refreshPromise=refreshData().finally(()=>{refreshPromise=null});return refreshPromise}
+async function refreshData(){if(tab.value==='Custom exam')return;if(['Overview','Processing'].includes(tab.value))stats.value=await api('/admin/stats');if(tab.value==='Content Reports'){const d=await api('/admin/content-reports?'+new URLSearchParams({status:reportStatus.value,page:page.value,limit:24}));reports.value=d.items;total.value=d.total}else if(tab.value==='Processing'){const d=await api('/admin/ingestion?page='+page.value);jobs.value=d.items;total.value=d.total}else if(tab.value==='Papers'){const d=await api('/admin/papers?'+new URLSearchParams({page:page.value,limit:24,q:paperSearch.value,status:paperStatus.value,course_id:manageCourse.value}));adminPapers.value=d.items;total.value=d.total}else if(tab.value==='Question bank'){const d=await api('/admin/questions?'+new URLSearchParams({page:page.value,paper_id:paper.value,status:questionStatus.value}));questions.value=d.items;total.value=d.total}else if(tab.value==='Settings')settings.value=await api('/admin/settings')}
 async function chooseTab(t){if(busy.value)return;navOpen.value=false;tab.value=t;try{localStorage.setItem('pyq-admin-tab',t)}catch{};if(t==='Overview'||t==='Content Reports'||t==='Contact Inbox')void loadBadges();page.value=1;detail.value=null;await run(async()=>{if(t!=='Custom exam'&&!courses.value.length){const c=await loadCatalog();courses.value=c.courses;meta.value=c.meta}await refresh();if(t==='Catalog Sync'){await loadCampaign();await loadResetPreview();await loadDriveStatus()}})}
 async function loadPapers(){papers.value=(await api('/papers?limit=100&course_id='+course.value)).items;paper.value=''}
 async function queue(retry=false){await run(async()=>{const d=await api('/admin/process-catalog',{method:'POST',body:{retry,limit:20}});notice.value=d.queued+' sources queued (maximum 20 this run). The worker stops after the bounded queue is exhausted.';await refresh()})}
@@ -75,6 +77,7 @@ async function runWebBatch(){
  webRunnerActive.value=true;webRunnerStop.value=false;error.value='';let consecutiveFailures=0;
  try{
   while(!webRunnerStop.value&&syncBatch.value&&!syncBatch.value.done){
+   if(document.hidden){webRunnerStop.value=true;notice.value='Processing paused while this tab is hidden. Return and resume when ready.';break}
    const beforeFailed=syncBatch.value.failed||0,beforeCompleted=syncBatch.value.completed||0;
    syncBatch.value=await api('/admin/catalog/batches/'+syncBatch.value.id+'/run-next',{method:'POST',body:{}});
    await loadCampaign();
@@ -137,7 +140,23 @@ async function restorePaper(p){await run(async()=>{await api('/admin/papers/'+p.
 async function repairJavaSources(){await run(async()=>{const preview=await api('/admin/catalog/repair-java-2025',{method:'POST',body:{apply:false}});if(!preview.count){notice.value='No known swapped Java sources remain.';return}if(preview.active_jobs)throw Error('Java papers are already processing. Finish or recover those jobs first.');if(!confirm('Repair '+preview.count+' known Java/App Dev-1 source mappings for May/Sep 2025 and queue extraction? App Dev-1 question banks stay unchanged.'))return;const d=await api('/admin/catalog/repair-java-2025',{method:'POST',body:{apply:true}});notice.value=d.queued+' Java papers queued with corrected sources. Use Processing to run this batch.';invalidateCatalog();await refreshCatalog();await refresh()})}
 async function deletePaper(p){if(!confirm('Permanently delete this catalog paper? This is allowed only when it has no linked questions, imports, attempts or progress.'))return;await run(async()=>{await api('/admin/papers/'+p.id,{method:'DELETE'});notice.value='Paper permanently deleted.';invalidateCatalog();await refreshCatalog();await refresh()})}
 async function refreshCatalog(){invalidateCatalog();const catalog=await loadCatalog();courses.value=catalog.courses;meta.value=catalog.meta;await uploadForm.value?.refreshCatalog()}
-onMounted(async()=>{if(session.user?.role!=='ADMIN'||tab.value==='Custom exam')return;void loadBadges();await run(async()=>{const catalog=await loadCatalog();courses.value=catalog.courses;meta.value=catalog.meta;await refresh();if(tab.value==='Catalog Sync'){await loadCampaign();await loadResetPreview();await loadDriveStatus()}const latest=await api('/admin/catalog/batches/latest');if(latest.batch_id){syncBatch.value={id:latest.batch_id};await refreshSyncBatch()}});timer=setInterval(()=>{if(tab.value==='Processing')refresh().catch(e=>error.value=e.message)},8000)});onUnmounted(()=>{webRunnerStop.value=true;clearInterval(timer)});
+onMounted(async()=>{
+ if(session.user?.role!=='ADMIN')return;
+ poller=createAdminPoller({refresh,shouldPoll:()=>tab.value==='Processing'&&!busy.value&&Number(stats.value.processing)>0,onError:e=>{error.value=e.message}});
+ poller.start();
+ if(tab.value==='Custom exam')return;
+ void loadBadges();
+ await run(async()=>{
+  const catalog=await loadCatalog();courses.value=catalog.courses;meta.value=catalog.meta;
+  if(disposed)return;
+  await refresh();
+  if(tab.value==='Catalog Sync'){await loadCampaign();await loadResetPreview();await loadDriveStatus()}
+  if(disposed)return;
+  const latest=await api('/admin/catalog/batches/latest');
+  if(latest.batch_id){syncBatch.value={id:latest.batch_id};await refreshSyncBatch()}
+ });
+});
+onUnmounted(()=>{disposed=true;webRunnerStop.value=true;poller?.stop()});
 async function inspectReport(r){await run(async()=>{reportDetail.value=await api('/admin/content-reports/'+r.id)})}
 async function resolveReport(r){await run(async()=>{await api('/admin/content-reports/'+r.id,{method:'PATCH',body:{status:r.status==='OPEN'?'RESOLVED':'OPEN'}});reportDetail.value=null;await refresh();notice.value='Report status updated.'})}
 async function hideAndResolveReport(r){await run(async()=>{const q=await api('/admin/questions/'+r.question_id);await api('/admin/content-reports/'+r.id,{method:'PATCH',body:{status:'RESOLVED',hide_question:true,updated_at:q.updated_at}});reportDetail.value=null;invalidateCatalog();await refresh();notice.value='Question hidden and report resolved.'})}

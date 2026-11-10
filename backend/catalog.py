@@ -211,7 +211,7 @@ def compare_scan(scan):
     ready={pid for pid, in db.session.query(Question.paper_id).filter(Question.status=='AVAILABLE').distinct()}
     matches,catalog=_match_entries(scan,ready)
     latest_ids=db.session.query(func.max(IngestionFile.id)).group_by(IngestionFile.paper_id)
-    latest={f.paper_id:f for f in IngestionFile.query.filter(IngestionFile.id.in_(latest_ids)).all()}
+    latest={f.paper_id:f for f in db.session.query(IngestionFile.paper_id,IngestionFile.status).filter(IngestionFile.id.in_(latest_ids)).all()}
     categories={'new':[],'unprocessed':[],'changed':[],'available':[],'ignored':[],'queued':[],'failed':[]}
     matched_ids=set()
     active_states={'QUEUED','FETCH_QUEUED','FETCHING','PROCESSING'}

@@ -1,4 +1,5 @@
 <script setup>
+import {createAdminPoller} from './adminPolling';
 import BusyFeedback from './BusyFeedback.vue';
 import {ref,onMounted,onUnmounted,computed} from 'vue';import {api,loadCatalog,invalidateCatalog} from './api';
 const courses=ref([]),meta=ref({exams:[],terms:[]}),form=ref({course_id:'',exam_type_id:'',term_id:'',name:''}),file=ref(null),job=ref(null),paper=ref(null),busy=ref(false),retrying=ref(false),error=ref(''),catalogLoading=ref(true);let poll;
@@ -9,9 +10,9 @@ const stage=computed(()=>busy.value?'Uploading…':failed.value?'Extraction Fail
 async function refreshCatalog(){catalogLoading.value=true;error.value='';try{const catalog=await loadCatalog();courses.value=catalog.courses;meta.value=catalog.meta}catch(e){error.value=e.message}finally{catalogLoading.value=false}}
 onMounted(refreshCatalog);
 defineExpose({refreshCatalog});
-onUnmounted(()=>clearInterval(poll));
-async function refresh(){try{const d=await api('/admin/ingestion/'+job.value.id);job.value=d.file;paper.value=d.paper;if(done.value||failed.value)clearInterval(poll)}catch(e){error.value=e.message}}
-function watchJob(){clearInterval(poll);poll=setInterval(refresh,1500);refresh()}
+onUnmounted(()=>poll?.stop());
+async function refresh(){const d=await api('/admin/ingestion/'+job.value.id);job.value=d.file;paper.value=d.paper;if(!['QUEUED','FETCH_QUEUED','FETCHING','PROCESSING'].includes(status.value))poll?.stop()}
+function watchJob(){poll?.stop();poll=createAdminPoller({refresh,interval:5000,shouldPoll:()=>!!job.value,onError:e=>{error.value=e.message}});poll.start({immediate:true})}
 async function upload(){if(busy.value)return;busy.value=true;error.value='';try{if(!file.value)throw Error('Select a PDF.');const data=new FormData();Object.entries(form.value).forEach(([k,v])=>data.append(k,v));data.append('file',file.value);const d=await api('/admin/upload-pyq',{method:'POST',form:data});job.value=d.file;paper.value=d.paper;invalidateCatalog();watchJob()}catch(e){error.value=e.message}finally{busy.value=false}}
 async function retry(){if(retrying.value)return;retrying.value=true;error.value='';try{await api('/admin/ingestion/'+job.value.id+'/retry',{method:'POST'});watchJob()}catch(e){error.value=e.message}finally{retrying.value=false}}
 </script>

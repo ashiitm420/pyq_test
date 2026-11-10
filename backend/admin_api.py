@@ -279,7 +279,7 @@ def catalog_campaign():
 @admin.post('/catalog/campaign/process')
 @require_user(True)
 def process_campaign_group():
-    from .library_campaign import campaign,group_papers
+    from .library_campaign import _campaign as campaign,group_papers
     from .acquisition import queue_catalog
     payload=body();overview=campaign(payload.get('level')); current=overview.get('current')
     if not current:abort(409,description='The catalog campaign is already complete.')
@@ -298,7 +298,7 @@ def process_campaign_group():
 @admin.post('/catalog/campaign/retry-failed')
 @require_user(True)
 def retry_campaign_failed():
-    from .library_campaign import campaign,group_papers
+    from .library_campaign import _campaign as campaign,group_papers
     from .acquisition import queue_catalog
     payload=body();current=campaign(payload.get('level')).get('retry_target')
     if not current:abort(409,description='There are no failed campaign papers to retry.')

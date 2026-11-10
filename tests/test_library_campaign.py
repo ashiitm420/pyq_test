@@ -232,3 +232,31 @@ def test_diploma_reset_blocks_shared_bank_and_running_import(app,client):
     db.session.commit()
     assert client.post(endpoint,headers=h,json={'confirmation':'RESET DIPLOMA'}).status_code==409
     assert Paper.query.count()==6
+
+
+def test_campaign_cache_uses_slim_queries_and_invalidates_on_processing_change(app,client):
+    from sqlalchemy import event
+    from backend.content_cache import invalidate
+    h=login(client,True)
+    post_xlsx(client,'/api/admin/catalog/refresh',h,workbook())
+    p=Paper.query.first()
+    batch=IngestionBatch(user_id=User.query.filter_by(role='ADMIN').first().id)
+    db.session.add(batch);db.session.flush()
+    job=IngestionFile(batch_id=batch.id,paper_id=p.id,filename='paper.pdf',status='FETCH_QUEUED',events=[{'message':'x'*10000}])
+    db.session.add(job);db.session.commit();invalidate()
+    statements=[]
+    def capture(conn,cursor,statement,parameters,context,executemany):statements.append(statement)
+    event.listen(db.engine,'before_cursor_execute',capture)
+    try:
+        first=client.get('/api/admin/catalog/campaign?level=Diploma',headers=h)
+        assert first.status_code==200 and first.json['queued']==1
+        reads=[s.lower() for s in statements if s.lstrip().lower().startswith('select')]
+        assert not any('ingestion_file.events' in s or 'paper.source_metadata' in s for s in reads)
+        statements.clear()
+        assert client.get('/api/admin/catalog/campaign?level=Diploma',headers=h).json==first.json
+        assert not any('from paper' in s.lower() or 'from ingestion_file' in s.lower() for s in statements)
+        job=db.session.get(IngestionFile,job.id);job.status='PROCESSING_FAILED';db.session.commit()
+        updated=client.get('/api/admin/catalog/campaign?level=Diploma',headers=h).json
+        assert updated['failed']==1 and updated['queued']==0
+        assert client.get('/api/admin/catalog/campaign?level=Degree',headers=h).json['total']==0
+    finally:event.remove(db.engine,'before_cursor_execute',capture)

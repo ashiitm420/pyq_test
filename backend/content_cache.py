@@ -9,9 +9,10 @@ from .performance import count
 CONTENT_TABLES = {'course', 'term', 'exam_type', 'paper', 'question', 'question_option',
                   'question_image', 'ingestion_file', 'ai_solution'}
 
-CACHE_SCOPES = ('catalog', 'snapshots', 'solutions', 'other')
+CACHE_SCOPES = ('catalog', 'snapshots', 'solutions', 'other', 'admin')
 
 def _scope(key):
+    if key.startswith('admin-campaign:'):return 'admin'
     if key.startswith('paper:'):return 'snapshots'
     if key.startswith(('paper-published-solutions:', 'admin-solution-summary:')):return 'solutions'
     if key == 'site-feedback':return 'other'
@@ -20,7 +21,7 @@ def _scope(key):
 def _changed_scopes(table):
     # Import progress does not change questions. Source-entry bookkeeping is
     # not read by public caches; changes to actual Paper rows still invalidate.
-    if table == 'ingestion_file':return {'catalog'}
+    if table == 'ingestion_file':return {'catalog', 'admin'}
     if table == 'ai_solution':return {'catalog', 'solutions'}
     return set(CACHE_SCOPES) if table in CONTENT_TABLES else set()
 
@@ -67,6 +68,10 @@ def _local_limit():
     return max(8, int(current_app.config.get('LOCAL_CONTENT_CACHE_MAX', 128)))
 
 
+def _ttl(key):
+    ttl=_local_ttl()
+    return min(ttl,15) if _scope(key)=='admin' else ttl
+
 def _local_ttl():
     return max(1, int(current_app.config.get('CONTENT_CACHE_TTL', 60)))
 
@@ -93,7 +98,7 @@ def _local_put(key,value):
             if expires<=now:_local_drop(old)
         _local_drop(key)
         if not budget or size>budget:return
-        _local_cache[key]=(time.monotonic()+_local_ttl(),value)
+        _local_cache[key]=(time.monotonic()+_ttl(key),value)
         _local_sizes[key]=size;_local_bytes+=size
         _local_cache.move_to_end(key)
         while len(_local_cache)>_local_limit() or _local_bytes>budget:
@@ -220,7 +225,7 @@ def cached(key, loader):
         if acquired:
             try:
                 if r.get(epoch_key) == epoch:
-                    r.set(full, json.dumps(value), ex=current_app.config.get('CONTENT_CACHE_TTL', 60))
+                    r.set(full, json.dumps(value), ex=_ttl(key))
             except Exception:count('cache_error')
         _local_put(key,value)
         return value
@@ -239,6 +244,7 @@ def changed(session, context, instances):
             # Only download availability depends on this row. Status, retry
             # counters and extraction events are admin bookkeeping.
             state=inspect(obj)
+            if state.attrs.status.history.has_changes():scopes.add('admin')
             if not any(state.attrs[name].history.has_changes() for name in ('path','paper_id')):continue
         scopes.update(_changed_scopes(table))
     if scopes:session.info.setdefault('content_changed',set()).update(scopes)

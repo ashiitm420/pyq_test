@@ -2,11 +2,11 @@
 import time
 from collections import defaultdict
 from sqlalchemy import func,or_
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload,load_only
 from flask import current_app
 from .models import *
 from .storage import project_prefix_inventory,purge_project_prefix,StorageError
-from .content_cache import invalidate
+from .content_cache import invalidate,cached
 
 SUCCESS={'AVAILABLE','PARTIAL','DUPLICATE'}
 FAILED={'PROCESSING_FAILED','EXTRACTION_FAILED'}
@@ -152,11 +152,17 @@ def _paper_state(p,ready,latest):
     return 'pending'
 
 def campaign(level=None):
-    papers=Paper.query.options(joinedload(Paper.exam_type),joinedload(Paper.term),joinedload(Paper.course)).filter(Paper.source_url.isnot(None)).all()
-    if level:papers=[p for p in papers if p.course.level==level]
+    # Existing bounded cache and content-change invalidation; never cache ORM rows.
+    return cached('admin-campaign:'+str(level or 'all'),lambda:_campaign(level))
+
+def _campaign(level=None):
+    query=Paper.query.options(load_only(Paper.id,Paper.canonical_paper_id,Paper.status,Paper.session),joinedload(Paper.exam_type).load_only(ExamType.name),joinedload(Paper.term).load_only(Term.name,Term.year,Term.month))\
+        .filter(Paper.source_url.isnot(None))
+    if level:query=query.join(Course).filter(Course.level==level)
+    papers=query.all()
     ready={pid for pid, in db.session.query(Question.paper_id).filter(Question.status=='AVAILABLE').distinct()}
     latest_ids=db.session.query(func.max(IngestionFile.id)).group_by(IngestionFile.paper_id)
-    latest={f.paper_id:f for f in IngestionFile.query.filter(IngestionFile.id.in_(latest_ids)).all()}
+    latest={f.paper_id:f for f in db.session.query(IngestionFile.paper_id,IngestionFile.status).filter(IngestionFile.id.in_(latest_ids)).all()}
     grouped={}
     totals=defaultdict(int)
     for p in papers:
@@ -178,9 +184,10 @@ def campaign(level=None):
             'percent':round((ready_count/total)*100,1) if total else 0,'groups':rows,'current':current,'retry_target':retry_target}
 
 def group_papers(stage,term_id,state='pending',level=None):
-    papers=Paper.query.options(joinedload(Paper.exam_type),joinedload(Paper.term)).filter_by(term_id=term_id).filter(Paper.source_url.isnot(None)).order_by(Paper.id).all()
-    if level:papers=[p for p in papers if p.course.level==level]
+    query=Paper.query.options(joinedload(Paper.exam_type),joinedload(Paper.term)).filter_by(term_id=term_id).filter(Paper.source_url.isnot(None))
+    if level:query=query.join(Course).filter(Course.level==level)
+    papers=query.order_by(Paper.id).all()
     ready={pid for pid, in db.session.query(Question.paper_id).filter(Question.status=='AVAILABLE').distinct()}
     latest_ids=db.session.query(func.max(IngestionFile.id)).group_by(IngestionFile.paper_id)
-    latest={f.paper_id:f for f in IngestionFile.query.filter(IngestionFile.id.in_(latest_ids)).all()}
+    latest={f.paper_id:f for f in db.session.query(IngestionFile.paper_id,IngestionFile.status).filter(IngestionFile.id.in_(latest_ids)).all()}
     return [p for p in papers if _stage(p)[0]==stage and _paper_state(p,ready,latest)==state]

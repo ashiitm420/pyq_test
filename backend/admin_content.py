@@ -17,7 +17,8 @@ def refresh_paper(q):
     if p.status!='ARCHIVED':
         available=Question.query.filter_by(paper_id=p.id,status='AVAILABLE').count()
         failed=Question.query.filter_by(paper_id=p.id,status='EXTRACTION_FAILED').count()
-        p.status=('PARTIALLY_AVAILABLE' if failed else 'AVAILABLE') if available else 'EXTRACTION_FAILED'
+        status=('PARTIALLY_AVAILABLE' if failed else 'AVAILABLE') if available else 'EXTRACTION_FAILED'
+        if p.status!=status:p.status=status
     return p
 
 def audit(q,before,action):
@@ -37,6 +38,8 @@ def apply(q,data):
     q.evidence={**(q.evidence or {}),'_admin_locked':True,'_active_image_ids':[i['id'] for i in data['images']]}
 
 def register_content_routes(admin):
+    from .admin_append import register_append_routes
+    register_append_routes(admin)
     from .admin_api import admin_question,file_json
     @admin.get('/questions/<int:id>')
     @require_user(True)

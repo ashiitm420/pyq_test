@@ -9,12 +9,13 @@ from .performance import count
 CONTENT_TABLES = {'course', 'term', 'exam_type', 'paper', 'question', 'question_option',
                   'question_image', 'ingestion_file', 'ai_solution'}
 
-CACHE_SCOPES = ('catalog', 'snapshots', 'solutions', 'other', 'admin')
+CACHE_SCOPES = ('catalog', 'snapshots', 'solutions', 'other', 'admin', 'admin-solutions')
 
 def _scope(key):
     if key.startswith('admin-campaign:'):return 'admin'
+    if key.startswith('admin-solution-summary:'):return 'admin-solutions'
     if key.startswith('paper:'):return 'snapshots'
-    if key.startswith(('paper-published-solutions:', 'admin-solution-summary:')):return 'solutions'
+    if key.startswith('paper-published-solutions:'):return 'solutions'
     if key == 'site-feedback':return 'other'
     return 'catalog'
 
@@ -22,7 +23,7 @@ def _changed_scopes(table):
     # Import progress does not change questions. Source-entry bookkeeping is
     # not read by public caches; changes to actual Paper rows still invalidate.
     if table == 'ingestion_file':return {'catalog', 'admin'}
-    if table == 'ai_solution':return {'catalog', 'solutions'}
+    if table == 'ai_solution':return {'catalog', 'solutions', 'admin-solutions'}
     return set(CACHE_SCOPES) if table in CONTENT_TABLES else set()
 
 # A small per-process fallback matters on Render even before Redis is provisioned:
@@ -70,7 +71,7 @@ def _local_limit():
 
 def _ttl(key):
     ttl=_local_ttl()
-    return min(ttl,15) if _scope(key)=='admin' else ttl
+    return min(ttl,15) if _scope(key) in ('admin','admin-solutions') else ttl
 
 def _local_ttl():
     return max(1, int(current_app.config.get('CONTENT_CACHE_TTL', 60)))
@@ -181,11 +182,14 @@ def forget(key):
     Used for data outside CONTENT_TABLES (for example site feedback), so a
     single public post never forces every paper/course entry to be rebuilt.
     """
+    global _local_generation
     with _local_lock:
         _local_drop(key)
+        _local_generation+=1
     try:
         r = client()
         if r is not None:
+            r.set(prefix()+':forgot:'+key,uuid.uuid4().hex,ex=max(60,_ttl(key)))
             epoch = r.get(prefix()+':epoch:'+_scope(key))
             if epoch:
                 r.delete(prefix()+':'+str(epoch)+':'+key)
@@ -193,6 +197,7 @@ def forget(key):
         current_app.logger.warning('content_cache_forget_failed; entry expires within configured TTL')
 
 def cached(key, loader):
+    with _local_lock:generation=_local_generation
     lock = None
     acquired = False
     try:
@@ -205,6 +210,8 @@ def cached(key, loader):
         r.set(epoch_key, uuid.uuid4().hex, nx=True)
         epoch = r.get(epoch_key)
         full = prefix()+':'+str(epoch)+':'+key
+        forgot_key=prefix()+':forgot:'+key
+        forgot=r.get(forgot_key) or ''
         raw = r.get(full)
         if raw is not None:
             count('cache_hit');return json.loads(raw)
@@ -222,12 +229,13 @@ def cached(key, loader):
         count('cache_error');return _local_cached(key,loader)
     try:
         value = loader()  # Application exceptions propagate; no duplicate execution.
+        stored=False
         if acquired:
             try:
-                if r.get(epoch_key) == epoch:
-                    r.set(full, json.dumps(value), ex=_ttl(key))
+                stored=bool(r.eval("if redis.call('get',KEYS[1])==ARGV[1] and (redis.call('get',KEYS[2]) or '')==ARGV[2] then return redis.call('set',KEYS[3],ARGV[3],'EX',ARGV[4]) end return 0",3,epoch_key,forgot_key,full,epoch,forgot,json.dumps(value),_ttl(key)))
             except Exception:count('cache_error')
-        _local_put(key,value)
+        with _local_lock:
+            if stored and generation==_local_generation:_local_put(key,value)
         return value
     finally:
         if acquired:
@@ -235,11 +243,78 @@ def cached(key, loader):
             except Exception:pass
 
 
+PAPER_LEVEL_TABLES = {'question', 'question_option', 'question_image', 'ai_solution'}
+
+
+def paper_keys(paper_id):
+    return ('paper:'+str(paper_id)+':snapshots:msq-proportional-v1',
+            'paper-published-solutions:'+str(paper_id))
+
+
+def _question_paper_ids(session, question_id, paper_map):
+    from .models import Question
+    if question_id is None:return None
+    if question_id in paper_map:
+        return {paper_map[question_id]} if paper_map[question_id] is not None else set()
+    with session.no_autoflush:
+        pid = session.query(Question.paper_id).filter(Question.id == question_id).scalar()
+    return {pid} if pid is not None else set()
+
+
+def _changed_paper_ids(session, obj, table, paper_map):
+    """Paper ids a question-level row belongs to (old and new), or None when
+    they cannot be known safely (then the whole scope is invalidated)."""
+    state = inspect(obj)
+    if table == 'question':
+        hist = state.attrs.paper_id.history
+        ids = {v for v in (*hist.added, *hist.unchanged, *hist.deleted) if v is not None}
+        if state.persistent and ((hist.has_changes() and not hist.deleted) or (not ids and 'paper_id' in state.unloaded)):
+            with session.no_autoflush:
+                pid = session.query(type(obj).paper_id).filter(type(obj).id == state.identity[0]).scalar()
+            ids |= {pid} if pid is not None else set()
+        return ids or None
+    question = state.dict.get('question')
+    related_ids={question.paper_id} if question is not None and getattr(question,'paper_id',None) is not None else set()
+    hist = state.attrs.question_id.history
+    qids = {v for v in (*hist.added, *hist.unchanged, *hist.deleted) if v is not None}
+    if state.persistent and ((hist.has_changes() and not hist.deleted) or (not qids and 'question_id' in state.unloaded)):
+        with session.no_autoflush:
+            qid = session.query(type(obj).question_id).filter(type(obj).id == state.identity[0]).scalar()
+        qids |= {qid} if qid is not None else set()
+    if not qids:
+        # A new child attached through its parent's collection: the parent
+        # question is in this flush and supplies the paper id.
+        return related_ids if related_ids or obj in session.new else None
+    ids = related_ids
+    for qid in qids:
+        found = _question_paper_ids(session, qid, paper_map)
+        if found is None:return None
+        ids |= found
+    return ids
+
+
 @event.listens_for(Session, 'before_flush')
 def changed(session, context, instances):
-    scopes=set()
-    for obj in session.new.union(session.dirty).union(session.deleted):
+    scopes=set();papers=set()
+    objects=session.new.union(session.dirty).union(session.deleted)
+    # Resolve all known child foreign keys in one slim SELECT per flush, not
+    # one database round trip per published solution/option/image.
+    qids=set()
+    for obj in objects:
+        if getattr(obj,'__tablename__','') in PAPER_LEVEL_TABLES-{'question'}:
+            hist=inspect(obj).attrs.question_id.history
+            qids.update(v for v in (*hist.added,*hist.unchanged,*hist.deleted) if v is not None)
+    from .models import Question
+    with session.no_autoflush:
+        paper_map=dict(session.query(Question.id,Question.paper_id).filter(Question.id.in_(qids)).all()) if qids else {}
+    for obj in objects:
         table=getattr(obj, '__tablename__', '')
+        if table in PAPER_LEVEL_TABLES:
+            ids=_changed_paper_ids(session,obj,table,paper_map)
+            if ids is not None:
+                papers |= ids
+                scopes.update({'catalog','admin','admin-solutions'})
+                continue
         if table=='ingestion_file' and obj in session.dirty:
             # Only download availability depends on this row. Status, retry
             # counters and extraction events are admin bookkeeping.
@@ -248,6 +323,7 @@ def changed(session, context, instances):
             if not any(state.attrs[name].history.has_changes() for name in ('path','paper_id')):continue
         scopes.update(_changed_scopes(table))
     if scopes:session.info.setdefault('content_changed',set()).update(scopes)
+    if papers:session.info.setdefault('content_papers',set()).update(papers)
 
 
 @event.listens_for(Session, 'do_orm_execute')
@@ -263,11 +339,15 @@ def committed(session):
     if session.in_nested_transaction():
         return
     scopes=session.info.pop('content_changed', None)
-    if scopes and has_app_context():
-        invalidate(scopes)
+    papers=session.info.pop('content_papers',None)
+    if not has_app_context():return
+    if scopes:invalidate(scopes)
+    for pid in papers or ():
+        for key in paper_keys(pid):forget(key)
 
 
 @event.listens_for(Session, 'after_soft_rollback')
 def rolled_back(session, previous):
     if previous.parent is None:
         session.info.pop('content_changed', None)
+        session.info.pop('content_papers', None)

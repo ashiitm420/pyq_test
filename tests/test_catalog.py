@@ -8,9 +8,9 @@ def test_import_real_workbook_idempotent(app):
     first=import_workbook(WORKBOOK); count=Paper.query.count()
     assert Course.query.count()==39
     assert Term.query.count()==13
-    assert first['linked_cells']==722
+    assert first['linked_cells']==715
     assert Paper.query.join(Term).filter(Term.name=='Sep 2026').count()==0
-    assert Paper.query.join(ExamType).filter(ExamType.name=='OPPE 1').count()>0
+    assert Paper.query.join(ExamType).filter(ExamType.name.ilike('%OPPE%')).count()==0
     assert Course.query.filter_by(name='Operating Systems').count()==0
     assert Paper.query.filter(Paper.variant!='').count()>0
     second=import_workbook(WORKBOOK)
@@ -39,8 +39,8 @@ def test_shifted_headers_and_placeholders(app,tmp_path):
             if c.hyperlink: c.hyperlink.ref=c.coordinate
     p=tmp_path/'shifted.xlsx';w.save(p)
     report=import_workbook(p)
-    assert report['linked_cells']==722
-    assert report['terms']['May 2026']==85
+    assert report['linked_cells']==715
+    assert report['terms']['May 2026']==77
     assert not Paper.query.filter(Paper.name.in_(['No OPPE','No Quiz 1','Only 1 QP'])).first()
     assert len(report['issues'])>=4
 
@@ -55,9 +55,9 @@ def test_catalog_lookup_queries_are_bounded(app):
         first=import_workbook(WORKBOOK)
         second=import_workbook(WORKBOOK)
     finally:event.remove(db.engine,'before_cursor_execute',capture)
-    assert first['new_papers']==734 and second['new_papers']==0
+    assert first['new_papers']==726 and second['new_papers']==0
     assert len(statements)<=12, 'Catalog lookups must not grow with workbook cells'
-    assert SourceEntry.query.count()==734
+    assert SourceEntry.query.count()==726
 
 
 def test_numeric_catalog_filters_validate_types(client,app):

@@ -79,7 +79,7 @@ def scan_workbook(path,level=None):
         if not rownum:
             report['issues'].append({'sheet':sheet.title,'warning':'Header not recognized'});continue
         report['terms'][sheet.title]=0
-        examcols={k:v for k,v in cols.items() if k in ('quiz 1','quiz 2') or k.startswith(('fn ','an ','oppe'))}
+        examcols={k:v for k,v in cols.items() if k in ('quiz 1','quiz 2') or k.startswith(('fn ','an '))}
         for row in sheet.iter_rows(min_row=rownum+1):
             course_name=norm(row[cols['course name']-1].value)
             if not course_name:continue
@@ -115,18 +115,15 @@ def scan_workbook(path,level=None):
                     continue
                 if urlparse(url).scheme not in ('http','https'):continue
                 report['linked_cells']+=1
-                parts=[norm(p) for p in re.split(r'[,;]|\n(?=.*(?:QP\d|NPPE|OPPE))',value) if norm(p)] or [cell.coordinate]
+                parts=[norm(p) for p in re.split(r'[,;]|\n(?=.*(?:QP\d|NPPE))',value) if norm(p)] or [cell.coordinate]
                 for label in parts:
+                    if re.search(r'\bN?OPPE[\s_-]*\d*\b',label,re.I):continue
                     warnings=[]
                     if len(parts)>1:warnings.append('Multiple named papers share one cell hyperlink; source mapping requires review')
                     session='FN' if header.startswith('fn ') else 'AN' if header.startswith('an ') else ''
                     if session:examname='End Term'
                     elif header in ('quiz 1','quiz 2'):examname=header.title()
-                    elif re.search('project',label,re.I):examname='Project'
-                    else:
-                        practical=re.search(r'(N?OPPE|NPPE)[\s_-]*(\d+)',label,re.I)
-                        if practical:examname=practical[1].upper()+' '+practical[2]
-                        else:examname='Practical assessment';warnings.append('Assessment type requires review')
+                    else:continue
                     entry_code=code
                     filename_code=re.match(r'(?i)^(?:BS)?([A-Z]{2}\d{4})_',label)
                     confirmed_code=code_aliases.get(code_key(filename_code[1])) if filename_code else None

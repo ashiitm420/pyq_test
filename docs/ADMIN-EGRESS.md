@@ -20,3 +20,23 @@ Historical query counters and billed egress are different metrics. Do not claim 
 monthly GB or CPU percentage reduction from polling intervals alone. Compare
 subsequent dashboard egress under similar traffic and admin usage. Existing egress
 is not reversed by this deployment.
+
+## Paper reads and invalidation
+
+Student snapshots and solution-summary version checks select only the five
+evidence keys used by the snapshot builder. Debug evidence remains stored in the
+database and available to editors. A separate read-only ORM identity map shares
+the request connection, so partial evidence cannot overwrite full editor data or
+consume an additional database pool slot. Options and images are select-in loaded
+to avoid multiplying question text/evidence across option-image combinations.
+
+Normal question/option/image/solution ORM edits evict the affected paper keys.
+Old and new paper ownership are included for moves. Unknown ownership and bulk
+SQL changes fall back to broader invalidation. Compact admin summaries retain
+their separate 15-second TTL and ingestion-status invalidation. Redis cache writes
+atomically verify scope and per-key invalidation tokens; local fills are fenced
+against changes during a load. Cache memory limits are unchanged.
+
+OPPE remains an external new-tab homepage link only. Workbook OPPE columns are
+not imported; no internal runner/routes are provided. Historical database tables
+not represented by the application models are not dropped by this release.

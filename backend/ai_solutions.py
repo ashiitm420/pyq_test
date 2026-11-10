@@ -3,7 +3,7 @@ import hashlib,json,secrets,time
 from flask import Blueprint,jsonify,request,abort,send_file
 from sqlalchemy import func
 from sqlalchemy.orm import selectinload
-from .models import db,Question,Paper,AISolution,SolutionBatch,SolutionJob,Attempt,AttemptAnswer,IngestionFile,Course,Term
+from .models import db,Question,QuestionOption,QuestionImage,Paper,AISolution,SolutionBatch,SolutionJob,Attempt,AttemptAnswer,IngestionFile,Course,Term
 from .api import require_user,require_visitor,body,integer_argument
 from .engine import question_snapshot,grade
 from .exam_api import owned,question_with_image_urls,prepare_image_paths,use_paper_image_delivery
@@ -88,15 +88,21 @@ def _solution_summary_data():
         # Full solution text/final answers/checks are unnecessary for counts.
         # Streaming preserves exact version checks without retaining the entire
         # solved question library and its eager-loaded children in one request.
-        rows=db.session.query(Question,AISolution.version,AISolution.status).join(AISolution,AISolution.question_id==Question.id).filter(Question.status=='AVAILABLE',Question.paper_id.in_(papers)).options(selectinload(Question.options),selectinload(Question.images)).yield_per(500)
-        for q,solution_version,solution_status in rows:
-            p=papers[q.paper_id]
-            if solution_version!=version(snapshot(q)):
-                p['outdated']+=1
-                continue
-            p['uploaded']+=1
-            if solution_status=='PUBLISHED':p['published']+=1
-            else:p['review']+=1
+        # Only the columns and evidence keys a version hash reads are fetched:
+        # summary refreshes after publishing, so extraction diagnostics
+        # should not be transferred just to calculate version-aware counts.
+        from .paper_content import slim_session,slim_question_query,apply_slim_evidence
+        with slim_session() as session:
+            rows=slim_question_query(session,AISolution.version,AISolution.status).join(AISolution,AISolution.question_id==Question.id).filter(Question.status=='AVAILABLE',Question.paper_id.in_(list(papers))).options(selectinload(Question.options).load_only(QuestionOption.key,QuestionOption.text,QuestionOption.position),selectinload(Question.images).load_only(QuestionImage.id,QuestionImage.path,QuestionImage.alt,QuestionImage.option_key)).yield_per(500)
+            for q,solution_version,solution_status,*evidence in rows:
+                p=papers[q.paper_id]
+                apply_slim_evidence(q,evidence)
+                if solution_version!=version(snapshot(q)):
+                    p['outdated']+=1
+                    continue
+                p['uploaded']+=1
+                if solution_status=='PUBLISHED':p['published']+=1
+                else:p['review']+=1
     values=list(papers.values())
     for p in values:
         p['missing']=p['questions']-p['uploaded']

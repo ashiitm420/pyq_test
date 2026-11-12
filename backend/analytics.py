@@ -85,7 +85,7 @@ def record(attempt,automatic=False,post_commit=False):
         values={k:e[k] for k in ('paper_key','paper_name','course_key','course_name','device','browser_key','initial_mode')}
         values['exam_name']=e.get('exam_name')
         is_submitted=attempt.submitted_at is not None
-        values['score_percent']=(attempt.result or {}).get('percentage') if is_submitted and attempt.mode=='exam' else None
+        values['score_percent']=(attempt.result or {}).get('percentage') if is_submitted and attempt.mode=='exam' and not (attempt.result or {}).get('partial_score') else None
         values.update(key=event_key(attempt),started_at=attempt.started_at,start_day=day(attempt.started_at),
                       expires_at=attempt.expires_at,automatic=automatic,
                       completed_at=attempt.submitted_at,completion_mode=('assisted_exam' if e.get('assisted') and attempt.mode=='exam' else attempt.mode) if is_submitted else None)

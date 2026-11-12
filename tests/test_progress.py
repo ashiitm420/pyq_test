@@ -94,7 +94,8 @@ def test_practice_mode_switch_and_unknown_percentage(client):
     assert PaperProgress.query.count()==0
     q=Question.query.first();q.answers=None;q.answer_status='ANSWER_UNAVAILABLE';db.session.commit()
     result=take(client,h,p,10)
-    assert result['result']['percentage'] is None
+    assert result['result']['percentage']==100
+    assert result['result']['total_marks']==9 and result['result']['excluded_from_score']==1
     assert PaperProgress.query.count()==0
 
 def test_concurrent_upserts_keep_one_latest_row(app):

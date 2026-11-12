@@ -21,8 +21,9 @@ def refresh_paper(q):
         if p.status!=status:p.status=status
     return p
 
-def audit(q,before,action):
-    q.updated_at=time.time();db.session.add(QuestionReview(question_id=q.id,user_id=g.user.id,action=action,before=before,after=state(q)));refresh_paper(q)
+def audit(q,before,action,refresh=True):
+    q.updated_at=time.time();db.session.add(QuestionReview(question_id=q.id,user_id=g.user.id,action=action,before=before,after=state(q)))
+    if refresh:refresh_paper(q)
 
 def conflict(q,payload):
     db.session.execute(db.select(Paper).filter_by(id=q.paper_id).with_for_update()).scalar_one()
@@ -37,9 +38,45 @@ def apply(q,data):
     q.options=[QuestionOption(key=o['key'],text=o['text'],position=n) for n,o in enumerate(data['options'])]
     q.evidence={**(q.evidence or {}),'_admin_locked':True,'_active_image_ids':[i['id'] for i in data['images']]}
 
+def validated_edit(q,b):
+    before=state(q);data=state(q)
+    for key in ('kind','text','answers','explanation','marks','negative_marks','tolerance','topic'):
+        if key in b:data[key]=b[key]
+    for key in ('text','explanation','topic'):
+        v=data.get(key)
+        if (key=='text' and not isinstance(v,str)) or (v is not None and (not isinstance(v,str) or len(v)>(20000 if key!='topic' else 150))):abort(400,description='Invalid '+key)
+    passage=b.get('passage',question_snapshot(q).get('passage'))
+    if passage is not None and (not isinstance(passage,str) or len(passage)>20000):abort(400,description='Invalid passage')
+    data['evidence']={**data['evidence'],'shared_passage_text':passage or None,'subquestion_text':data['text'] if passage else None,'_admin_locked':True}
+    options=b.get('options',data['options'])
+    if not isinstance(options,list) or len(options)>20 or any(not isinstance(o,dict) or not isinstance(o.get('key'),str) or not 1<=len(o['key'])<=20 or not isinstance(o.get('text'),str) or not o['text'].strip() or len(o['text'])>10000 for o in options):abort(400,description='Invalid options')
+    data['options']=[{'key':o['key'],'text':o['text']} for o in options]
+    if len({o['key'] for o in options})!=len(options):abort(400,description='Option keys must be unique')
+    for key in ('marks','negative_marks','tolerance'):
+        v=data[key]
+        if v is not None and (type(v) not in (int,float) or not math.isfinite(v) or v<0):abort(400,description='Invalid '+key)
+    data['answer_status']='ANSWER_AVAILABLE' if data['answers'] is not None else 'ANSWER_UNAVAILABLE'
+    data['status']='HIDDEN' if q.status=='HIDDEN' else 'AVAILABLE'
+    if q.status=='HIDDEN':data['evidence']['_admin_previous_status']='AVAILABLE'
+    try:validate_question(data)
+    except (ValueError,TypeError,KeyError) as exc:abort(400,description=str(exc))
+    # A range/alternative NAT key must use the same validator as text input.
+    if data['kind']=='NAT' and isinstance(data['answers'],dict) and data['answers']!=before['answers']:
+        from .numeric import parse_numeric_key
+        try:
+            if parse_numeric_key(data['answers'].get('raw',''))!=data['answers']:raise ValueError()
+        except (ValueError,TypeError,KeyError):abort(400,description='Use a numeric NAT answer or a valid source range key.')
+    keep=b.get('image_ids',[i['id'] for i in data['images']])
+    valid={i.id for i in q.images}
+    if not isinstance(keep,list) or any(type(i)!=int or i not in valid for i in keep):abort(400,description='Invalid image selection')
+    data['images']=[{'id':i.id} for i in q.images if i.id in keep]
+    return data
+
 def register_content_routes(admin):
     from .admin_append import register_append_routes
     register_append_routes(admin)
+    from .admin_paper_editor import register_paper_editor
+    register_paper_editor(admin)
     from .admin_api import admin_question,file_json
     @admin.get('/questions/<int:id>')
     @require_user(True)
@@ -52,37 +89,8 @@ def register_content_routes(admin):
     def edit_question(id):
         q=db.session.execute(db.select(Question).filter_by(id=id).with_for_update()).scalar_one_or_none()
         if q is None:abort(404)
-        b=body();conflict(q,b);before=state(q);data=state(q)
-        for key in ('kind','text','answers','explanation','marks','negative_marks','tolerance','topic'):
-            if key in b:data[key]=b[key]
-        for key in ('text','explanation','topic'):
-            v=data.get(key)
-            if v is not None and (not isinstance(v,str) or len(v)>(20000 if key!='topic' else 150)):abort(400,description='Invalid '+key)
-        passage=b.get('passage',question_snapshot(q).get('passage'))
-        if passage is not None and (not isinstance(passage,str) or len(passage)>20000):abort(400,description='Invalid passage')
-        data['evidence']={**data['evidence'],'shared_passage_text':passage or None,'subquestion_text':data['text'] if passage else None,'_admin_locked':True}
-        options=b.get('options',data['options'])
-        if not isinstance(options,list) or len(options)>20 or any(not isinstance(o,dict) or not isinstance(o.get('key'),str) or not 1<=len(o['key'])<=20 or not isinstance(o.get('text'),str) or not o['text'].strip() or len(o['text'])>10000 for o in options):abort(400,description='Invalid options')
-        data['options']=[{'key':o['key'],'text':o['text']} for o in options]
-        if len({o['key'] for o in options})!=len(options):abort(400,description='Option keys must be unique')
-        for key in ('marks','negative_marks','tolerance'):
-            v=data[key]
-            if v is not None and (type(v) not in (int,float) or not math.isfinite(v) or v<0):abort(400,description='Invalid '+key)
-        data['answer_status']='ANSWER_AVAILABLE' if data['answers'] is not None else 'ANSWER_UNAVAILABLE'
-        data['status']='HIDDEN' if q.status=='HIDDEN' else 'AVAILABLE'
-        if q.status=='HIDDEN':data['evidence']['_admin_previous_status']='AVAILABLE'
-        try:validate_question(data)
-        except (ValueError,TypeError,KeyError) as exc:abort(400,description=str(exc))
-        # A range/alternative NAT key must use the same validator as text input.
-        if data['kind']=='NAT' and isinstance(data['answers'],dict) and data['answers']!=before['answers']:
-            from .numeric import parse_numeric_key
-            try:
-                if parse_numeric_key(data['answers'].get('raw',''))!=data['answers']:raise ValueError()
-            except (ValueError,TypeError,KeyError):abort(400,description='Use a numeric NAT answer or a valid source range key.')
-        keep=b.get('image_ids',[i['id'] for i in data['images']])
-        valid={i.id for i in q.images}
-        if not isinstance(keep,list) or any(type(i)!=int or i not in valid for i in keep):abort(400,description='Invalid image selection')
-        data['images']=[{'id':i.id} for i in q.images if i.id in keep]
+        b=body();conflict(q,b);before=state(q)
+        data=validated_edit(q,b)
         report=None
         if b.get('resolve_report_id') is not None:
             if type(b['resolve_report_id']) is not int:abort(400,description='Invalid report id')

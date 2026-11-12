@@ -8,7 +8,7 @@ export function saveResult(attempt){
  const rows=read(PROGRESS),old=rows[String(attempt.paper_id)],time=attempt.submitted_at;
  if(old&&old.last_attempted_at>time)return;
  const parts=(attempt.title||'').replace(/^(?:(?:Assisted timed continuation|Practice continuation) · )+/,'').split(' · ');
- rows[String(attempt.paper_id)]={paper_id:attempt.paper_id,attempted:true,last_score:attempt.result.percentage,last_attempted_at:time,course:parts[0]||'',exam:parts[1]||'',term:parts[2]||'',name:parts[3]||attempt.title};
+ rows[String(attempt.paper_id)]={paper_id:attempt.paper_id,attempted:true,last_score:attempt.result.partial_score?null:attempt.result.percentage,last_attempted_at:time,course:parts[0]||'',exam:parts[1]||'',term:parts[2]||'',name:parts[3]||attempt.title};
  write(PROGRESS,rows);
 }
 // Signed image links expire, so bookmarks keep only the image identity. When a

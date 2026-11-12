@@ -75,16 +75,17 @@ def grade(s,a):
 
 def aggregate(a):
     items=a.items;counts={key:sum(i.outcome==key for i in items) for key in ('CORRECT','PARTIAL','INCORRECT','SKIPPED','UNGRADED')}
-    score=sum(i.awarded or 0 for i in items);total=sum(i.snapshot.get('marks') or 0 for i in items)
-    known_total=all(i.snapshot.get('marks') is not None for i in items)
+    eligible=[i for i in items if i.snapshot.get('marks') is not None and ((i.outcome in ('CORRECT','PARTIAL','INCORRECT') and i.awarded is not None) or (i.snapshot.get('kind') in AUTO_TYPES and i.snapshot.get('answer_status')=='ANSWER_AVAILABLE' and i.snapshot.get('negative_marks') is not None))]
+    score=sum(i.awarded or 0 for i in eligible);total=sum(i.snapshot['marks'] for i in eligible)
+    excluded=len(items)-len(eligible)
     graded=counts['CORRECT']+counts['PARTIAL']+counts['INCORRECT']
-    return {'score':round(score,6),'total_marks':total if known_total else None,'percentage':round(score/total*100,2) if total and known_total and not counts['UNGRADED'] else None,'accuracy':round(counts['CORRECT']/graded*100,2) if graded else None,'correct':counts['CORRECT'],'incorrect':counts['INCORRECT'],'partial':counts['PARTIAL'],'skipped':counts['SKIPPED'],'ungraded':counts['UNGRADED'],'attempted':len(items)-counts['SKIPPED'],'negative_marks':sum(-i.awarded for i in items if i.awarded is not None and i.awarded<0),'time_taken':round(max(0,a.submitted_at-a.started_at)),'pending_manual':counts['UNGRADED']>0}
+    return {'score':round(score,6),'total_marks':total if eligible else None,'percentage':round(score/total*100,2) if total else None,'partial_score':excluded>0,'excluded_from_score':excluded,'accuracy':round(counts['CORRECT']/graded*100,2) if graded else None,'correct':counts['CORRECT'],'incorrect':counts['INCORRECT'],'partial':counts['PARTIAL'],'skipped':counts['SKIPPED'],'ungraded':counts['UNGRADED'],'attempted':len(items)-counts['SKIPPED'],'negative_marks':sum(-i.awarded for i in items if i.awarded is not None and i.awarded<0),'time_taken':round(max(0,a.submitted_at-a.started_at)),'pending_manual':counts['UNGRADED']>0}
 
 RESULT_TTL_SECONDS = 3600
 ACTIVE_TTL_SECONDS = 86400
 
 def save_progress(a):
-    if a.user_id is None or not a.paper_id or not a.records_progress:return
+    if a.user_id is None or not a.paper_id or not a.records_progress or (a.result or {}).get('partial_score'):return
     # Database-level UPSERT handles racing submissions without duplicate rows.
     dialect=db.session.get_bind().dialect.name
     if dialect=='postgresql':

@@ -27,6 +27,7 @@ export function shareSummary(attempt, origin = (typeof window !== 'undefined' ? 
     score: score === null ? null : trim(score),
     total: total === null ? null : trim(total),
     provisional: Boolean(r.pending_manual),
+    partialScore: Boolean(r.partial_score),
     correct: r.correct ?? 0,
     incorrect: r.incorrect ?? 0,
     partial: r.partial ?? 0,
@@ -48,7 +49,7 @@ export function headline(s) {
 export function shareText(s) {
   const marks = s.score !== null && s.total !== null ? ` (${s.score}/${s.total} marks)` : '';
   const what = s.percentage !== null ? `${trim(s.percentage)}%${marks}` : (marks ? marks.slice(2, -1) : `${s.correct} correct out of ${s.questions}`);
-  return `I scored ${what}${s.provisional ? ' (provisional)' : ''} in ${s.title} on MauryaHub.\nPractise IITM BS previous-year papers free: ${s.link}`;
+  return `I scored ${what}${s.partialScore ? ' (available graded questions only)' : s.provisional ? ' (provisional)' : ''} in ${s.title} on MauryaHub.\nPractise IITM BS previous-year papers free: ${s.link}`;
 }
 
 // Greedy word wrap with an injectable measure, so it is unit-testable without canvas.
@@ -121,7 +122,7 @@ export function drawShareCard(canvas, s) {
   const inner = (radius - 30) * 2;
   fitText(ctx, headline(s), cx, cy + 30, 800, 104, inner - 30);
   ctx.fillStyle = '#708098';
-  fitText(ctx, s.provisional ? 'PROVISIONAL SCORE' : 'SCORE', cx, cy + 80, 600, 26, inner - 70);
+  fitText(ctx, s.partialScore ? 'AVAILABLE GRADED SCORE' : s.provisional ? 'PROVISIONAL SCORE' : 'SCORE', cx, cy + 80, 600, 26, inner - 70);
   ctx.font = `650 34px ${FONT}`; ctx.fillStyle = '#285cbd';
   const marks = s.score !== null && s.total !== null ? `${s.score} / ${s.total} marks` : `${s.correct} of ${s.questions} correct`;
   ctx.fillText(marks, cx, cardY + cardH - 50);

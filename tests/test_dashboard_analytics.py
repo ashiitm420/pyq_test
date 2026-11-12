@@ -8,11 +8,18 @@ from backend.engine import question_snapshot,cleanup_sessions
 from conftest import login
 from test_engine import seed
 
+def fully_gradable_paper():
+    # Scored-exam analytics fixtures must contain only gradable questions.
+    # The shared engine seed also includes an ungraded subjective question.
+    p=seed();q=Question.query.filter_by(paper_id=p.id,kind='SUBJECTIVE').one()
+    q.kind='NAT';q.answers=2.5;q.answer_status='ANSWER_AVAILABLE';db.session.commit()
+    return p
+
 def start(client,p,h,mode='exam'):
     return client.post('/api/attempts',headers=h,json={'paper_id':p.id,'mode':mode}).json
 
 def test_admin_scores_question_totals_and_double_submit_survive_cleanup(app,client):
-    p=seed();q=Question.query.filter_by(paper_id=p.id,number='1').one();h=login(client,True)
+    p=fully_gradable_paper();q=Question.query.filter_by(paper_id=p.id,number='1').one();h=login(client,True)
     a=start(client,p,h)
     assert client.post(f"/api/attempts/{a['id']}/answers",headers=h,json={'question_id':q.id,'answer':['A']}).status_code==200
     for _ in range(2):assert client.post(f"/api/attempts/{a['id']}/submit",headers=h,json={}).status_code==200
@@ -28,7 +35,7 @@ def test_admin_scores_question_totals_and_double_submit_survive_cleanup(app,clie
     r=report('all');assert r['totals']['scored_exams']==1 and r['totals']['average_score']==20
 
 def test_final_exam_mode_records_assisted_score(app,client):
-    p=seed();h=login(client)
+    p=fully_gradable_paper();h=login(client)
     a=start(client,p,h)
     client.post(f"/api/attempts/{a['id']}/switch-mode",headers=h,json={'mode':'practice'})
     client.post(f"/api/attempts/{a['id']}/switch-mode",headers=h,json={'mode':'exam','duration_seconds':60})
@@ -118,10 +125,19 @@ def test_submit_uses_one_bulk_question_write_not_one_per_question(app,client):
 
 
 def test_practice_to_exam_is_counted_by_final_mode(app,client):
-    p=seed();h=login(client);a=start(client,p,h,'practice')
+    p=fully_gradable_paper();h=login(client);a=start(client,p,h,'practice')
     assert client.post(f"/api/attempts/{a['id']}/switch-mode",headers=h,json={'mode':'exam','duration_seconds':60}).status_code==200
     for _ in range(2):
         assert client.post(f"/api/attempts/{a['id']}/submit",headers=h,json={}).status_code==200
     r=report('all',mode='exam')['totals']
     assert r['completions']==1 and r['exam_completions']==1 and r['scored_exams']==1
     assert report('all',mode='practice')['totals']['completions']==0
+
+
+def test_subset_percentage_does_not_enter_full_exam_distribution(app,client):
+    p=seed();h=login(client);a=start(client,p,h)
+    r=client.post(f"/api/attempts/{a['id']}/submit",headers=h,json={})
+    assert r.json['result']['partial_score'] and r.json['result']['percentage']==0
+    assert AnalyticsEvent.query.one().score_percent is None
+    totals=report('all')['totals']
+    assert totals['completions']==1 and totals['scored_exams']==0

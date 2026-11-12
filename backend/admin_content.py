@@ -55,6 +55,7 @@ def validated_edit(q,b):
     for key in ('marks','negative_marks','tolerance'):
         v=data[key]
         if v is not None and (type(v) not in (int,float) or not math.isfinite(v) or v<0):abort(400,description='Invalid '+key)
+    data['negative_marks']=0
     data['answer_status']='ANSWER_AVAILABLE' if data['answers'] is not None else 'ANSWER_UNAVAILABLE'
     data['status']='HIDDEN' if q.status=='HIDDEN' else 'AVAILABLE'
     if q.status=='HIDDEN':data['evidence']['_admin_previous_status']='AVAILABLE'

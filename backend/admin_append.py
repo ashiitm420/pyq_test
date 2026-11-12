@@ -40,6 +40,7 @@ def validate_row(row):
     except (ValueError,TypeError,KeyError) as exc:abort(400,description=str(exc))
     try:json.dumps(data,allow_nan=False)
     except (ValueError,TypeError):abort(400,description='Answers must contain finite JSON values')
+    data['negative_marks']=0
     return data
 
 

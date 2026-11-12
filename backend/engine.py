@@ -18,6 +18,7 @@ def question_order(number):
 
 def public_question(s):
     result={k:v for k,v in s.items() if k not in ('answers','answer_status','explanation','tolerance')}
+    result['negative_marks']=0
     result['images']=[{k:v for k,v in i.items() if not k.startswith('_')} for i in s.get('images',[])]
     return result
 
@@ -29,7 +30,7 @@ def validate_question(s,grading=False):
     for key in ('marks','negative_marks','tolerance'):
         v=s.get(key)
         if v is not None and (not isinstance(v,(int,float)) or not math.isfinite(v) or v<0):raise ValueError(f'{key} must be finite and non-negative')
-    if grading and (s.get('marks') is None or s.get('negative_marks') is None):raise ValueError('Verified marks and negative marks are required for exams')
+    if grading and s.get('marks') is None:raise ValueError('Verified marks are required for exams')
     if s.get('answer_status')=='ANSWER_AVAILABLE':
         a=s.get('answers')
         if s['kind'] in CHOICE_TYPES:
@@ -59,7 +60,7 @@ def normalize_answer(s,a):
 
 def grade(s,a):
     if a in (None,'',[]):return {'outcome':'SKIPPED','awarded':0}
-    if s['kind'] not in AUTO_TYPES or s.get('answer_status')!='ANSWER_AVAILABLE' or s.get('marks') is None or s.get('negative_marks') is None:
+    if s['kind'] not in AUTO_TYPES or s.get('answer_status')!='ANSWER_AVAILABLE' or s.get('marks') is None:
         return {'outcome':'UNGRADED','awarded':None}
     if s['kind']=='MSQ' and s.get('msq_scoring')=='proportional-v1':
         selected=set(a);correct=set(s['answers'] or [])
@@ -71,11 +72,14 @@ def grade(s,a):
         key=s['answers'];norm=(lambda v:str(v).strip()) if key.get('case_sensitive',True) else (lambda v:str(v).strip().casefold())
         correct=norm(a) in [norm(v) for v in key['values']]
     else:correct=numeric_correct(a,s['answers'],s.get('tolerance',0)) if s['kind']=='NAT' else set(a)==set(s['answers'])
-    return {'outcome':'CORRECT' if correct else 'INCORRECT','awarded':s['marks'] if correct else -s['negative_marks']}
+    if correct:return {'outcome':'CORRECT','awarded':s['marks']}
+    # MauryaHub marking policy: all papers have no negative marking.
+    # Apply centrally, including active snapshots with missing/legacy penalties.
+    return {'outcome':'INCORRECT','awarded':0}
 
 def aggregate(a):
     items=a.items;counts={key:sum(i.outcome==key for i in items) for key in ('CORRECT','PARTIAL','INCORRECT','SKIPPED','UNGRADED')}
-    eligible=[i for i in items if i.snapshot.get('marks') is not None and ((i.outcome in ('CORRECT','PARTIAL','INCORRECT') and i.awarded is not None) or (i.snapshot.get('kind') in AUTO_TYPES and i.snapshot.get('answer_status')=='ANSWER_AVAILABLE' and i.snapshot.get('negative_marks') is not None))]
+    eligible=[i for i in items if i.snapshot.get('marks') is not None and ((i.outcome in ('CORRECT','PARTIAL','INCORRECT') and i.awarded is not None) or (i.snapshot.get('kind') in AUTO_TYPES and i.snapshot.get('answer_status')=='ANSWER_AVAILABLE'))]
     score=sum(i.awarded or 0 for i in eligible);total=sum(i.snapshot['marks'] for i in eligible)
     excluded=len(items)-len(eligible)
     graded=counts['CORRECT']+counts['PARTIAL']+counts['INCORRECT']

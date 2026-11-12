@@ -17,7 +17,7 @@ def seed():
 def test_scoring(kind,key,response,expected):
     r=grade({'kind':kind,'answers':key,'answer_status':'ANSWER_AVAILABLE','marks':4,'negative_marks':1,'tolerance':.01},response)
     assert r['outcome']==expected
-    if expected=='INCORRECT':assert r['awarded']==-1
+    if expected=='INCORRECT':assert r['awarded']==0
 
 @pytest.mark.parametrize('value',['nan','inf',float('-inf'),'abc',{}])
 def test_bad_numeric(value):
@@ -46,7 +46,7 @@ def test_expiry_ownership_collections(client,app):
     client.post(f'/api/attempts/{aid}/answers',json={'question_id':qid,'answer':['B']},headers=h)
     attempt=db.session.get(Attempt,aid);attempt.deadline=time.time()-1;db.session.commit()
     assert client.post(f'/api/attempts/{aid}/answers',json={'question_id':qid,'answer':['A']},headers=h).status_code==409
-    assert client.get(f'/api/attempts/{aid}').json['result']['score']==-1
+    assert client.get(f'/api/attempts/{aid}').json['result']['score']==0
     assert client.get('/api/mistakes').status_code==410
     assert client.post(f'/api/questions/{qid}/bookmark',headers=h).status_code==410
     assert client.get('/api/bookmarks').status_code==410

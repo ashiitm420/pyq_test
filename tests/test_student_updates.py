@@ -21,7 +21,7 @@ def test_mode_switch_preserves_same_session_responses_and_grades_on_submit(app,c
     question=client.get(f"/api/attempts/{exam['id']}/questions/{qid}").json
     assert question['answer']==['B'] and 'feedback' not in question and 'answers' not in question['question']
     result=client.post(f"/api/attempts/{a['id']}/submit",headers=h).json
-    assert result['result']['score']==-1
+    assert result['result']['score']==0
     assert client.post(f"/api/attempts/{a['id']}/switch-mode",json={'mode':'practice'},headers=h).status_code==409
 
 def test_wrong_answer_practice_only_uses_this_attempt(app,client):

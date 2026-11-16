@@ -1,6 +1,6 @@
 from pathlib import Path
 import re,hashlib,json
-from .numeric import parse_numeric_key
+from .numeric import parse_numeric_key,parse_numeric_answer_block
 from .text_format import source_bold
 
 Q_PATTERN=r'Question\s+Number\s*:\s*(\d+)\s+Question\s+Id\s*:\s*(\d+)(?:\s+Question\s+Type\s*:\s*([\w/-]+))?'
@@ -91,9 +91,7 @@ def parse_document(layout):
                     evidence['answer_source']='explicit_text_key'
                 elif not alpha:
                     try:
-                        keys=[parse_numeric_key(v) for v in values]
-                        if not keys:raise ValueError('Missing key')
-                        answers=keys[0] if len(keys)==1 else {'kind':'alternatives','raw':raw,'keys':keys}
+                        answers=parse_numeric_answer_block(raw)
                         evidence['answer_source']='explicit_numeric_key'
                     except ValueError:warnings.append('UNPARSED_NUMERIC_KEY:'+raw)
             elif alpha:kind='SUBJECTIVE'

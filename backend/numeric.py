@@ -33,3 +33,27 @@ def numeric_correct(answer,key,tolerance=0):
         if key.get('kind')=='values':return any(abs(value-number(v))<=tol for v in key['values'])
         raise ValueError('Unknown numeric key structure')
     return abs(value-number(key))<=tol
+
+
+def parse_numeric_answer_block(raw):
+    """Read explicit key lines; discard only a positively identified next section.
+
+    Unknown trailing text stays an error. This never infers keys from question text.
+    """
+    lines=[line.strip() for line in raw.splitlines() if line.strip()]
+    keys=[]
+    for line in lines:
+        try:keys.append(parse_numeric_key(line))
+        except (ValueError,ArithmeticError):break
+    if not keys:raise ValueError('Missing or invalid explicit numeric key')
+    tail=lines[len(keys):]
+    if tail:
+        # A section title may immediately precede its labelled numeric Section Id.
+        if not re.fullmatch(r'(?:Sub-)?Section\s+Id\s*:\s*\d+',tail[0],re.I):
+            if not re.fullmatch(r'[^\W\d_][^:\n]{0,149}',tail[0],re.UNICODE):
+                raise ValueError('Ambiguous text after numeric key')
+            tail=tail[1:]
+        if not tail or not re.fullmatch(r'(?:Sub-)?Section\s+Id\s*:\s*\d+',tail[0],re.I):
+            raise ValueError('Unrecognized text after numeric key')
+    clean='\n'.join(lines[:len(keys)])
+    return keys[0] if len(keys)==1 else {'kind':'alternatives','raw':clean,'keys':keys}

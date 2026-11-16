@@ -4,6 +4,16 @@ from werkzeug.security import generate_password_hash
 from .models import db,User
 
 def register_cli(app):
+    @app.cli.command('repair-verified-keys')
+    def repair_verified_keys():
+        """Apply the bundled, source-verified one-time answer-key correction."""
+        from .verified_key_repair import apply_verified_keys
+        try:result=apply_verified_keys()
+        except Exception:
+            db.session.rollback()
+            raise click.ClickException('Verified key repair failed; transaction rolled back. Inspect the manifest and database state before retrying.') from None
+        click.echo(json.dumps(result,sort_keys=True))
+
     @app.cli.command('check-db')
     def check_db():
         """Read-only connection check. Does not create tables or migrate data."""

@@ -1,0 +1,16 @@
+id,paper_id,number,kind,course,filename,reason
+7999,1681,175,NAT,Computer Systems Design,cs3031_2025T3_Q1_NA.pdf,Provided PDF ends before the complete key/options; no verified source key
+8186,1711,250,NAT,Mathematical Foundations of Generative AI,da5002_2025T3_Q1_NA.pdf,Provided PDF ends before the complete key/options; no verified source key
+8203,1717,93,NAT,Deep Learning Practice,da5013_2025T3_Q1_NA.pdf,Provided PDF ends before the complete key/options; no verified source key
+12909,1655,46,MCQ,Software Testing,cs3002_2025T3_Q2_NA.pdf,Provided PDF ends before the complete key/options; no verified source key
+12971,1665,234,MCQ,Strategies for Professional Growth,gn3001_2025T3_Q2_NA.pdf,Provided PDF ends before the complete key/options; no verified source key
+13031,1682,74,MCQ,Computer Systems Design,cs3031_2025T3_Q2_NA.pdf,Scanned source option IDs/diagrams were not faithfully extracted
+13032,1682,75,MCQ,Computer Systems Design,cs3031_2025T3_Q2_NA.pdf,Scanned source option IDs/diagrams were not faithfully extracted
+13070,1688,196,NAT,Reinforcement Learning,da5007_2025T3_Q2_NA.pdf,Provided PDF ends before the complete key/options; no verified source key
+13085,1694,37,NAT,Computer Networks,cs4024_2025T3_Q2_NA.pdf,Provided PDF ends before the complete key/options; no verified source key
+13136,1697,179,NAT,Deep Learning for Computer Vision,da5006_2025T3_Q2_NA.pdf,Provided PDF ends before the complete key/options; no verified source key
+13245,1715,94,NAT,Algorithms for Data Science,da5003_2025T3_Q2_NA.pdf,Provided PDF ends before the complete key/options; no verified source key
+13263,1718,214,NAT,Deep Learning Practice,da5013_2025T3_Q2_NA.pdf,Provided PDF ends before the complete key/options; no verified source key
+15781,1726,67,MCQ,Software Testing,cs3002_2025T2_ET_FN.pdf,Provided PDF ends before the complete key/options; no verified source key
+20051,1818,81,NAT,Operating System,cs4022_2025T1_Q2_NA.pdf,Provided PDF ends before the complete key/options; no verified source key
+21258,2021,46,NAT,AI: Search Methods for Problem Solving,cs3003_2023T3_Q2_NA.pdf,Manual correction locked; preserved

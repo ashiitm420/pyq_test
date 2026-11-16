@@ -1,0 +1,4416 @@
+{
+  "repair_id": "source-verified-answer-keys-20261116-v1",
+  "verified_through": "2026-11-16",
+  "questions": [
+    {
+      "id": 7879,
+      "paper_id": 1648,
+      "ingestion_file_id": 1139,
+      "number": "3",
+      "kind": "MSQ",
+      "marks": 3,
+      "source_question_id": "6406531962336",
+      "expected_updated_at": 1790951203.99515,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": [
+        "6406536375935",
+        "6406536375937"
+      ],
+      "raw_key": "6406536375935, 6406536375937",
+      "source_pdf_sha256": "8b499c042006d6d0016f64960ecac533b60d08dc56f4c20538f53a9231473d25",
+      "verification": "visually_checked_green_source_options_6406536375935_and_6406536375937"
+    },
+    {
+      "id": 7977,
+      "paper_id": 1676,
+      "ingestion_file_id": 1145,
+      "number": "94",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "6406531535507",
+      "expected_updated_at": 1790953988.06651,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "39.4",
+        "values": [
+          "39.4"
+        ]
+      },
+      "raw_key": "39.4",
+      "source_pdf_sha256": "259c0f34733c8c18b5e37e31455c13808db6809a67eaa72305a146ff4d46c9a8",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 8266,
+      "paper_id": 1732,
+      "ingestion_file_id": 1161,
+      "number": "75",
+      "kind": "NAT",
+      "marks": 6,
+      "source_question_id": "6406531279410",
+      "expected_updated_at": 1790955841.53495,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "0.89 to 0.91",
+        "lower": "0.89",
+        "upper": "0.91",
+        "inclusive": true
+      },
+      "raw_key": "0.89 to 0.91",
+      "source_pdf_sha256": "ce66b7e255fed9289b3e763be2d367b57b55e29dffc936f6fa36c0d8a535a38e",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 8282,
+      "paper_id": 1739,
+      "ingestion_file_id": 1162,
+      "number": "16",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "6406531279343",
+      "expected_updated_at": 1790955885.4029,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "20",
+        "values": [
+          "20"
+        ]
+      },
+      "raw_key": "20",
+      "source_pdf_sha256": "ece6cb607d1eeb320f1626a8d9f928b2a9059e938d98a123b87f41d5d40c2f0b",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 8302,
+      "paper_id": 1742,
+      "ingestion_file_id": 1163,
+      "number": "186",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "6406531279900",
+      "expected_updated_at": 1790956081.92491,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "5",
+        "values": [
+          "5"
+        ]
+      },
+      "raw_key": "5",
+      "source_pdf_sha256": "cda794c2b18fd9e3ebec4f27cc9a82caaa30acb21241686cc585cff1cdeac8e5",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 8320,
+      "paper_id": 1742,
+      "ingestion_file_id": 1163,
+      "number": "204",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "6406531279924",
+      "expected_updated_at": 1790956101.86452,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "0.68 to 0.74",
+        "lower": "0.68",
+        "upper": "0.74",
+        "inclusive": true
+      },
+      "raw_key": "0.68 to 0.74",
+      "source_pdf_sha256": "cda794c2b18fd9e3ebec4f27cc9a82caaa30acb21241686cc585cff1cdeac8e5",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 8321,
+      "paper_id": 1748,
+      "ingestion_file_id": 1164,
+      "number": "243",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "6406531279594",
+      "expected_updated_at": 1790956125.13642,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "0.288 to 0.292",
+        "lower": "0.288",
+        "upper": "0.292",
+        "inclusive": true
+      },
+      "raw_key": "0.288 to 0.292",
+      "source_pdf_sha256": "de5df208c5365a6b13ad43a31d72fedeb246782ea5031c94a786215c56c46f2c",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 8377,
+      "paper_id": 1752,
+      "ingestion_file_id": 1165,
+      "number": "243",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "6406531279594",
+      "expected_updated_at": 1790956244.38946,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "0.288 to 0.292",
+        "lower": "0.288",
+        "upper": "0.292",
+        "inclusive": true
+      },
+      "raw_key": "0.288 to 0.292",
+      "source_pdf_sha256": "cc743ba8914d85d53e783d42464048779c74befa362fa37404901860554c48f5",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 8405,
+      "paper_id": 1759,
+      "ingestion_file_id": 1167,
+      "number": "93",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "6406531279428",
+      "expected_updated_at": 1790956385.86011,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "24",
+        "values": [
+          "24"
+        ]
+      },
+      "raw_key": "24",
+      "source_pdf_sha256": "62ac07526b7d27d6c982a20173c69c04e10f83f76f1c5dde571e0b8ae1acaf2e",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 8418,
+      "paper_id": 1759,
+      "ingestion_file_id": 1167,
+      "number": "106",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "6406531279441",
+      "expected_updated_at": 1790956401.66487,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "2",
+        "values": [
+          "2"
+        ]
+      },
+      "raw_key": "2",
+      "source_pdf_sha256": "62ac07526b7d27d6c982a20173c69c04e10f83f76f1c5dde571e0b8ae1acaf2e",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 8437,
+      "paper_id": 1763,
+      "ingestion_file_id": 1168,
+      "number": "93",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "6406531279428",
+      "expected_updated_at": 1790956469.32403,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "24",
+        "values": [
+          "24"
+        ]
+      },
+      "raw_key": "24",
+      "source_pdf_sha256": "a6e0b081d9be538c77b74f04b0cdb78ae83d43ca76baac6650d5696f191040c6",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 8438,
+      "paper_id": 1766,
+      "ingestion_file_id": 1169,
+      "number": "155",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "6406531279497",
+      "expected_updated_at": 1790956586.30866,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "0.41",
+        "values": [
+          "0.41"
+        ]
+      },
+      "raw_key": "0.41",
+      "source_pdf_sha256": "ca3537c411037961b8f29674fdc0548baa38d4cef5509b33da636f05dc012ce7",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 8473,
+      "paper_id": 1766,
+      "ingestion_file_id": 1169,
+      "number": "190",
+      "kind": "NAT",
+      "marks": 1.5,
+      "source_question_id": "6406531279529",
+      "expected_updated_at": 1790956627.24828,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "153600",
+        "values": [
+          "153600"
+        ]
+      },
+      "raw_key": "153600",
+      "source_pdf_sha256": "ca3537c411037961b8f29674fdc0548baa38d4cef5509b33da636f05dc012ce7",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 8496,
+      "paper_id": 1770,
+      "ingestion_file_id": 1170,
+      "number": "155",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "6406531279497",
+      "expected_updated_at": 1790956705.44081,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "0.41",
+        "values": [
+          "0.41"
+        ]
+      },
+      "raw_key": "0.41",
+      "source_pdf_sha256": "a8f64888d57debe8682701d05682f6028b33f9120ac354ab933639265a872afa",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 8545,
+      "paper_id": 1782,
+      "ingestion_file_id": 1173,
+      "number": "190",
+      "kind": "NAT",
+      "marks": 1.5,
+      "source_question_id": "6406531279529",
+      "expected_updated_at": 1790956897.18437,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "153600",
+        "values": [
+          "153600"
+        ]
+      },
+      "raw_key": "153600",
+      "source_pdf_sha256": "ce01f99902ff74dc03598086283e3077b0a16da376524f56fee89a81a7a84444",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 8627,
+      "paper_id": 1799,
+      "ingestion_file_id": 1177,
+      "number": "80",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "6406531130533",
+      "expected_updated_at": 1790957271.24954,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "0.11 to 0.19",
+        "lower": "0.11",
+        "upper": "0.19",
+        "inclusive": true
+      },
+      "raw_key": "0.11 to 0.19",
+      "source_pdf_sha256": "b973cced2dbcdb1a253369e69ec791e745bc62c6eac2e8b86ba08bff838fb6a4",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 8644,
+      "paper_id": 1802,
+      "ingestion_file_id": 1178,
+      "number": "17",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "6406531130459",
+      "expected_updated_at": 1790957333.86374,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "alternatives",
+        "raw": "3\n-3",
+        "keys": [
+          {
+            "kind": "values",
+            "raw": "3",
+            "values": [
+              "3"
+            ]
+          },
+          {
+            "kind": "values",
+            "raw": "-3",
+            "values": [
+              "-3"
+            ]
+          }
+        ]
+      },
+      "raw_key": "3\n-3",
+      "source_pdf_sha256": "b14f94f5b7581ae4d0d445283b1b8f97a72be59d2ff9a535959f37608ebafd91",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 8673,
+      "paper_id": 1808,
+      "ingestion_file_id": 1180,
+      "number": "97",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "6406531130550",
+      "expected_updated_at": 1790957443.39751,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "17",
+        "values": [
+          "17"
+        ]
+      },
+      "raw_key": "17",
+      "source_pdf_sha256": "d9a63913390ff94f1b93c953d954f30f73b3a4035fb4b9bf1fa3bd7056306729",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 8741,
+      "paper_id": 1819,
+      "ingestion_file_id": 1186,
+      "number": "189",
+      "kind": "NAT",
+      "marks": 1,
+      "source_question_id": "6406531130648",
+      "expected_updated_at": 1790957821.73807,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "55",
+        "values": [
+          "55"
+        ]
+      },
+      "raw_key": "55",
+      "source_pdf_sha256": "ef0e60a36fc290d99ae1b1512ee4e256dc5ac6d59821f4fa774c60a47894225a",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 8763,
+      "paper_id": 1819,
+      "ingestion_file_id": 1186,
+      "number": "211",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "6406531130675",
+      "expected_updated_at": 1790957846.63178,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "12.20 to 12.30",
+        "lower": "12.20",
+        "upper": "12.30",
+        "inclusive": true
+      },
+      "raw_key": "12.20 to 12.30",
+      "source_pdf_sha256": "ef0e60a36fc290d99ae1b1512ee4e256dc5ac6d59821f4fa774c60a47894225a",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 8783,
+      "paper_id": 1821,
+      "ingestion_file_id": 1187,
+      "number": "97",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "6406531130550",
+      "expected_updated_at": 1790957910.81627,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "17",
+        "values": [
+          "17"
+        ]
+      },
+      "raw_key": "17",
+      "source_pdf_sha256": "0bcd5ac9545b8858aab82c594b3692b4ffe0145d2d1cd73dab33d647cd351d29",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 8784,
+      "paper_id": 1822,
+      "ingestion_file_id": 1188,
+      "number": "152",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "6406531130608",
+      "expected_updated_at": 1790957971.17678,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "0.83",
+        "values": [
+          "0.83"
+        ]
+      },
+      "raw_key": "0.83",
+      "source_pdf_sha256": "22769d58a07a5853244f32db2e3ba0183a272caf2e6ca5ee07a1a1289dcc976b",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 8821,
+      "paper_id": 1822,
+      "ingestion_file_id": 1188,
+      "number": "189",
+      "kind": "NAT",
+      "marks": 1,
+      "source_question_id": "6406531130648",
+      "expected_updated_at": 1790958011.8177,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "55",
+        "values": [
+          "55"
+        ]
+      },
+      "raw_key": "55",
+      "source_pdf_sha256": "22769d58a07a5853244f32db2e3ba0183a272caf2e6ca5ee07a1a1289dcc976b",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 8942,
+      "paper_id": 1834,
+      "ingestion_file_id": 1193,
+      "number": "152",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "6406531130608",
+      "expected_updated_at": 1790958342.59835,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "0.83",
+        "values": [
+          "0.83"
+        ]
+      },
+      "raw_key": "0.83",
+      "source_pdf_sha256": "3f7e5c5e1c35049051f7282a6a63e01e043daca4b38425ee647a1c6f19219b1f",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 9023,
+      "paper_id": 1847,
+      "ingestion_file_id": 1196,
+      "number": "32",
+      "kind": "NAT",
+      "marks": 5,
+      "source_question_id": "640653993331",
+      "expected_updated_at": 1790958709.3684,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "0.1 to 0.2",
+        "lower": "0.1",
+        "upper": "0.2",
+        "inclusive": true
+      },
+      "raw_key": "0.1 to 0.2",
+      "source_pdf_sha256": "6e3cee37b3ffb2425090bcc429e096523f41f925c28bc030ccddd0418cc7fe04",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 9047,
+      "paper_id": 1855,
+      "ingestion_file_id": 1197,
+      "number": "219",
+      "kind": "NAT",
+      "marks": 1,
+      "source_question_id": "640653993543",
+      "expected_updated_at": 1790958756.90312,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "820",
+        "values": [
+          "820"
+        ]
+      },
+      "raw_key": "820",
+      "source_pdf_sha256": "67bb9013a726cd3e9ee081c2c84ede580707bf1e99501e65d9ea20d8f5193f68",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 9137,
+      "paper_id": 1868,
+      "ingestion_file_id": 1201,
+      "number": "102",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "640653993409",
+      "expected_updated_at": 1790959060.32249,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "15",
+        "values": [
+          "15"
+        ]
+      },
+      "raw_key": "15",
+      "source_pdf_sha256": "6af5692f1e80d82a765b279608564580be4c15097ab464f03dbcf20f5e7cde8f",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 9151,
+      "paper_id": 1871,
+      "ingestion_file_id": 1202,
+      "number": "195",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "640653993516",
+      "expected_updated_at": 1790959133.73714,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "3",
+        "values": [
+          "3"
+        ]
+      },
+      "raw_key": "3",
+      "source_pdf_sha256": "961eb175707f0f5ba95a911dccf277ce7257e109ad9925017010cce2c21805aa",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 9171,
+      "paper_id": 1874,
+      "ingestion_file_id": 1203,
+      "number": "73",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "640653993379",
+      "expected_updated_at": 1790959205.92536,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "9",
+        "values": [
+          "9"
+        ]
+      },
+      "raw_key": "9",
+      "source_pdf_sha256": "b6b7694525bd034d8d7391ec6d664bb89b71de367029b36bdab09a9138c4e3c2",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 9223,
+      "paper_id": 1880,
+      "ingestion_file_id": 1205,
+      "number": "293",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "640653993606",
+      "expected_updated_at": 1790959363.0466,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "0.75 to 0.85",
+        "lower": "0.75",
+        "upper": "0.85",
+        "inclusive": true
+      },
+      "raw_key": "0.75 to 0.85",
+      "source_pdf_sha256": "8534bc668949ec367f47353bf5ed1635cd8673eeb8c6ce627783c78c4adab6e2",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 9317,
+      "paper_id": 1895,
+      "ingestion_file_id": 1209,
+      "number": "246",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "640653993563",
+      "expected_updated_at": 1790959598.95804,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "0.8 to 0.85",
+        "lower": "0.8",
+        "upper": "0.85",
+        "inclusive": true
+      },
+      "raw_key": "0.8 to 0.85",
+      "source_pdf_sha256": "febf6125e7ab8becdb40d49282d871c2b6634791cc1d48379397a4d04de38908",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 9379,
+      "paper_id": 1915,
+      "ingestion_file_id": 1213,
+      "number": "109",
+      "kind": "NAT",
+      "marks": 1,
+      "source_question_id": "640653829668",
+      "expected_updated_at": 1790959942.47909,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "1",
+        "values": [
+          "1"
+        ]
+      },
+      "raw_key": "1",
+      "source_pdf_sha256": "41c02ed60dc503b2b59bfc911786fa30a2034406149adef107a2fc522af6353d",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 9452,
+      "paper_id": 1925,
+      "ingestion_file_id": 1216,
+      "number": "173",
+      "kind": "NAT",
+      "marks": 1,
+      "source_question_id": "640653829752",
+      "expected_updated_at": 1790960128.71525,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "6900",
+        "values": [
+          "6900"
+        ]
+      },
+      "raw_key": "6900",
+      "source_pdf_sha256": "f0ab47aafda4f74f5e3347ca4c40333b1a9809556c2a208c3b861b5672435f82",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 9531,
+      "paper_id": 1943,
+      "ingestion_file_id": 1221,
+      "number": "227",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "640653829815",
+      "expected_updated_at": 1790990490.30907,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "12.23 to 12.25",
+        "lower": "12.23",
+        "upper": "12.25",
+        "inclusive": true
+      },
+      "raw_key": "12.23 to 12.25",
+      "source_pdf_sha256": "00a2c3387df2b828e5c96142da87f9c709bb95e6f405c5207c35c70cf0ce6108",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 9549,
+      "paper_id": 1947,
+      "ingestion_file_id": 1222,
+      "number": "79",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "640653829640",
+      "expected_updated_at": 1790990547.0612,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "16",
+        "values": [
+          "16"
+        ]
+      },
+      "raw_key": "16",
+      "source_pdf_sha256": "e78c145034d6e51c763f1ab6d77308191edd83887c56788a8aa546cc937ba4e5",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 9579,
+      "paper_id": 1950,
+      "ingestion_file_id": 1223,
+      "number": "109",
+      "kind": "NAT",
+      "marks": 1,
+      "source_question_id": "640653829668",
+      "expected_updated_at": 1790990639.42481,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "1",
+        "values": [
+          "1"
+        ]
+      },
+      "raw_key": "1",
+      "source_pdf_sha256": "9a36d9155329aa84478d709adb8f3473f81b43097a0cb6803bb85be1ac3699e1",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 9769,
+      "paper_id": 1994,
+      "ingestion_file_id": 1234,
+      "number": "134",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "640653739701",
+      "expected_updated_at": 1790992228.17339,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "2",
+        "values": [
+          "2"
+        ]
+      },
+      "raw_key": "2",
+      "source_pdf_sha256": "a3a606df2f52917b924a4ad5480195eed40497bcd3560396dbc9490505f6647d",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 9811,
+      "paper_id": 2000,
+      "ingestion_file_id": 1236,
+      "number": "73",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "640653739631",
+      "expected_updated_at": 1790992352.18036,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "22",
+        "values": [
+          "22"
+        ]
+      },
+      "raw_key": "22",
+      "source_pdf_sha256": "1a594c2b328ed0551621bebcd1b0332226e9bfc8d31b609289824291c9d68760",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 9835,
+      "paper_id": 2002,
+      "ingestion_file_id": 1237,
+      "number": "181",
+      "kind": "NAT",
+      "marks": 1,
+      "source_question_id": "640653739753",
+      "expected_updated_at": 1790992412.43162,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "6",
+        "values": [
+          "6"
+        ]
+      },
+      "raw_key": "6",
+      "source_pdf_sha256": "a63a2ec216e8e123b7b56796716dc6bb37fbf1539aa4feeb426b0894d6ef22cc",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 9836,
+      "paper_id": 2005,
+      "ingestion_file_id": 1238,
+      "number": "181",
+      "kind": "NAT",
+      "marks": 1,
+      "source_question_id": "640653739753",
+      "expected_updated_at": 1790992450.64551,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "6",
+        "values": [
+          "6"
+        ]
+      },
+      "raw_key": "6",
+      "source_pdf_sha256": "f9418c188bfff09ac15cb4a6a868d71310090e68352296324cbdedd8e4502f30",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 9892,
+      "paper_id": 2016,
+      "ingestion_file_id": 1240,
+      "number": "19",
+      "kind": "NAT",
+      "marks": 5,
+      "source_question_id": "640653676778",
+      "expected_updated_at": 1790992611.56311,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "2",
+        "values": [
+          "2"
+        ]
+      },
+      "raw_key": "2",
+      "source_pdf_sha256": "bd4a7a6e336d17ad3d35f01574e6433e969a96cb563f02ad7a4b8e9f96458ece",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 9893,
+      "paper_id": 2020,
+      "ingestion_file_id": 1241,
+      "number": "19",
+      "kind": "NAT",
+      "marks": 5,
+      "source_question_id": "640653676778",
+      "expected_updated_at": 1790992635.23647,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "2",
+        "values": [
+          "2"
+        ]
+      },
+      "raw_key": "2",
+      "source_pdf_sha256": "cbe30d1d59dadcece4564b2109a56c0aba5b8578d355675b6bc74d1ac540af2e",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 9987,
+      "paper_id": 2053,
+      "ingestion_file_id": 1247,
+      "number": "120",
+      "kind": "NAT",
+      "marks": 1,
+      "source_question_id": "640653676900",
+      "expected_updated_at": 1790992888.68789,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "80 to 81",
+        "lower": "80",
+        "upper": "81",
+        "inclusive": true
+      },
+      "raw_key": "80 to 81",
+      "source_pdf_sha256": "caadc79b8b010e92d46e315b2547afe54692e38a648f36c171d74e723379c971",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 10047,
+      "paper_id": 2065,
+      "ingestion_file_id": 1250,
+      "number": "104",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "640653676880",
+      "expected_updated_at": 1790993098.49596,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "10.75 to 10.85",
+        "lower": "10.75",
+        "upper": "10.85",
+        "inclusive": true
+      },
+      "raw_key": "10.75 to 10.85",
+      "source_pdf_sha256": "19e4e51306e3f6f5a632d098480d718ff4bfae76d99e398a6f854e31a632b8bc",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 10067,
+      "paper_id": 2069,
+      "ingestion_file_id": 1251,
+      "number": "145",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "640653676924",
+      "expected_updated_at": 1790993157.88636,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "120",
+        "values": [
+          "120"
+        ]
+      },
+      "raw_key": "120",
+      "source_pdf_sha256": "f4a68391db3da5df13b84f6dbe5f4a03bb3a632946405475b13979681662b119",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 10122,
+      "paper_id": 2083,
+      "ingestion_file_id": 1254,
+      "number": "54",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "640653578879",
+      "expected_updated_at": 1790993913.40065,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "1024000",
+        "values": [
+          "1024000"
+        ]
+      },
+      "raw_key": "1024000",
+      "source_pdf_sha256": "e3d2e612e6c63e02922870e2bbab4985ef9d0e7bbe6c2ebdc05299283361d2bb",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 10164,
+      "paper_id": 2092,
+      "ingestion_file_id": 1256,
+      "number": "131",
+      "kind": "NAT",
+      "marks": 0.5,
+      "source_question_id": "640653578964",
+      "expected_updated_at": 1790994379.43327,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "17539",
+        "values": [
+          "17539"
+        ]
+      },
+      "raw_key": "17539",
+      "source_pdf_sha256": "048d9bed51fedd1baa1f043c32eeaef5740b858d60c7360c7babab03e16009f8",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 10207,
+      "paper_id": 2103,
+      "ingestion_file_id": 1258,
+      "number": "131",
+      "kind": "NAT",
+      "marks": 0.5,
+      "source_question_id": "640653578964",
+      "expected_updated_at": 1790994467.09073,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "17539",
+        "values": [
+          "17539"
+        ]
+      },
+      "raw_key": "17539",
+      "source_pdf_sha256": "627b1f5c4c95b57dc62051fe59c0f99b93fb4316aebf7bb28e9ced5f497edb83",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 10263,
+      "paper_id": 2115,
+      "ingestion_file_id": 1261,
+      "number": "155",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "640653578990",
+      "expected_updated_at": 1790994650.98802,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "2.74 to 2.76",
+        "lower": "2.74",
+        "upper": "2.76",
+        "inclusive": true
+      },
+      "raw_key": "2.74 to 2.76",
+      "source_pdf_sha256": "2128091633a81988d9af48f0e3cdf12c35e9a53adf8b215f2a107c63b30cc819",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 10281,
+      "paper_id": 2122,
+      "ingestion_file_id": 1262,
+      "number": "82",
+      "kind": "NAT",
+      "marks": 7,
+      "source_question_id": "640653470836",
+      "expected_updated_at": 1790994755.52975,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "14",
+        "values": [
+          "14"
+        ]
+      },
+      "raw_key": "14",
+      "source_pdf_sha256": "86609e5cd91db11b1c24665f5cb2107651dc6ef8c694adf5c39463f530c31a25",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 10282,
+      "paper_id": 2126,
+      "ingestion_file_id": 1263,
+      "number": "82",
+      "kind": "NAT",
+      "marks": 7,
+      "source_question_id": "640653470836",
+      "expected_updated_at": 1790994779.91892,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "14",
+        "values": [
+          "14"
+        ]
+      },
+      "raw_key": "14",
+      "source_pdf_sha256": "e4b6e3130b6dd08c9a9d9605b83949c4c4fbb750ad9eab0b1554bf77e83595cc",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 10321,
+      "paper_id": 2134,
+      "ingestion_file_id": 1265,
+      "number": "14",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "640653470767",
+      "expected_updated_at": 1790994879.90237,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "87 to 88",
+        "lower": "87",
+        "upper": "88",
+        "inclusive": true
+      },
+      "raw_key": "87 to 88",
+      "source_pdf_sha256": "785117ef203329f721cd1291d792d27918b83f57ee5a1063e90222a40c988e55",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 13022,
+      "paper_id": 1680,
+      "ingestion_file_id": 1420,
+      "number": "258",
+      "kind": "NAT",
+      "marks": 1,
+      "source_question_id": "6406531815869",
+      "expected_updated_at": 1791621516.4181,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "0",
+        "values": [
+          "0"
+        ]
+      },
+      "raw_key": "0",
+      "source_pdf_sha256": "567ba707a502aacde6abab00c1a8377cd5bf0ce0f107e5fa8e32bc0ceb5d3764",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 13054,
+      "paper_id": 1688,
+      "ingestion_file_id": 1423,
+      "number": "180",
+      "kind": "NAT",
+      "marks": 0.5,
+      "source_question_id": "6406531815778",
+      "expected_updated_at": 1791645610.12395,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "2.4 to 2.6",
+        "lower": "2.4",
+        "upper": "2.6",
+        "inclusive": true
+      },
+      "raw_key": "2.4 to 2.6",
+      "source_pdf_sha256": "af9915b9b07d2db6714654adcb11472091d2554ec3ab104b6f397ce42820fee2",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 13137,
+      "paper_id": 1700,
+      "ingestion_file_id": 1426,
+      "number": "105",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "6406531815696",
+      "expected_updated_at": 1791645921.35696,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "0.55 to 0.59",
+        "lower": "0.55",
+        "upper": "0.59",
+        "inclusive": true
+      },
+      "raw_key": "0.55 to 0.59",
+      "source_pdf_sha256": "f8bb8de26f2feee9023f2ae63201ebfbc33cfeaec70b9963fa796f253e248002",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 13539,
+      "paper_id": 3062,
+      "ingestion_file_id": 1448,
+      "number": "143",
+      "kind": "NAT",
+      "marks": 1,
+      "source_question_id": "6406531297979",
+      "expected_updated_at": 1791688195.63795,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "0",
+        "values": [
+          "0"
+        ]
+      },
+      "raw_key": "0",
+      "source_pdf_sha256": "03f4a454a5ed896721914f99623b65c974db450b5685d5371fd82d6bfa117631",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 13556,
+      "paper_id": 3070,
+      "ingestion_file_id": 1449,
+      "number": "45",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "6406531297874",
+      "expected_updated_at": 1791688276.15248,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "8",
+        "values": [
+          "8"
+        ]
+      },
+      "raw_key": "8",
+      "source_pdf_sha256": "6cdeec2bf6e8482d83542f8bb6425685fb8d2930a51308835b6561589f3b99d9",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 13574,
+      "paper_id": 3073,
+      "ingestion_file_id": 1450,
+      "number": "62",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "6406531297889",
+      "expected_updated_at": 1791688347.18284,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "30",
+        "values": [
+          "30"
+        ]
+      },
+      "raw_key": "30",
+      "source_pdf_sha256": "2b9c95be5032bfd604ad4dc289fc5e24f62e1016906b87b7bb135b512de6666e",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 13694,
+      "paper_id": 3102,
+      "ingestion_file_id": 1457,
+      "number": "145",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "6406531113842",
+      "expected_updated_at": 1791688899.77747,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "0.10 to 0.11",
+        "lower": "0.10",
+        "upper": "0.11",
+        "inclusive": true
+      },
+      "raw_key": "0.10 to 0.11",
+      "source_pdf_sha256": "266001b37709849c1a22cfc1e11147c92d8cf34a6e2332268dbfec0992ee72ce",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 13696,
+      "paper_id": 3106,
+      "ingestion_file_id": 1458,
+      "number": "145",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "6406531113842",
+      "expected_updated_at": 1791688942.85634,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "0.10 to 0.11",
+        "lower": "0.10",
+        "upper": "0.11",
+        "inclusive": true
+      },
+      "raw_key": "0.10 to 0.11",
+      "source_pdf_sha256": "b04a8be4b3e9ca0f08a8f6bc01d68c177f3e23f7024575f9287aa2f6afc8142e",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 13752,
+      "paper_id": 3115,
+      "ingestion_file_id": 1460,
+      "number": "65",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "6406531113757",
+      "expected_updated_at": 1791689103.37312,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "12",
+        "values": [
+          "12"
+        ]
+      },
+      "raw_key": "12",
+      "source_pdf_sha256": "2b3e79f64ad30f2847675e3d4079abec8826d9d8431c2e7d1474c2eeb65f6fa4",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 13839,
+      "paper_id": 3012,
+      "ingestion_file_id": 1465,
+      "number": "235",
+      "kind": "NAT",
+      "marks": 1,
+      "source_question_id": "6406531527984",
+      "expected_updated_at": 1791690498.75424,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "4",
+        "values": [
+          "4"
+        ]
+      },
+      "raw_key": "4",
+      "source_pdf_sha256": "2e54158ca07e902856ae2268a6cfeef64892e02aedb66b84ddf81a0cf056ac28",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 13855,
+      "paper_id": 3016,
+      "ingestion_file_id": 1466,
+      "number": "160",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "6406531527895",
+      "expected_updated_at": 1791690550.96276,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "1",
+        "values": [
+          "1"
+        ]
+      },
+      "raw_key": "1",
+      "source_pdf_sha256": "d8d9a4ed6cd86254716048fb32c92750781a3aa625b26f4777d326a236dda5be",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 13907,
+      "paper_id": 3032,
+      "ingestion_file_id": 1469,
+      "number": "18",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "6406531527741",
+      "expected_updated_at": 1791690762.60379,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "2",
+        "values": [
+          "2"
+        ]
+      },
+      "raw_key": "2",
+      "source_pdf_sha256": "1760cfa3304011ac5880b3725af2518c4d206866395c12b348bc3f971c4263b1",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 13942,
+      "paper_id": 3042,
+      "ingestion_file_id": 1472,
+      "number": "160",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "6406531527895",
+      "expected_updated_at": 1791691080.32688,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "1",
+        "values": [
+          "1"
+        ]
+      },
+      "raw_key": "1",
+      "source_pdf_sha256": "86f50a10f94627a030e2d54c789cef0fd00550b3feca369f9b3beb41abbd7c45",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 14000,
+      "paper_id": 3048,
+      "ingestion_file_id": 1474,
+      "number": "257",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "6406531528010",
+      "expected_updated_at": 1791691252.37823,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "192",
+        "values": [
+          "192"
+        ]
+      },
+      "raw_key": "192",
+      "source_pdf_sha256": "2dbe5408150fb0b20ea12fc1fee279b0f1db336a7b10fc654747ece6a098ebfb",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 14019,
+      "paper_id": 3134,
+      "ingestion_file_id": 1475,
+      "number": "67",
+      "kind": "NAT",
+      "marks": 1.5,
+      "source_question_id": "640653995496",
+      "expected_updated_at": 1791692422.42573,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "0.26 to 0.28",
+        "lower": "0.26",
+        "upper": "0.28",
+        "inclusive": true
+      },
+      "raw_key": "0.26 to 0.28",
+      "source_pdf_sha256": "50baf7ca45d203913871d1016d37efb1c62ab2b9afb318d343e764c0e9e222d2",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 14032,
+      "paper_id": 3137,
+      "ingestion_file_id": 1476,
+      "number": "13",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "640653995434",
+      "expected_updated_at": 1791692506.16127,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "0.4",
+        "values": [
+          "0.4"
+        ]
+      },
+      "raw_key": "0.4",
+      "source_pdf_sha256": "986a67b27aabf393fc5910530dcb75d6fc18cf2a215ff8a235408f2ad301eb01",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 14091,
+      "paper_id": 3153,
+      "ingestion_file_id": 1480,
+      "number": "67",
+      "kind": "NAT",
+      "marks": 1.5,
+      "source_question_id": "640653995496",
+      "expected_updated_at": 1791692852.72564,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "0.26 to 0.28",
+        "lower": "0.26",
+        "upper": "0.28",
+        "inclusive": true
+      },
+      "raw_key": "0.26 to 0.28",
+      "source_pdf_sha256": "4c550028fea7f31ce19b3405bda4359d901e433aad16eedd9c466064d812aa6a",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 14108,
+      "paper_id": 3153,
+      "ingestion_file_id": 1480,
+      "number": "84",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "640653995507",
+      "expected_updated_at": 1791692873.26101,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "105",
+        "values": [
+          "105"
+        ]
+      },
+      "raw_key": "105",
+      "source_pdf_sha256": "4c550028fea7f31ce19b3405bda4359d901e433aad16eedd9c466064d812aa6a",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 14228,
+      "paper_id": 3178,
+      "ingestion_file_id": 1487,
+      "number": "132",
+      "kind": "NAT",
+      "marks": 2.5,
+      "source_question_id": "640653825126",
+      "expected_updated_at": 1791698764.42452,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "2.52",
+        "values": [
+          "2.52"
+        ]
+      },
+      "raw_key": "2.52",
+      "source_pdf_sha256": "44b56e54918bfa549f24f09c858689aa11e4f1af006924782ae34aa7cb12f6e4",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 14229,
+      "paper_id": 3182,
+      "ingestion_file_id": 1488,
+      "number": "132",
+      "kind": "NAT",
+      "marks": 2.5,
+      "source_question_id": "640653825126",
+      "expected_updated_at": 1791698860.18675,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "2.52",
+        "values": [
+          "2.52"
+        ]
+      },
+      "raw_key": "2.52",
+      "source_pdf_sha256": "84882d9d0fbdb57301c37e0acf1f849b8d812c3e1f259d4c50c2025b3a5d3009",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 16073,
+      "paper_id": 2884,
+      "ingestion_file_id": 1581,
+      "number": "281",
+      "kind": "NAT",
+      "marks": 1,
+      "source_question_id": "6406531525316",
+      "expected_updated_at": 1792124818.83461,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "4",
+        "values": [
+          "4"
+        ]
+      },
+      "raw_key": "4",
+      "source_pdf_sha256": "d8406b0c1ef3cf2c9e64ca3fd8af36ed678158d2abcc16983b8e0168116fa09a",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 16118,
+      "paper_id": 2892,
+      "ingestion_file_id": 1583,
+      "number": "30",
+      "kind": "NAT",
+      "marks": 5,
+      "source_question_id": "6406531525037",
+      "expected_updated_at": 1792124957.43519,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "4",
+        "values": [
+          "4"
+        ]
+      },
+      "raw_key": "4",
+      "source_pdf_sha256": "654a866ce8cb1d2ceba3972607ab0f4dc3b48de3970c252b013870514e753174",
+      "verification": "visually_checked_original_pdf_key_before_cut_heading"
+    },
+    {
+      "id": 16173,
+      "paper_id": 2900,
+      "ingestion_file_id": 1585,
+      "number": "77",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "6406531525714",
+      "expected_updated_at": 1792125082.64523,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "1.5",
+        "values": [
+          "1.5"
+        ]
+      },
+      "raw_key": "1.5",
+      "source_pdf_sha256": "6478fc1e6590a03fe9975fb478f86e7fcadf321bdec9c5b0ab10effd78f936c3",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 16602,
+      "paper_id": 2885,
+      "ingestion_file_id": 1606,
+      "number": "227",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "6406531827073",
+      "expected_updated_at": 1792593315.98518,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "-4",
+        "values": [
+          "-4"
+        ]
+      },
+      "raw_key": "-4",
+      "source_pdf_sha256": "35b5dbadbbd6f225a181c1ea2238f1c4e51b9a44cc78482c85aa4888fd869a80",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 16604,
+      "paper_id": 2889,
+      "ingestion_file_id": 1607,
+      "number": "227",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "6406531827073",
+      "expected_updated_at": 1792593353.29036,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "-4",
+        "values": [
+          "-4"
+        ]
+      },
+      "raw_key": "-4",
+      "source_pdf_sha256": "fbc28388a4e20152c58c53c16b183672d617a779889df6dade8070566045a3b2",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 16620,
+      "paper_id": 2889,
+      "ingestion_file_id": 1607,
+      "number": "243",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "6406531827092",
+      "expected_updated_at": 1792593372.38296,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "0.64 to 0.70",
+        "lower": "0.64",
+        "upper": "0.70",
+        "inclusive": true
+      },
+      "raw_key": "0.64 to 0.70",
+      "source_pdf_sha256": "fbc28388a4e20152c58c53c16b183672d617a779889df6dade8070566045a3b2",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 16690,
+      "paper_id": 2901,
+      "ingestion_file_id": 1610,
+      "number": "256",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "6406531827106",
+      "expected_updated_at": 1792593600.4051,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "-9",
+        "values": [
+          "-9"
+        ]
+      },
+      "raw_key": "-9",
+      "source_pdf_sha256": "af76c098932cde58bea219827be19809c2c5db3b3e5a886ced7b1429b3186201",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 16714,
+      "paper_id": 2905,
+      "ingestion_file_id": 1611,
+      "number": "279",
+      "kind": "NAT",
+      "marks": 1,
+      "source_question_id": "6406531827135",
+      "expected_updated_at": 1792593712.84406,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "0",
+        "values": [
+          "0"
+        ]
+      },
+      "raw_key": "0",
+      "source_pdf_sha256": "f0b2ed4e6caaedfa2a3141a3231223feea3c51e257aeacee8c0cb2a473d9922a",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 18541,
+      "paper_id": 3049,
+      "ingestion_file_id": 1681,
+      "number": "155",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "6406531828262",
+      "expected_updated_at": 1792677716.47366,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "-0.0001 to 0.0001",
+        "lower": "-0.0001",
+        "upper": "0.0001",
+        "inclusive": true
+      },
+      "raw_key": "-0.0001 to 0.0001",
+      "source_pdf_sha256": "9764ff09d15cb29c0e34f6e5ac1755ce7e36dd6095e42a886948b9560eadce30",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 18609,
+      "paper_id": 3063,
+      "ingestion_file_id": 1685,
+      "number": "171",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "6406531324327",
+      "expected_updated_at": 1792679047.16416,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "0.34 to 0.38",
+        "lower": "0.34",
+        "upper": "0.38",
+        "inclusive": true
+      },
+      "raw_key": "0.34 to 0.38",
+      "source_pdf_sha256": "75d31de7c38e34d821e5ff4d9e6b4997a215871deaa2a9d8d897b1e969c2153c",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 18625,
+      "paper_id": 3071,
+      "ingestion_file_id": 1686,
+      "number": "186",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "6406531324345",
+      "expected_updated_at": 1792679124.66808,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "12",
+        "values": [
+          "12"
+        ]
+      },
+      "raw_key": "12",
+      "source_pdf_sha256": "7195fcb6a73eb72dbd7bc2c1be6182e82035481b6215aa5378b1b235e1feea14",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 18642,
+      "paper_id": 3074,
+      "ingestion_file_id": 1687,
+      "number": "34",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "6406531324171",
+      "expected_updated_at": 1792679207.91867,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "12",
+        "values": [
+          "12"
+        ]
+      },
+      "raw_key": "12",
+      "source_pdf_sha256": "6dbaa5736de7ae126e51914b2d97baf1be94d20f7af624aeb95e55296ad73225",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 18800,
+      "paper_id": 3116,
+      "ingestion_file_id": 1696,
+      "number": "46",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "6406531173351",
+      "expected_updated_at": 1792680662.79021,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "2",
+        "values": [
+          "2"
+        ]
+      },
+      "raw_key": "2",
+      "source_pdf_sha256": "578f6498000b3dcfaa97962f0a68d815fabad774821a9fa83d8f34630ebf6d4e",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 18932,
+      "paper_id": 3146,
+      "ingestion_file_id": 1703,
+      "number": "150",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "6406531020751",
+      "expected_updated_at": 1792684415.34238,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "3.5",
+        "values": [
+          "3.5"
+        ]
+      },
+      "raw_key": "3.5",
+      "source_pdf_sha256": "5fa1b06ca1efd02ab85d26079098064f74bc5134dbda25306fe413cf8d8f8a94",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 19044,
+      "paper_id": 3172,
+      "ingestion_file_id": 1709,
+      "number": "88",
+      "kind": "NAT",
+      "marks": 1,
+      "source_question_id": "640653852419",
+      "expected_updated_at": 1792686129.40338,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "31 to 32",
+        "lower": "31",
+        "upper": "32",
+        "inclusive": true
+      },
+      "raw_key": "31 to 32",
+      "source_pdf_sha256": "fe7b34f012a567b9ccf1ffdf826044a6b8b0d2dcd692717de49ea41beeb7056e",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 19061,
+      "paper_id": 3175,
+      "ingestion_file_id": 1710,
+      "number": "65",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "640653852394",
+      "expected_updated_at": 1792686231.37807,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "5.006 to 5.012",
+        "lower": "5.006",
+        "upper": "5.012",
+        "inclusive": true
+      },
+      "raw_key": "5.006 to 5.012",
+      "source_pdf_sha256": "d8845cda219054d1b5547090066c688384e168bc5c442922171fcbd63ccf7033",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 19086,
+      "paper_id": 3179,
+      "ingestion_file_id": 1711,
+      "number": "168",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "640653852508",
+      "expected_updated_at": 1792686316.6114,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "14",
+        "values": [
+          "14"
+        ]
+      },
+      "raw_key": "14",
+      "source_pdf_sha256": "e4f0a62cc737b1779a2e0c0bf071bcde7a1ee75ba66840d787130d7d1ba43999",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 19214,
+      "paper_id": 3210,
+      "ingestion_file_id": 1718,
+      "number": "245",
+      "kind": "NAT",
+      "marks": 1,
+      "source_question_id": "640653770671",
+      "expected_updated_at": 1792720778.32158,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "1",
+        "values": [
+          "1"
+        ]
+      },
+      "raw_key": "1",
+      "source_pdf_sha256": "6060f05ce893313eb6d58e078f6572976e0d432f79185d4dded222709f946520",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 19229,
+      "paper_id": 3213,
+      "ingestion_file_id": 1719,
+      "number": "155",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "640653770574",
+      "expected_updated_at": 1792720866.77745,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "10.2 to 10.8",
+        "lower": "10.2",
+        "upper": "10.8",
+        "inclusive": true
+      },
+      "raw_key": "10.2 to 10.8",
+      "source_pdf_sha256": "07433e9c72966f45d6d26456e0550e1f4a3081d348265f552d0540633ff2f425",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 19268,
+      "paper_id": 3220,
+      "ingestion_file_id": 1721,
+      "number": "227",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "640653770648",
+      "expected_updated_at": 1792721070.20241,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "1",
+        "values": [
+          "1"
+        ]
+      },
+      "raw_key": "1",
+      "source_pdf_sha256": "59a1b189500e112d4c712a425614a377f50d040800b70e7c2b692c499417915c",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 19301,
+      "paper_id": 3229,
+      "ingestion_file_id": 1723,
+      "number": "123",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "640653770534",
+      "expected_updated_at": 1792721207.3036,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "4",
+        "values": [
+          "4"
+        ]
+      },
+      "raw_key": "4",
+      "source_pdf_sha256": "5907cbd58c813db0f11f815b2c69b118359b7b5096aabcb0a985bd155f08d090",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 19302,
+      "paper_id": 3233,
+      "ingestion_file_id": 1724,
+      "number": "155",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "640653770574",
+      "expected_updated_at": 1792721326.91501,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "10.2 to 10.8",
+        "lower": "10.2",
+        "upper": "10.8",
+        "inclusive": true
+      },
+      "raw_key": "10.2 to 10.8",
+      "source_pdf_sha256": "c1ff36241a55d9cbc4d74e2741b383cccbfee7907294179cd69da68fc1f4bc40",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 19353,
+      "paper_id": 3243,
+      "ingestion_file_id": 1727,
+      "number": "245",
+      "kind": "NAT",
+      "marks": 1,
+      "source_question_id": "640653770671",
+      "expected_updated_at": 1792721679.83067,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "1",
+        "values": [
+          "1"
+        ]
+      },
+      "raw_key": "1",
+      "source_pdf_sha256": "c1098bf5ddfbd6b8bb2c6a3e807a8c81efdab51bb4f921f7a3e162ddbbff36d3",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 19457,
+      "paper_id": 1733,
+      "ingestion_file_id": 1731,
+      "number": "279",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "6406531323439",
+      "expected_updated_at": 1792722361.31772,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "2",
+        "values": [
+          "2"
+        ]
+      },
+      "raw_key": "2",
+      "source_pdf_sha256": "8c2f0b5d482a3032b4e949c00cd7dfe5ad2b9395fff87974fb71449e60151293",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 19566,
+      "paper_id": 1749,
+      "ingestion_file_id": 1736,
+      "number": "178",
+      "kind": "NAT",
+      "marks": 5,
+      "source_question_id": "6406531323331",
+      "expected_updated_at": 1792722874.24424,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "7.3",
+        "values": [
+          "7.3"
+        ]
+      },
+      "raw_key": "7.3",
+      "source_pdf_sha256": "8877d5c2b125911a798ee94e0c053202a2ec3051d9a01f594a077f4b0303c394",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 19595,
+      "paper_id": 1756,
+      "ingestion_file_id": 1738,
+      "number": "228",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "6406531339379",
+      "expected_updated_at": 1792723047.21171,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "150",
+        "values": [
+          "150"
+        ]
+      },
+      "raw_key": "150",
+      "source_pdf_sha256": "8f979063808830b71ad3004605fde4fa7cc7b44a12c920482074631716bcae57",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 19612,
+      "paper_id": 1760,
+      "ingestion_file_id": 1739,
+      "number": "139",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "6406531339279",
+      "expected_updated_at": 1792723115.69021,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "2",
+        "values": [
+          "2"
+        ]
+      },
+      "raw_key": "2",
+      "source_pdf_sha256": "e3c10a1602abedfc7e90a9aa3b05546d30ce9b2ae91f93197478cb66c972fe85",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 19665,
+      "paper_id": 1767,
+      "ingestion_file_id": 1740,
+      "number": "285",
+      "kind": "NAT",
+      "marks": 0.5,
+      "source_question_id": "6406531333843",
+      "expected_updated_at": 1792723257.04702,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "2.4 to 2.6",
+        "lower": "2.4",
+        "upper": "2.6",
+        "inclusive": true
+      },
+      "raw_key": "2.4 to 2.6",
+      "source_pdf_sha256": "29ebafaf568fe00497591d4d4fa75088d6920c500432f8a6705008b9b7ca9094",
+      "verification": "visually_checked_original_pdf_key_before_cut_heading"
+    },
+    {
+      "id": 19724,
+      "paper_id": 1779,
+      "ingestion_file_id": 1743,
+      "number": "43",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "6406531323179",
+      "expected_updated_at": 1792725917.48132,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "12",
+        "values": [
+          "12"
+        ]
+      },
+      "raw_key": "12",
+      "source_pdf_sha256": "8a5727f9d214888050aa5cd0dabd39544741825da5bd0c28590444f2725faccc",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 19980,
+      "paper_id": 1803,
+      "ingestion_file_id": 1753,
+      "number": "18",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "6406531172581",
+      "expected_updated_at": 1792745498.07809,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "16",
+        "values": [
+          "16"
+        ]
+      },
+      "raw_key": "16",
+      "source_pdf_sha256": "2990b6069921ec81a888fa8c7782aff866380daccff003fc6df9caa2c285907c",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 19983,
+      "paper_id": 1806,
+      "ingestion_file_id": 1754,
+      "number": "294",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "6406531172892",
+      "expected_updated_at": 1792745525.78653,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "16",
+        "values": [
+          "16"
+        ]
+      },
+      "raw_key": "16",
+      "source_pdf_sha256": "b4a7db0aa249c56fdc92f47b7eaec70bc413d30b9cc314b6f01ea498590c7317",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 20026,
+      "paper_id": 1811,
+      "ingestion_file_id": 1756,
+      "number": "294",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "6406531172892",
+      "expected_updated_at": 1792745629.21957,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "16",
+        "values": [
+          "16"
+        ]
+      },
+      "raw_key": "16",
+      "source_pdf_sha256": "37b9585232f65465689853a7a72341151c05cff3cf2da588ba6c3684df667115",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 20052,
+      "paper_id": 1820,
+      "ingestion_file_id": 1760,
+      "number": "155",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "6406531172733",
+      "expected_updated_at": 1792745811.5835,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "2",
+        "values": [
+          "2"
+        ]
+      },
+      "raw_key": "2",
+      "source_pdf_sha256": "a6a0e192280b21478ea06644554546ab2e41ff04ddd20fd29717cd191ae6588f",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 20076,
+      "paper_id": 1820,
+      "ingestion_file_id": 1760,
+      "number": "179",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "6406531172756",
+      "expected_updated_at": 1792745839.448,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "1",
+        "values": [
+          "1"
+        ]
+      },
+      "raw_key": "1",
+      "source_pdf_sha256": "a6a0e192280b21478ea06644554546ab2e41ff04ddd20fd29717cd191ae6588f",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 20165,
+      "paper_id": 1827,
+      "ingestion_file_id": 1763,
+      "number": "253",
+      "kind": "NAT",
+      "marks": 1,
+      "source_question_id": "6406531172835",
+      "expected_updated_at": 1792746060.38498,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "7500",
+        "values": [
+          "7500"
+        ]
+      },
+      "raw_key": "7500",
+      "source_pdf_sha256": "8e45e587c5174f4d80d56c7e5266cf7390d4bf5f2807844522e1db0936483b23",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 20194,
+      "paper_id": 1833,
+      "ingestion_file_id": 1765,
+      "number": "179",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "6406531172756",
+      "expected_updated_at": 1792746163.87856,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "1",
+        "values": [
+          "1"
+        ]
+      },
+      "raw_key": "1",
+      "source_pdf_sha256": "a72fcf01ec8c8227b175da6bdfa0dc52f6bde1519c5bbd3de16f2e7e53e1acbd",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 20235,
+      "paper_id": 1835,
+      "ingestion_file_id": 1766,
+      "number": "155",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "6406531172733",
+      "expected_updated_at": 1792746245.31302,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "2",
+        "values": [
+          "2"
+        ]
+      },
+      "raw_key": "2",
+      "source_pdf_sha256": "85d20ee8b20960533d7f9d3ce0a208cc0d8fa572702cd4c96cacb9d353985f46",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 20330,
+      "paper_id": 1848,
+      "ingestion_file_id": 1770,
+      "number": "92",
+      "kind": "NAT",
+      "marks": 1,
+      "source_question_id": "6406531029956",
+      "expected_updated_at": 1792746604.94104,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "150528",
+        "values": [
+          "150528"
+        ]
+      },
+      "raw_key": "150528",
+      "source_pdf_sha256": "bb477b440a9926f115ea25c0b2ce16a48c226665cd8d0cdfd5772e658d3eb2f5",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 20410,
+      "paper_id": 1858,
+      "ingestion_file_id": 1773,
+      "number": "235",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "6406531030100",
+      "expected_updated_at": 1792746764.49701,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "-33",
+        "values": [
+          "-33"
+        ]
+      },
+      "raw_key": "-33",
+      "source_pdf_sha256": "2636c7ba6f25da84a7044d174695570cb48b1cd653f1b1a5725b4ce550652693",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 20412,
+      "paper_id": 1863,
+      "ingestion_file_id": 1774,
+      "number": "108",
+      "kind": "NAT",
+      "marks": 6,
+      "source_question_id": "6406531029973",
+      "expected_updated_at": 1792746897.35869,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "010",
+        "values": [
+          "010"
+        ]
+      },
+      "raw_key": "010",
+      "source_pdf_sha256": "17a0c099613b380e1cb0f786a23a78dc6a1e554c6d080e5995ebdbfdfe8a1185",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 20461,
+      "paper_id": 1872,
+      "ingestion_file_id": 1777,
+      "number": "108",
+      "kind": "NAT",
+      "marks": 6,
+      "source_question_id": "6406531029973",
+      "expected_updated_at": 1792748539.74197,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "010",
+        "values": [
+          "010"
+        ]
+      },
+      "raw_key": "010",
+      "source_pdf_sha256": "a313645879626c523227a0bb3faa69425e70814e964ae2d1a7a51a670d460d37",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 20686,
+      "paper_id": 1910,
+      "ingestion_file_id": 1787,
+      "number": "86",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "640653856545",
+      "expected_updated_at": 1792752622.7203,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "1",
+        "values": [
+          "1"
+        ]
+      },
+      "raw_key": "1",
+      "source_pdf_sha256": "6920e1abeb4b5504ada3792a24f7c8aa9997b0c12565903b2ca3099a0ac5b8fb",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 20687,
+      "paper_id": 1912,
+      "ingestion_file_id": 1788,
+      "number": "86",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "640653856545",
+      "expected_updated_at": 1792752649.07926,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "1",
+        "values": [
+          "1"
+        ]
+      },
+      "raw_key": "1",
+      "source_pdf_sha256": "897f545e96ba0998773ea7558be095838d0a7e17de6cd0ce756575f130785bc5",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 20987,
+      "paper_id": 1971,
+      "ingestion_file_id": 1803,
+      "number": "108",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "640653766100",
+      "expected_updated_at": 1792769741.0978,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "20000",
+        "values": [
+          "20000"
+        ]
+      },
+      "raw_key": "20000",
+      "source_pdf_sha256": "b0ac701e2bf5ff4b550a9f39bc566e6fd9b4c75db6e4884dd3c292bf33bf3cb1",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 21121,
+      "paper_id": 1995,
+      "ingestion_file_id": 1811,
+      "number": "124",
+      "kind": "NAT",
+      "marks": 6,
+      "source_question_id": "640653766117",
+      "expected_updated_at": 1792770310.47063,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "111",
+        "values": [
+          "111"
+        ]
+      },
+      "raw_key": "111",
+      "source_pdf_sha256": "6a7cc21aae201e07dae0ba7e9e9f70f45f8ccadf70fc77ca2eb30b90c10315fa",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 21151,
+      "paper_id": 2003,
+      "ingestion_file_id": 1812,
+      "number": "176",
+      "kind": "NAT",
+      "marks": 1,
+      "source_question_id": "640653766174",
+      "expected_updated_at": 1792770379.86566,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "0.5",
+        "values": [
+          "0.5"
+        ]
+      },
+      "raw_key": "0.5",
+      "source_pdf_sha256": "00a7cdb4f8946939d962742598821a993c2a78334e29da88f98cc1b1c61f638f",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 21188,
+      "paper_id": 2010,
+      "ingestion_file_id": 1814,
+      "number": "249",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "640653766251",
+      "expected_updated_at": 1792770477.85097,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "6",
+        "values": [
+          "6"
+        ]
+      },
+      "raw_key": "6",
+      "source_pdf_sha256": "39ad862c8e606c559455675ab4d8deb6b96b5d159192b6c100562fb73dce01ad",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 21259,
+      "paper_id": 2025,
+      "ingestion_file_id": 1818,
+      "number": "46",
+      "kind": "NAT",
+      "marks": 1,
+      "source_question_id": "640653691201",
+      "expected_updated_at": 1792773278.03592,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "346",
+        "values": [
+          "346"
+        ]
+      },
+      "raw_key": "346",
+      "source_pdf_sha256": "c325d4a052c539e1d44898c112261cf19e46e9e80cc8ee2c648de4a62bae6cbc",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 21277,
+      "paper_id": 2025,
+      "ingestion_file_id": 1818,
+      "number": "64",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "640653691234",
+      "expected_updated_at": 1792773300.10706,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "-0.25 to -0.23",
+        "lower": "-0.25",
+        "upper": "-0.23",
+        "inclusive": true
+      },
+      "raw_key": "-0.25 to -0.23",
+      "source_pdf_sha256": "c325d4a052c539e1d44898c112261cf19e46e9e80cc8ee2c648de4a62bae6cbc",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 21354,
+      "paper_id": 2039,
+      "ingestion_file_id": 1822,
+      "number": "127",
+      "kind": "NAT",
+      "marks": 1,
+      "source_question_id": "640653691297",
+      "expected_updated_at": 1792773478.69471,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "2700",
+        "values": [
+          "2700"
+        ]
+      },
+      "raw_key": "2700",
+      "source_pdf_sha256": "ebd516edc43d10b91d866ac0eaa2665a2738ea20f04ce2a3f04fe7e5c89612f7",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 21355,
+      "paper_id": 2043,
+      "ingestion_file_id": 1823,
+      "number": "64",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "640653691234",
+      "expected_updated_at": 1792773507.11883,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "-0.25 to -0.23",
+        "lower": "-0.25",
+        "upper": "-0.23",
+        "inclusive": true
+      },
+      "raw_key": "-0.25 to -0.23",
+      "source_pdf_sha256": "4ba30d929f6352e9cb1ca1589563743a2690f663b0e0661c5dcbc59b00894847",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 21412,
+      "paper_id": 2054,
+      "ingestion_file_id": 1826,
+      "number": "127",
+      "kind": "NAT",
+      "marks": 1,
+      "source_question_id": "640653691297",
+      "expected_updated_at": 1792773829.55914,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "2700",
+        "values": [
+          "2700"
+        ]
+      },
+      "raw_key": "2700",
+      "source_pdf_sha256": "e6094d859d349fbe2cfb5963ecf640412d735b0e214d86c4604d3847b4f31b46",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 21562,
+      "paper_id": 2084,
+      "ingestion_file_id": 1833,
+      "number": "86",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "640653589890",
+      "expected_updated_at": 1792774932.57244,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "-3",
+        "values": [
+          "-3"
+        ]
+      },
+      "raw_key": "-3",
+      "source_pdf_sha256": "02a94a9dc63cbf5b81be23c1460b650a931b802dff68c045a1b5c12b866cda4d",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 21563,
+      "paper_id": 2087,
+      "ingestion_file_id": 1834,
+      "number": "86",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "640653589890",
+      "expected_updated_at": 1792774953.50699,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "-3",
+        "values": [
+          "-3"
+        ]
+      },
+      "raw_key": "-3",
+      "source_pdf_sha256": "72071852dfa0aa27bf049033aeea1bbee79b372e78020cb549d7a5ad475f7b67",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 21732,
+      "paper_id": 1754,
+      "ingestion_file_id": 1562,
+      "number": "336",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "6406531422729",
+      "expected_updated_at": 1792805918.33082,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "7.70 to 7.90",
+        "lower": "7.70",
+        "upper": "7.90",
+        "inclusive": true
+      },
+      "raw_key": "7.70 to 7.90",
+      "source_pdf_sha256": "449bb628b46c62c226602258d6caa4d30dc669c8674552274ee5256193cda398",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 21778,
+      "paper_id": 1761,
+      "ingestion_file_id": 1564,
+      "number": "136",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "6406531422512",
+      "expected_updated_at": 1792806074.77348,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "11101010",
+        "values": [
+          "11101010"
+        ]
+      },
+      "raw_key": "11101010",
+      "source_pdf_sha256": "3dca00a824f3adf27c641d401ce9a400247896e3e1ed4123f497c6e8cd8cf284",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 21804,
+      "paper_id": 1764,
+      "ingestion_file_id": 1565,
+      "number": "115",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "6406531422491",
+      "expected_updated_at": 1792806194.60753,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "7",
+        "values": [
+          "7"
+        ]
+      },
+      "raw_key": "7",
+      "source_pdf_sha256": "a231849e001ed5ab0a429bf9545afef551560a053b33372a6fd11f4a44da2350",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 21806,
+      "paper_id": 1768,
+      "ingestion_file_id": 1566,
+      "number": "154",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "6406531422529",
+      "expected_updated_at": 1792806281.96448,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "21.3 to 22.0",
+        "lower": "21.3",
+        "upper": "22.0",
+        "inclusive": true
+      },
+      "raw_key": "21.3 to 22.0",
+      "source_pdf_sha256": "2c0d429131a44d4c9f1cd8bf1b72dcba0d9ea3e4c5c26d84e876e01864074172",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 21859,
+      "paper_id": 1768,
+      "ingestion_file_id": 1566,
+      "number": "207",
+      "kind": "NAT",
+      "marks": 0.54,
+      "source_question_id": "6406531422590",
+      "expected_updated_at": 1792806343.13326,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "6",
+        "values": [
+          "6"
+        ]
+      },
+      "raw_key": "6",
+      "source_pdf_sha256": "2c0d429131a44d4c9f1cd8bf1b72dcba0d9ea3e4c5c26d84e876e01864074172",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 21878,
+      "paper_id": 1772,
+      "ingestion_file_id": 1567,
+      "number": "154",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "6406531422529",
+      "expected_updated_at": 1792806420.3532,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "21.3 to 22.0",
+        "lower": "21.3",
+        "upper": "22.0",
+        "inclusive": true
+      },
+      "raw_key": "21.3 to 22.0",
+      "source_pdf_sha256": "838e6b1ea02e15a09eb284d2f3db7950d356652b030197a1e328941d9dbf50f3",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 22025,
+      "paper_id": 1790,
+      "ingestion_file_id": 1572,
+      "number": "297",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "6406531422688",
+      "expected_updated_at": 1792807164.62455,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "2",
+        "values": [
+          "2"
+        ]
+      },
+      "raw_key": "2",
+      "source_pdf_sha256": "02c689532208428bc330640255a58618d589dac8a0c9e238ee569113d728a8b2",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 22114,
+      "paper_id": 2131,
+      "ingestion_file_id": 1846,
+      "number": "124",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "640653521908",
+      "expected_updated_at": 1792807748.85496,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "0",
+        "values": [
+          "0"
+        ]
+      },
+      "raw_key": "0",
+      "source_pdf_sha256": "75b56baff39cdd167f592066f6e4c660ea5f027923566d7fb8b8986c4810ccdd",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 22276,
+      "paper_id": 2155,
+      "ingestion_file_id": 1852,
+      "number": "9",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "640653521782",
+      "expected_updated_at": 1792808115.46818,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "9.4 to 9.6",
+        "lower": "9.4",
+        "upper": "9.6",
+        "inclusive": true
+      },
+      "raw_key": "9.4 to 9.6",
+      "source_pdf_sha256": "fef2f2a598f31f390dab3a80fd6eeeb119804f411a9c8a2ceeb96303c012beb7",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 22492,
+      "paper_id": 2201,
+      "ingestion_file_id": 1864,
+      "number": "47",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "640653446388",
+      "expected_updated_at": 1792810169.56323,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "4",
+        "values": [
+          "4"
+        ]
+      },
+      "raw_key": "4",
+      "source_pdf_sha256": "452aa233746d56585dd563208348ff98812da96315d5ac6b2e4fabcd11a63b9e",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 22544,
+      "paper_id": 2205,
+      "ingestion_file_id": 1865,
+      "number": "47",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "640653446388",
+      "expected_updated_at": 1792810251.85274,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "4",
+        "values": [
+          "4"
+        ]
+      },
+      "raw_key": "4",
+      "source_pdf_sha256": "238ff485804bdaf135050ef68280755b4aed796b979a2e361072e63a7630ded2",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 23721,
+      "paper_id": 1735,
+      "ingestion_file_id": 1913,
+      "number": "102",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "6406531425034",
+      "expected_updated_at": 1792821429.09468,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "4.1 to 4.3",
+        "lower": "4.1",
+        "upper": "4.3",
+        "inclusive": true
+      },
+      "raw_key": "4.1 to 4.3",
+      "source_pdf_sha256": "6b8dcb1793dd0cd6c290e697fd63a11c8bfec78b4bfda68d5bef103ad71cf3bf",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 23741,
+      "paper_id": 1735,
+      "ingestion_file_id": 1913,
+      "number": "122",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "6406531425059",
+      "expected_updated_at": 1792821452.45218,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "1",
+        "values": [
+          "1"
+        ]
+      },
+      "raw_key": "1",
+      "source_pdf_sha256": "6b8dcb1793dd0cd6c290e697fd63a11c8bfec78b4bfda68d5bef103ad71cf3bf",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 23795,
+      "paper_id": 1738,
+      "ingestion_file_id": 1914,
+      "number": "270",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "6406531433448",
+      "expected_updated_at": 1792821600.54963,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "17",
+        "values": [
+          "17"
+        ]
+      },
+      "raw_key": "17",
+      "source_pdf_sha256": "c4c95bf81888e81068f03ea086e979c39247fcc5db5477c462e0a09c0fe27ff7",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 23820,
+      "paper_id": 1751,
+      "ingestion_file_id": 1916,
+      "number": "283",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "6406531425237",
+      "expected_updated_at": 1792821684.26773,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "53.65 to 53.75",
+        "lower": "53.65",
+        "upper": "53.75",
+        "inclusive": true
+      },
+      "raw_key": "53.65 to 53.75",
+      "source_pdf_sha256": "1fe3e733347c202e08584fbe27bff4609d72ae5daad57543df61588b93e05374",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 24148,
+      "paper_id": 1854,
+      "ingestion_file_id": 1938,
+      "number": "323",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "6406531041063",
+      "expected_updated_at": 1792854815.30075,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "4",
+        "values": [
+          "4"
+        ]
+      },
+      "raw_key": "4",
+      "source_pdf_sha256": "ce69c877f2f83933740c73e2b59f292b69d7579b8de44bb31ef6f2cea6db19f2",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 24195,
+      "paper_id": 1864,
+      "ingestion_file_id": 1940,
+      "number": "107",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "6406531040827",
+      "expected_updated_at": 1792854973.2176,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "11",
+        "values": [
+          "11"
+        ]
+      },
+      "raw_key": "11",
+      "source_pdf_sha256": "d19639831f1fb49459f8e0c172dc736a86cd6a2320cc220c2724045876393e29",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 24275,
+      "paper_id": 1875,
+      "ingestion_file_id": 1943,
+      "number": "107",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "6406531040827",
+      "expected_updated_at": 1792855487.10222,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "11",
+        "values": [
+          "11"
+        ]
+      },
+      "raw_key": "11",
+      "source_pdf_sha256": "a7ca255bda6cc5804d7910cb27676280a46a8f2c8553adcce18490394a4c1c45",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 24298,
+      "paper_id": 1882,
+      "ingestion_file_id": 1944,
+      "number": "209",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "6406531040938",
+      "expected_updated_at": 1792855585.12437,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "74",
+        "values": [
+          "74"
+        ]
+      },
+      "raw_key": "74",
+      "source_pdf_sha256": "9673ae8d3a7498f580eafa795d3a154c7561f2053e69c36884fc27718e40afcd",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 24375,
+      "paper_id": 1890,
+      "ingestion_file_id": 1946,
+      "number": "323",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "6406531041063",
+      "expected_updated_at": 1792855781.44882,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "4",
+        "values": [
+          "4"
+        ]
+      },
+      "raw_key": "4",
+      "source_pdf_sha256": "fdd2c6f4fb05fae57465c158ef097a409547e885fb775cd816c885f223a8c813",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 24562,
+      "paper_id": 1923,
+      "ingestion_file_id": 1953,
+      "number": "134",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "640653906850",
+      "expected_updated_at": 1792856686.64152,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "300",
+        "values": [
+          "300"
+        ]
+      },
+      "raw_key": "300",
+      "source_pdf_sha256": "4cd28145fec39d929eb2a43466d6dd7961b6d2e726323a3facb5c11f94f785d4",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 24604,
+      "paper_id": 1926,
+      "ingestion_file_id": 1954,
+      "number": "243",
+      "kind": "NAT",
+      "marks": 0.5,
+      "source_question_id": "640653906970",
+      "expected_updated_at": 1792857106.14786,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "71500",
+        "values": [
+          "71500"
+        ]
+      },
+      "raw_key": "71500",
+      "source_pdf_sha256": "a67d0be5f96d57b726ca07ac42c79cecb266f4dd0fc4fac2ef184c7cfa20c837",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 24606,
+      "paper_id": 1928,
+      "ingestion_file_id": 1955,
+      "number": "243",
+      "kind": "NAT",
+      "marks": 0.5,
+      "source_question_id": "640653906970",
+      "expected_updated_at": 1792857141.07756,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "71500",
+        "values": [
+          "71500"
+        ]
+      },
+      "raw_key": "71500",
+      "source_pdf_sha256": "427bb5c224ced1c11ba9b86262f19757b7aa8de41acbb11c172cbc0a1feb0307",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 24745,
+      "paper_id": 1945,
+      "ingestion_file_id": 1960,
+      "number": "184",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "640653906903",
+      "expected_updated_at": 1792857543.51484,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "3.95 to 4.05",
+        "lower": "3.95",
+        "upper": "4.05",
+        "inclusive": true
+      },
+      "raw_key": "3.95 to 4.05",
+      "source_pdf_sha256": "3264f196905153638de0346bbf42c3fba80007f79ce74b2acd2ccb72f3230612",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 24747,
+      "paper_id": 1948,
+      "ingestion_file_id": 1961,
+      "number": "134",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "640653906850",
+      "expected_updated_at": 1792857593.59614,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "300",
+        "values": [
+          "300"
+        ]
+      },
+      "raw_key": "300",
+      "source_pdf_sha256": "3e161d86f3ae15e00d5ec115b6194245a24a450e1890b81eedce387bccbb631b",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 24773,
+      "paper_id": 1948,
+      "ingestion_file_id": 1961,
+      "number": "160",
+      "kind": "NAT",
+      "marks": 5,
+      "source_question_id": "640653906886",
+      "expected_updated_at": 1792857624.10452,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "17",
+        "values": [
+          "17"
+        ]
+      },
+      "raw_key": "17",
+      "source_pdf_sha256": "3e161d86f3ae15e00d5ec115b6194245a24a450e1890b81eedce387bccbb631b",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 25042,
+      "paper_id": 1996,
+      "ingestion_file_id": 1972,
+      "number": "159",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "640653820824",
+      "expected_updated_at": 1792894072.31302,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "11111001",
+        "values": [
+          "11111001"
+        ]
+      },
+      "raw_key": "11111001",
+      "source_pdf_sha256": "9affb3256109a213289a49f4324d41765c733d4e8dfb83afd8397730cc419f0b",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 25059,
+      "paper_id": 2007,
+      "ingestion_file_id": 1973,
+      "number": "212",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "640653820873",
+      "expected_updated_at": 1792894127.41338,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "3",
+        "values": [
+          "3"
+        ]
+      },
+      "raw_key": "3",
+      "source_pdf_sha256": "6e96f77cf13e0cb118b82718a3c26d95f5d122dc30f54f3acaf9a5fc24211ffc",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 25132,
+      "paper_id": 2014,
+      "ingestion_file_id": 1975,
+      "number": "31",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "640653698420",
+      "expected_updated_at": 1792894960.41565,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "5",
+        "values": [
+          "5"
+        ]
+      },
+      "raw_key": "5",
+      "source_pdf_sha256": "3e9670ab37adfcab824a75c636960bec911c02bcf2acbf44719173be01a1af72",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 25133,
+      "paper_id": 2018,
+      "ingestion_file_id": 1976,
+      "number": "31",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "640653698420",
+      "expected_updated_at": 1792895733.65501,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "5",
+        "values": [
+          "5"
+        ]
+      },
+      "raw_key": "5",
+      "source_pdf_sha256": "6c9fbe781ceafa9865bf66391a272bc9f9afa12cb42789ba80434648e38211dd",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 25200,
+      "paper_id": 2026,
+      "ingestion_file_id": 1978,
+      "number": "97",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "640653698516",
+      "expected_updated_at": 1792895896.91851,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "100",
+        "values": [
+          "100"
+        ]
+      },
+      "raw_key": "100",
+      "source_pdf_sha256": "b2c9bba0d8fee9765c67c894a35cd7932cde1aedcd6a37979ddd69ad1a7f6013",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 25445,
+      "paper_id": 2067,
+      "ingestion_file_id": 1989,
+      "number": "155",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "640653698569",
+      "expected_updated_at": 1792896598.31409,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "3142",
+        "values": [
+          "3142"
+        ]
+      },
+      "raw_key": "3142",
+      "source_pdf_sha256": "d9eb9235239cae67ace5aef6a710e4ed08a2392dfe02db6d913d30d1b19c4d9f",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 25472,
+      "paper_id": 2070,
+      "ingestion_file_id": 1990,
+      "number": "123",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "640653698543",
+      "expected_updated_at": 1792896695.14394,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "4",
+        "values": [
+          "4"
+        ]
+      },
+      "raw_key": "4",
+      "source_pdf_sha256": "0999eaf3dc745fcd880391a250a932784cc0bf48a051494f41135dfbb5db075e",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 26582,
+      "paper_id": 1849,
+      "ingestion_file_id": 2035,
+      "number": "104",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "6406531045524",
+      "expected_updated_at": 1792911276.75287,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "5120",
+        "values": [
+          "5120"
+        ]
+      },
+      "raw_key": "5120",
+      "source_pdf_sha256": "a18e5a0d5175339533d0d4aca5e3011fb1a9fe4aa27133eb2b98c3c868d7b23f",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 26611,
+      "paper_id": 1856,
+      "ingestion_file_id": 2037,
+      "number": "325",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "6406531045754",
+      "expected_updated_at": 1792911392.44125,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "2",
+        "values": [
+          "2"
+        ]
+      },
+      "raw_key": "2",
+      "source_pdf_sha256": "b0160050d09d11ace43b7e80d46fccf810291cf96c0460ce203c900b59bd394a",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 26644,
+      "paper_id": 1856,
+      "ingestion_file_id": 2037,
+      "number": "358",
+      "kind": "NAT",
+      "marks": 1,
+      "source_question_id": "6406531045780",
+      "expected_updated_at": 1792911429.48467,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "22.82 to 23.92",
+        "lower": "22.82",
+        "upper": "23.92",
+        "inclusive": true
+      },
+      "raw_key": "22.82 to 23.92",
+      "source_pdf_sha256": "b0160050d09d11ace43b7e80d46fccf810291cf96c0460ce203c900b59bd394a",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 26688,
+      "paper_id": 1873,
+      "ingestion_file_id": 2040,
+      "number": "130",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "6406531045546",
+      "expected_updated_at": 1792911626.82345,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "7",
+        "values": [
+          "7"
+        ]
+      },
+      "raw_key": "7",
+      "source_pdf_sha256": "0b9f0f5c364cbec581b0f2a9e0cc9a8b64d4ddaf1cbb9cdc39aa4a140526a094",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 26736,
+      "paper_id": 1876,
+      "ingestion_file_id": 2041,
+      "number": "130",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "6406531045546",
+      "expected_updated_at": 1792911741.48729,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "7",
+        "values": [
+          "7"
+        ]
+      },
+      "raw_key": "7",
+      "source_pdf_sha256": "4ecceb4f771325afe71529a017834a26825ec15a491cf45e9f9cbbc5deef1333",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 26737,
+      "paper_id": 1879,
+      "ingestion_file_id": 2042,
+      "number": "196",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "6406531046046",
+      "expected_updated_at": 1792913206.0466,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "3",
+        "values": [
+          "3"
+        ]
+      },
+      "raw_key": "3",
+      "source_pdf_sha256": "b0a8889259337cf300a39c726a7f7f5b96e4f2702fb4db9099b3109a3f3c34ae",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 26763,
+      "paper_id": 1879,
+      "ingestion_file_id": 2042,
+      "number": "222",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "6406531046069",
+      "expected_updated_at": 1792913235.61882,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "0.18",
+        "values": [
+          "0.18"
+        ]
+      },
+      "raw_key": "0.18",
+      "source_pdf_sha256": "b0a8889259337cf300a39c726a7f7f5b96e4f2702fb4db9099b3109a3f3c34ae",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 26918,
+      "paper_id": 1924,
+      "ingestion_file_id": 2053,
+      "number": "348",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "640653904379",
+      "expected_updated_at": 1792940573.96681,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "21656 to 22094",
+        "lower": "21656",
+        "upper": "22094",
+        "inclusive": true
+      },
+      "raw_key": "21656 to 22094",
+      "source_pdf_sha256": "71b6fd175bc84f2880ef3af6ab6d3da9e9636fc5179d68018ce8cab25142728b",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 26990,
+      "paper_id": 1927,
+      "ingestion_file_id": 2054,
+      "number": "419",
+      "kind": "NAT",
+      "marks": 0.5,
+      "source_question_id": "640653904481",
+      "expected_updated_at": 1792940681.76313,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "71500",
+        "values": [
+          "71500"
+        ]
+      },
+      "raw_key": "71500",
+      "source_pdf_sha256": "4966b5a2d712ec99f85b130a222911c2beb86453d67cfa7644a66adfdf0f2440",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 27093,
+      "paper_id": 1946,
+      "ingestion_file_id": 2057,
+      "number": "170",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "640653904205",
+      "expected_updated_at": 1792941058.59753,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "7.95 to 8.05",
+        "lower": "7.95",
+        "upper": "8.05",
+        "inclusive": true
+      },
+      "raw_key": "7.95 to 8.05",
+      "source_pdf_sha256": "56bb8a3d0c0b7b2cb74bf4d16e8b755d2149be4908ed142c0e07d92eb9a51a4d",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 27121,
+      "paper_id": 1949,
+      "ingestion_file_id": 2058,
+      "number": "146",
+      "kind": "NAT",
+      "marks": 5,
+      "source_question_id": "640653904188",
+      "expected_updated_at": 1792941148.53814,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "36",
+        "values": [
+          "36"
+        ]
+      },
+      "raw_key": "36",
+      "source_pdf_sha256": "3954770c4dafa380426dec972040193286d58aee074bcfeea0bf03309e0f26a3",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 27233,
+      "paper_id": 1959,
+      "ingestion_file_id": 2061,
+      "number": "348",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "640653904379",
+      "expected_updated_at": 1792941435.70955,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "21656 to 22094",
+        "lower": "21656",
+        "upper": "22094",
+        "inclusive": true
+      },
+      "raw_key": "21656 to 22094",
+      "source_pdf_sha256": "f262babc9cac1a24db5c14a6a5ac216064d36d9af4ac7e50b0223e053f2643f9",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 27403,
+      "paper_id": 1997,
+      "ingestion_file_id": 2068,
+      "number": "115",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "640653821533",
+      "expected_updated_at": 1792945556.14989,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "11111000",
+        "values": [
+          "11111000"
+        ]
+      },
+      "raw_key": "11111000",
+      "source_pdf_sha256": "65e57801d6c9a3b563b3383dd9d0db462d480e4daa08f5b2446bc5aab3aa3050",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 27457,
+      "paper_id": 2001,
+      "ingestion_file_id": 2070,
+      "number": "94",
+      "kind": "NAT",
+      "marks": 5,
+      "source_question_id": "640653821511",
+      "expected_updated_at": 1792945708.43109,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "11",
+        "values": [
+          "11"
+        ]
+      },
+      "raw_key": "11",
+      "source_pdf_sha256": "52d2d08239f15352e2be2d8b907841a64a226faad64f2831799a7638d751678e",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 27584,
+      "paper_id": 1887,
+      "ingestion_file_id": 2044,
+      "number": "358",
+      "kind": "NAT",
+      "marks": 1,
+      "source_question_id": "6406531045780",
+      "expected_updated_at": 1792986592.04127,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "22.82 to 23.92",
+        "lower": "22.82",
+        "upper": "23.92",
+        "inclusive": true
+      },
+      "raw_key": "22.82 to 23.92",
+      "source_pdf_sha256": "279e65a7fab90a275ddfc425ee28f7b0eba264f7a22382fd9ea6f51bafc03595",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 27659,
+      "paper_id": 1891,
+      "ingestion_file_id": 2045,
+      "number": "325",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "6406531045754",
+      "expected_updated_at": 1792986703.00314,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "2",
+        "values": [
+          "2"
+        ]
+      },
+      "raw_key": "2",
+      "source_pdf_sha256": "d3ca5dc815b6fefe334695dea3770eefa7ad4c96ef17d8c6915e2a6392ad50dd",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 27713,
+      "paper_id": 2015,
+      "ingestion_file_id": 2074,
+      "number": "33",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "640653699206",
+      "expected_updated_at": 1792987272.89517,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "3",
+        "values": [
+          "3"
+        ]
+      },
+      "raw_key": "3",
+      "source_pdf_sha256": "50e00e87d7e719f4bc6a8baccc7f1d91000d9908aac21a2cdc0aeac22c550f25",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 27714,
+      "paper_id": 2019,
+      "ingestion_file_id": 2075,
+      "number": "33",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "640653699206",
+      "expected_updated_at": 1792987338.24243,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "3",
+        "values": [
+          "3"
+        ]
+      },
+      "raw_key": "3",
+      "source_pdf_sha256": "657679149bef35de0fe1022b02af760ea7ed99933bf9718c07b26880ac9e65e7",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 27782,
+      "paper_id": 2027,
+      "ingestion_file_id": 2077,
+      "number": "100",
+      "kind": "NAT",
+      "marks": 5,
+      "source_question_id": "640653699296",
+      "expected_updated_at": 1792987495.12771,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "1.5",
+        "values": [
+          "1.5"
+        ]
+      },
+      "raw_key": "1.5",
+      "source_pdf_sha256": "2af9c213419897530b54edf0168c192f1f8b8ce1c2a58f577a72086abd30d1e3",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 27876,
+      "paper_id": 2041,
+      "ingestion_file_id": 2081,
+      "number": "267",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "640653699481",
+      "expected_updated_at": 1792987697.03658,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "-36 to -30",
+        "lower": "-36",
+        "upper": "-30",
+        "inclusive": true
+      },
+      "raw_key": "-36 to -30",
+      "source_pdf_sha256": "ce9d0bf4f448d3ef6b3672b9e7f7d5b1b5bb925dc0ae7f78f415d2520536284f",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 27920,
+      "paper_id": 2048,
+      "ingestion_file_id": 2083,
+      "number": "179",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "640653699366",
+      "expected_updated_at": 1792987815.93407,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "5.5",
+        "values": [
+          "5.5"
+        ]
+      },
+      "raw_key": "5.5",
+      "source_pdf_sha256": "26b43a4652ddd35c11dd3a7a94f0706ff8eb6c8e2e54ba98abb6017a99238e12",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 27978,
+      "paper_id": 2064,
+      "ingestion_file_id": 2087,
+      "number": "126",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "640653699331",
+      "expected_updated_at": 1792988052.52793,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "6",
+        "values": [
+          "6"
+        ]
+      },
+      "raw_key": "6",
+      "source_pdf_sha256": "9d4e3ada102cb4587d31e48710fffe792a09aa8921d9e54aae3335d0887fc5c4",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 28032,
+      "paper_id": 2068,
+      "ingestion_file_id": 2088,
+      "number": "179",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "640653699366",
+      "expected_updated_at": 1792988197.12479,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "5.5",
+        "values": [
+          "5.5"
+        ]
+      },
+      "raw_key": "5.5",
+      "source_pdf_sha256": "9be1030bde3c681484a16caa1c67788312ec355e28571de628d0ec2e586dc6da",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 28058,
+      "paper_id": 2071,
+      "ingestion_file_id": 2089,
+      "number": "126",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "640653699331",
+      "expected_updated_at": 1792988294.41786,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "6",
+        "values": [
+          "6"
+        ]
+      },
+      "raw_key": "6",
+      "source_pdf_sha256": "ffa1a6eb95ef065d71a45025bd710f09bad6bb4576f8309d9fa112fb3bc874e8",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 28429,
+      "paper_id": 2137,
+      "ingestion_file_id": 2106,
+      "number": "24",
+      "kind": "NAT",
+      "marks": 1.5,
+      "source_question_id": "640653566896",
+      "expected_updated_at": 1792994086.67272,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "114",
+        "values": [
+          "114"
+        ]
+      },
+      "raw_key": "114",
+      "source_pdf_sha256": "09a733c5015fd49c732c52104fe75e4bb1d2d5682cac9fb9d486c3ef6c9e7cd6",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 28603,
+      "paper_id": 2157,
+      "ingestion_file_id": 2111,
+      "number": "24",
+      "kind": "NAT",
+      "marks": 1.5,
+      "source_question_id": "640653566896",
+      "expected_updated_at": 1792994510.08703,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "114",
+        "values": [
+          "114"
+        ]
+      },
+      "raw_key": "114",
+      "source_pdf_sha256": "e97ce8ec674e79efe2d85e9ae0b8a233014780d5e5734560e920f7e72f8a6f11",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 29689,
+      "paper_id": 3064,
+      "ingestion_file_id": 2163,
+      "number": "169",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "6406531404757",
+      "expected_updated_at": 1793506369.49838,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "5.64 to 5.68",
+        "lower": "5.64",
+        "upper": "5.68",
+        "inclusive": true
+      },
+      "raw_key": "5.64 to 5.68",
+      "source_pdf_sha256": "747783d8f7a4ca35826441b9b581b86ec89046b9ca86fbd3efdf36b9b09cb354",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 29690,
+      "paper_id": 3066,
+      "ingestion_file_id": 2164,
+      "number": "169",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "6406531404757",
+      "expected_updated_at": 1793506499.14518,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "5.64 to 5.68",
+        "lower": "5.64",
+        "upper": "5.68",
+        "inclusive": true
+      },
+      "raw_key": "5.64 to 5.68",
+      "source_pdf_sha256": "9d70bb60d30463b83258c12e72dade0f8735391402f8136497194d2eff291187",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 29717,
+      "paper_id": 3066,
+      "ingestion_file_id": 2164,
+      "number": "196",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "6406531404787",
+      "expected_updated_at": 1793506532.72043,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "3.8 to 4.1",
+        "lower": "3.8",
+        "upper": "4.1",
+        "inclusive": true
+      },
+      "raw_key": "3.8 to 4.1",
+      "source_pdf_sha256": "9d70bb60d30463b83258c12e72dade0f8735391402f8136497194d2eff291187",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 29774,
+      "paper_id": 3072,
+      "ingestion_file_id": 2166,
+      "number": "21",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "6406531404598",
+      "expected_updated_at": 1793506921.91888,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "8",
+        "values": [
+          "8"
+        ]
+      },
+      "raw_key": "8",
+      "source_pdf_sha256": "e224d0987bdcf08f85a425c920fd622b4f0b5baec8752a031bce0f0f229badc6",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 29801,
+      "paper_id": 3075,
+      "ingestion_file_id": 2167,
+      "number": "47",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "6406531404625",
+      "expected_updated_at": 1793507054.65726,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "76",
+        "values": [
+          "76"
+        ]
+      },
+      "raw_key": "76",
+      "source_pdf_sha256": "13d5b3f7581c0e895a80ee3dc0238abe99e236a1e5fce72f3f135194932fb961",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 29804,
+      "paper_id": 3079,
+      "ingestion_file_id": 2168,
+      "number": "94",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "6406531404677",
+      "expected_updated_at": 1793507220.70597,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "4",
+        "values": [
+          "4"
+        ]
+      },
+      "raw_key": "4",
+      "source_pdf_sha256": "5138e9065e1e1b4932fe071a7fa97562496f1a1cdcc24f8e3a459f0b3523c631",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 29916,
+      "paper_id": 3090,
+      "ingestion_file_id": 2171,
+      "number": "357",
+      "kind": "NAT",
+      "marks": 5,
+      "source_question_id": "6406531404969",
+      "expected_updated_at": 1793508001.46913,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "32",
+        "values": [
+          "32"
+        ]
+      },
+      "raw_key": "32",
+      "source_pdf_sha256": "4fdebbbaa7d43cbc3b64a9aba818218693e8543f10f1cc8caac5c624e10feb8d",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 29942,
+      "paper_id": 3052,
+      "ingestion_file_id": 2172,
+      "number": "303",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "6406531404907",
+      "expected_updated_at": 1793508321.2238,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "77 to 78",
+        "lower": "77",
+        "upper": "78",
+        "inclusive": true
+      },
+      "raw_key": "77 to 78",
+      "source_pdf_sha256": "e42ffb876fd41b32295ccdfc0840d6e931a7ee6c671eec9a51f5526bd8a61c61",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 29979,
+      "paper_id": 3212,
+      "ingestion_file_id": 2174,
+      "number": "145",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "640653737420",
+      "expected_updated_at": 1793508457.87639,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "3.12 to 3.20",
+        "lower": "3.12",
+        "upper": "3.20",
+        "inclusive": true
+      },
+      "raw_key": "3.12 to 3.20",
+      "source_pdf_sha256": "b71f95c34ba15dbf9c9997f2ff467a8e0e595e08e7a74b61699c6018601e3940",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 29993,
+      "paper_id": 3215,
+      "ingestion_file_id": 2175,
+      "number": "192",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "640653737469",
+      "expected_updated_at": 1793508520.2297,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "60",
+        "values": [
+          "60"
+        ]
+      },
+      "raw_key": "60",
+      "source_pdf_sha256": "7b25339954a3c98f0da71527a3d67ef02da702f3744e4e804054323614d92304",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 30019,
+      "paper_id": 3219,
+      "ingestion_file_id": 2176,
+      "number": "217",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "640653737499",
+      "expected_updated_at": 1793508630.07779,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "4",
+        "values": [
+          "4"
+        ]
+      },
+      "raw_key": "4",
+      "source_pdf_sha256": "00bd7fa08a3cc0d5b6bdb138f3583223bc97a6de4c79b589b3f1a1a9df8bfeb0",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 30054,
+      "paper_id": 3228,
+      "ingestion_file_id": 2178,
+      "number": "116",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "640653737391",
+      "expected_updated_at": 1793508815.487,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "6",
+        "values": [
+          "6"
+        ]
+      },
+      "raw_key": "6",
+      "source_pdf_sha256": "0a49425238fbe8b70469fe1f514a62a6d9eb2d1ad078a072efd534eb18cfcefe",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 30056,
+      "paper_id": 3232,
+      "ingestion_file_id": 2179,
+      "number": "145",
+      "kind": "NAT",
+      "marks": 4,
+      "source_question_id": "640653737420",
+      "expected_updated_at": 1793508923.70317,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "3.12 to 3.20",
+        "lower": "3.12",
+        "upper": "3.20",
+        "inclusive": true
+      },
+      "raw_key": "3.12 to 3.20",
+      "source_pdf_sha256": "eea904fe99ae9055bfb6f6b5f1999e880a423099b36edbf826309016d9fa548b",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 30156,
+      "paper_id": 3056,
+      "ingestion_file_id": 2183,
+      "number": "336",
+      "kind": "NAT",
+      "marks": 2,
+      "source_question_id": "6406531404948",
+      "expected_updated_at": 1793510583.8169,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "range",
+        "raw": "53.65 to 53.75",
+        "lower": "53.65",
+        "upper": "53.75",
+        "inclusive": true
+      },
+      "raw_key": "53.65 to 53.75",
+      "source_pdf_sha256": "0bf1f6685404345e6f667d0b26d81338ce0c23746fb80e0ab5aa22e61a8a8cec",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    },
+    {
+      "id": 30173,
+      "paper_id": 3060,
+      "ingestion_file_id": 2184,
+      "number": "94",
+      "kind": "NAT",
+      "marks": 3,
+      "source_question_id": "6406531404677",
+      "expected_updated_at": 1793510662.97522,
+      "old_answers": null,
+      "old_answer_status": "ANSWER_UNAVAILABLE",
+      "answers": {
+        "kind": "values",
+        "raw": "4",
+        "values": [
+          "4"
+        ]
+      },
+      "raw_key": "4",
+      "source_pdf_sha256": "007a942ee81a7dc7a7b398c3d7685f569b9f2bc5835622c0a5993e9fdb52ff8f",
+      "verification": "pdf_extracted_explicit_key_with_section_boundary"
+    }
+  ]
+}

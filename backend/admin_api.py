@@ -575,6 +575,24 @@ def content_reports():
     if status!='ALL':query=query.filter_by(status=status)
     return jsonify(paginate(query.order_by(ContentReport.created_at.desc()),report_json))
 
+@admin.get('/content-reports/<int:id>/source')
+@require_user(True)
+def content_report_source(id):
+    # Prefer the exact PDF that produced this question, even after replacement.
+    row=db.session.query(Question.paper_id,Question.ingestion_file_id).join(ContentReport,ContentReport.question_id==Question.id).filter(ContentReport.id==id).first_or_404()
+    files=db.session.query(IngestionFile.path).filter(IngestionFile.path.isnot(None))
+    source=files.filter(IngestionFile.id==row.ingestion_file_id).first() if row.ingestion_file_id else None
+    if source is None:
+        p=db.get_or_404(Paper,row.paper_id)
+        source=files.filter(IngestionFile.paper_id==(p.canonical_paper_id or p.id)).order_by(IngestionFile.id.desc()).first_or_404()
+    from .storage import private_download_url
+    filename='paper-'+str(row.paper_id)+'.pdf'
+    url=private_download_url(source.path,filename,as_attachment=False)
+    response=redirect(url,code=302) if url else send_asset(source.path,mimetype='application/pdf',as_attachment=False,download_name=filename)
+    response.headers['Cache-Control']='private, no-store'
+    return response
+
+
 @admin.get('/content-reports/<int:id>')
 @require_user(True)
 def content_report_detail(id):

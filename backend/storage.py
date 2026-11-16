@@ -225,7 +225,7 @@ def private_asset_url(name,image_id=None,expires=600):
     return '/api/images/'+str(image_id) if image_id is not None else None
 
 
-def private_download_url(name,filename,mimetype='application/pdf',expires=900):
+def private_download_url(name,filename,mimetype='application/pdf',expires=900,as_attachment=True):
     """Short-lived signed R2 link that downloads as an attachment.
 
     Source PDFs can be megabytes. Redirecting the browser to R2 means Flask
@@ -236,7 +236,7 @@ def private_download_url(name,filename,mimetype='application/pdf',expires=900):
     if not enabled():return None
     if not re.fullmatch(r'[A-Za-z0-9._-]{1,120}',filename or ''):raise StorageError('Invalid download filename')
     try:
-        params={**object_args(name),'ResponseContentDisposition':'attachment; filename="'+filename+'"','ResponseContentType':mimetype}
+        params={**object_args(name),'ResponseContentDisposition':('attachment' if as_attachment else 'inline')+'; filename="'+filename+'"','ResponseContentType':mimetype}
         return client().generate_presigned_url('get_object',Params=params,ExpiresIn=max(60,min(int(expires),3600)))
     except StorageError:raise
     except Exception as exc:raise failure(exc,'signed download URL generation') from None

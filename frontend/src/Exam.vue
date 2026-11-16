@@ -11,7 +11,7 @@ import {api,go,session} from './api';import {clock,paletteLabel,answerText} from
 const props=defineProps({id:Number});const attempt=ref(null),item=ref(null),index=ref(0),value=ref(null),error=ref(''),saving=ref(false),feedback=ref(null),confirm=ref(false),showPalette=ref(false),seconds=ref(null),saved=ref('All responses saved'),pending=ref(null);
 const navigating=ref(false),switching=ref(false),instructions=ref(false),submitting=ref(false),scratchOpen=ref(false),calculatorOpen=ref(false),natInput=ref(null),feedbackPanel=ref(null);
 const reportQuestion=ref(null),reportNotice=ref('');
-const cache=reactive(new Map()),queued=new Map();let ticker,poller,draftTimer,saveTask=null,serverNow=0,received=0,stopped=false,inflight=null,timeoutRequested=false;const prefetched=new Set(),prefetchAssets=new Map(),prefetchTimers=new Set();
+const cache=reactive(new Map()),queued=new Map();let ticker,poller,draftTimer,validationTimer,saveTask=null,serverNow=0,received=0,stopped=false,inflight=null,timeoutRequested=false;const prefetched=new Set(),prefetchAssets=new Map(),prefetchTimers=new Set();
 const key='pyq-pending-'+props.id,draftKey='pyq-draft-'+props.id,visitedKey='pyq-visited-'+props.id;
 const checked=reactive(new Set()),checking=ref(false);
 const practiceCache=reactive(new Map()),practicePending=new Map();let practiceGeneration=0;
@@ -87,6 +87,14 @@ function persist(data){
  d.visited=true;localState(data.question_id);saveVisited();
  queued.set(data.question_id,{...queued.get(data.question_id),...data});journal();saved.value='Saving…';scheduleSave(800);return Promise.resolve(true);
 }
+const numericValidationMessage='Enter a finite number or fraction';
+function clearNumericWarning(){clearTimeout(validationTimer);if(error.value===numericValidationMessage)error.value=''}
+function saveError(e){
+ clearTimeout(validationTimer);error.value=e.message;
+ if(e.status===400&&e.message===numericValidationMessage){
+  validationTimer=setTimeout(()=>{if(!stopped&&error.value===numericValidationMessage)error.value=''},4000);
+ }
+}
 function drain(){
  clearTimeout(draftTimer);
  if(saveTask)return saveTask;
@@ -107,12 +115,12 @@ function drain(){
      inflight=null;pending.value=null;
     }catch(e){
      for(const data of inflightEntries())queued.set(data.question_id,{...data,...queued.get(data.question_id)});
-     inflight=null;pending.value=[...queued.values()].at(-1)||null;journal();saved.value='Response pending — retry to save';error.value=e.message;
+     inflight=null;pending.value=[...queued.values()].at(-1)||null;journal();saved.value='Response pending — retry to save';saveError(e);
      if(e.status===409){await sync();return false}
      return false;
     }
    }
-   if(!queued.size){inflight=null;pending.value=null;journal();saved.value='All responses saved';return true}
+   if(!queued.size){inflight=null;pending.value=null;journal();saved.value='All responses saved';clearNumericWarning();return true}
    saved.value='Responses pending';return false;
   }finally{saving.value=false}
  })().finally(()=>{saveTask=null});
@@ -126,7 +134,7 @@ async function retry(){
  return ok;
 }
 function editText(v){
- value.value=v;feedback.value=null;const qid=current.value.question_id;checked.delete(qid);const d=cache.get(qid);d.answer=v;d.touched=true;d.visited=true;d.feedback=null;localState(qid);saveVisited();
+ clearNumericWarning();value.value=v;feedback.value=null;const qid=current.value.question_id;checked.delete(qid);const d=cache.get(qid);d.answer=v;d.touched=true;d.visited=true;d.feedback=null;localState(qid);saveVisited();
  queued.set(qid,{...queued.get(qid),question_id:qid,answer:v});journal();saved.value='Unsaved response';scheduleSave(800);
 }
 async function flushText(){clearTimeout(draftTimer);return drain()}
@@ -209,7 +217,7 @@ onMounted(async()=>{try{
  const tick=()=>{insights?.pulse();seconds.value=attempt.value?.deadline?Math.max(0,Math.ceil(attempt.value.deadline-serverNow-(performance.now()-received)/1000)):null;if(seconds.value===0&&!timeoutRequested){timeoutRequested=true;submit()}};tick();ticker=setInterval(tick,1000);scheduleHeartbeat();
  window.addEventListener('keydown',keyboard);window.addEventListener('online',online);window.addEventListener('beforeunload',leaving);window.addEventListener('pagehide',pageHidden);window.addEventListener('pageshow',trackPaper);document.addEventListener('visibilitychange',visible);
 }catch(e){error.value=e.message}});
-onUnmounted(()=>{insights?.active(null,false);if(attempt.value?.status==='ACTIVE')journal();stopped=true;practiceGeneration++;practiceCache.clear();practicePending.clear();clearInterval(ticker);clearTimeout(poller);clearTimeout(draftTimer);for(const id of prefetchTimers)clearTimeout(id);prefetchTimers.clear();prefetchAssets.clear();window.removeEventListener('online',online);window.removeEventListener('keydown',keyboard);window.removeEventListener('beforeunload',leaving);window.removeEventListener('pagehide',pageHidden);window.removeEventListener('pageshow',trackPaper);document.removeEventListener('visibilitychange',visible)});
+onUnmounted(()=>{insights?.active(null,false);if(attempt.value?.status==='ACTIVE')journal();stopped=true;practiceGeneration++;practiceCache.clear();practicePending.clear();clearInterval(ticker);clearTimeout(poller);clearTimeout(draftTimer);clearTimeout(validationTimer);for(const id of prefetchTimers)clearTimeout(id);prefetchTimers.clear();prefetchAssets.clear();window.removeEventListener('online',online);window.removeEventListener('keydown',keyboard);window.removeEventListener('beforeunload',leaving);window.removeEventListener('pagehide',pageHidden);window.removeEventListener('pageshow',trackPaper);document.removeEventListener('visibilitychange',visible)});
 </script>
 <template><template v-if="attempt"><header class="exam-header"><a class="exam-logo" href="/progress"><BookOpen/> MauryaHub PYQ</a><div><span class="eyebrow">{{attempt.mode==='exam'?'TIMED EXAM':'PRACTICE SESSION'}}</span><h1>{{displayExamTitle(attempt.title)}}</h1></div><button class="btn btn-light mode-switch" @click="switchMode" :disabled="submitting">{{switching?'Switching…':('Switch to '+(attempt.mode==='exam'?'practice':'exam'))}}</button><button class="btn btn-light exam-tool-button mobile-hide-tool" @click="scratchOpen=!scratchOpen"><NotebookPen :size="15"/>Scratch</button><button class="btn btn-light exam-tool-button" aria-label="Open calculator" @click="calculatorOpen=!calculatorOpen"><Calculator :size="15"/>Calculator</button><button class="btn btn-light mobile-hide-tool" @click="instructions=true">Instructions</button><div class="timer" :class="{urgent:seconds!==null&&seconds<120}"><Clock :size="19"/>{{seconds===null?'Untimed':clock(seconds)}}</div></header><div class="cbt-section-bar"><strong v-if="!attempt.custom_exam">Section 1 · Question paper</strong><nav v-if="attempt.custom_exam" class="custom-paper-tabs" aria-label="Exam papers"><button v-for="(p,n) in paperTabs" :key="p.id" class="btn" :class="activePaper?.id===p.id?'btn-primary':'btn-light'" :disabled="submitting" :aria-pressed="activePaper?.id===p.id" @click="chooseSection(p)">{{n+1}}. {{displayExamTitle(p.title)}} · {{p.answered}}/{{p.questions}}</button></nav><span class="section-user">{{session.user?.name||'Guest'}} · {{attempt.mode==='exam'?'Exam mode':'Practice mode'}}</span></div><div v-if="error" class="alert alert-danger" role="alert">{{error}}<button v-if="pending" class="btn btn-light ms-3" @click="retry" :disabled="saving">Retry save</button></div><p v-if="insightsWarning" class="alert alert-warning" role="status">{{insightsWarning}}</p><div class="exam-layout"><section class="question-panel panel" v-if="item"><div class="section-row"><span class="eyebrow current-question-label">Question {{index+1}} of {{attempt.palette.length}}<small v-if="String(item.question.number)!==String(index+1)"> · Paper Q{{item.question.number}}</small></span><div class="question-tools"><button v-if="attempt.custom_exam" class="btn btn-light btn-sm" :aria-pressed="unsureQuestions.includes(current.question_id)" :disabled="submitting" @click="toggleUnsure">{{unsureQuestions.includes(current.question_id)?'Unsure ✓':'Mark unsure'}}</button><button @click="bookmark" class="btn btn-light btn-sm"><Bookmark :size="17" :fill="item.bookmarked?'currentColor':'none'"/>{{item.bookmarked?'Bookmarked':'Bookmark'}}</button><button class="btn btn-light btn-sm" @click="reportQuestion={id:item.question.id,number:String(item.question.number)}"><Flag :size="16"/>Report Broken Format</button></div></div><ComprehensionLayout :passage="item.question.passage" :images="item.question.images.filter(i=>!i.option_key)"><div class="question-content"><div class="question-meta"><span>{{item.question.kind.replace('_',' / ')}}</span><span>{{item.question.marks===null?'Marks not specified':'+'+item.question.marks+' marks'}}</span><span v-if="item.question.negative_marks">−{{item.question.negative_marks}} incorrect</span></div>
 <div>

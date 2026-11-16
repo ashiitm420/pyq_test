@@ -22,3 +22,27 @@ describe('NAT drafts in timed exams',()=>{
   await w.findAll('button').find(b=>b.text()==='Submit exam').trigger('click');await w.findAll('button').find(b=>b.text()==='Submit attempt').trigger('click');await flushPromises();expect(stored[1]).toBe('42');expect(mocks.go).toHaveBeenCalledWith('/result/1');w.unmount();
  });
 });
+
+
+describe('temporary numeric validation warnings',()=>{
+ it('dismisses invalid-number warnings after four seconds without deleting the pending draft',async()=>{
+  const normal=mocks.api.getMockImplementation();mocks.api.mockImplementation((path,o)=>path.endsWith('/answers')?Promise.reject(Object.assign(Error('Enter a finite number or fraction'),{status:400})):normal(path,o));
+  const w=mount(Exam,{props:{id:1}});await flushPromises();await w.get('input.numeric-answer').setValue('ABCD');await vi.advanceTimersByTimeAsync(800);await flushPromises();
+  expect(w.get('[role="alert"]').text()).toContain('Enter a finite number or fraction');
+  await vi.advanceTimersByTimeAsync(3999);expect(w.find('[role="alert"]').exists()).toBe(true);
+  await vi.advanceTimersByTimeAsync(1);expect(w.find('[role="alert"]').exists()).toBe(false);
+  expect(w.get('input.numeric-answer').element.value).toBe('ABCD');expect(sessionStorage.getItem('pyq-pending-1')).toContain('ABCD');expect(w.text()).toContain('Response pending');w.unmount();
+ });
+ it('does not let the old dismissal timer hide a later network failure',async()=>{
+  const normal=mocks.api.getMockImplementation();let invalid=true;
+  mocks.api.mockImplementation((path,o)=>path.endsWith('/answers')?Promise.reject(Object.assign(Error(invalid?'Enter a finite number or fraction':'Network unavailable'),{status:invalid?400:503})):normal(path,o));
+  const w=mount(Exam,{props:{id:1}});await flushPromises();await w.get('input.numeric-answer').setValue('ABCD');await vi.advanceTimersByTimeAsync(800);await flushPromises();
+  invalid=false;await w.findAll('button').find(b=>b.text()==='Retry save').trigger('click');await flushPromises();await vi.advanceTimersByTimeAsync(5000);
+  expect(w.get('[role="alert"]').text()).toContain('Network unavailable');expect(sessionStorage.getItem('pyq-pending-1')).toContain('ABCD');w.unmount();
+ });
+ it('clears a validation warning when the answer is corrected and saves the correction',async()=>{
+  const normal=mocks.api.getMockImplementation();mocks.api.mockImplementation((path,o)=>path.endsWith('/answers')&&o.body.items.some(x=>x.answer==='ABCD')?Promise.reject(Object.assign(Error('Enter a finite number or fraction'),{status:400})):normal(path,o));
+  const w=mount(Exam,{props:{id:1}});await flushPromises();await w.get('input.numeric-answer').setValue('ABCD');await vi.advanceTimersByTimeAsync(800);await flushPromises();
+  await w.get('input.numeric-answer').setValue('3/4');expect(w.find('[role="alert"]').exists()).toBe(false);await vi.advanceTimersByTimeAsync(800);await flushPromises();expect(stored[1]).toBe('3/4');expect(sessionStorage.getItem('pyq-pending-1')).toBeNull();w.unmount();
+ });
+});

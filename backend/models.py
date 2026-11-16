@@ -325,8 +325,14 @@ class SolutionJob(db.Model):
     retry_at=db.Column(db.Float,nullable=False,default=0)
     error=db.Column(db.String(240))
 
+class FeedbackLike(db.Model):
+    __tablename__ = 'feedback_like'
+    feedback_id = db.Column(db.Integer, db.ForeignKey('contact_message.id', ondelete='CASCADE'), primary_key=True)
+    guest_hash = db.Column(db.String(64), primary_key=True, index=True)
+
 class ContactMessage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    guest_hash = db.Column(db.String(64), index=True)
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(254), nullable=False)
     topic = db.Column(db.String(40), nullable=False)

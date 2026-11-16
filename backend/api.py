@@ -279,6 +279,8 @@ def _load_site_feedback():
         ContactMessage.topic.like('Site feedback · %'),
         ContactMessage.status == 'OPEN'
     ).order_by(ContactMessage.id.desc()).limit(50).all()
+    ids=[r.id for r in rows]
+    likes=dict(db.session.query(FeedbackLike.feedback_id,func.count()).filter(FeedbackLike.feedback_id.in_(ids)).group_by(FeedbackLike.feedback_id).all()) if ids else {}
     items = []
     counts = {'5': 0, '4': 0, '3': 0, '2': 0, '1': 0}
     total_stars = 0
@@ -292,6 +294,7 @@ def _load_site_feedback():
         total_stars += stars
         items.append({
             'id': r.id,
+            'likes': likes.get(r.id,0),
             'name': r.name or 'Anonymous Student',
             'stars': stars,
             'message': r.message,
@@ -309,6 +312,7 @@ def get_site_feedback():
 @api.post('/feedback')
 @limiter.limit('5 per hour')
 @limiter.limit('20 per hour', key_func=ip_key)
+@require_visitor
 def post_site_feedback():
     from .content_cache import forget
     data = body()
@@ -325,6 +329,7 @@ def post_site_feedback():
     row = ContactMessage(
         name=name,
         email='feedback@mauryahub.in',
+        guest_hash=g.guest_hash,
         topic=f'Site feedback · {stars}★',
         message=message,
         status='OPEN'
@@ -334,3 +339,34 @@ def post_site_feedback():
     # Refresh only the feedback list; papers/courses stay cached.
     forget(SITE_FEEDBACK_CACHE_KEY)
     return jsonify(ok=True, **(_load_site_feedback())), 201
+
+
+@api.get('/feedback/state')
+@require_visitor
+def feedback_state():
+    submitted=db.session.query(ContactMessage.id).filter(ContactMessage.guest_hash==g.guest_hash,ContactMessage.topic.like('Site feedback · %')).first() is not None
+    liked=[r[0] for r in db.session.query(FeedbackLike.feedback_id).join(ContactMessage,ContactMessage.id==FeedbackLike.feedback_id).filter(FeedbackLike.guest_hash==g.guest_hash,ContactMessage.status=='OPEN').order_by(FeedbackLike.feedback_id.desc()).limit(50)]
+    return jsonify(submitted=submitted,liked_ids=liked)
+
+
+@api.route('/feedback/<int:id>/like',methods=['PUT','DELETE'])
+@limiter.limit('30 per minute')
+@limiter.limit('120 per hour',key_func=ip_key)
+@require_visitor
+def feedback_like(id):
+    from .content_cache import forget
+    row=ContactMessage.query.filter(ContactMessage.id==id,ContactMessage.status=='OPEN',ContactMessage.topic.like('Site feedback · %')).with_entities(ContactMessage.id).first()
+    if row is None:abort(404,description='This review is no longer available.')
+    if request.method=='PUT':
+        # Composite primary key handles retries and concurrent clicks atomically.
+        if db.engine.dialect.name=='postgresql':
+            from sqlalchemy.dialects.postgresql import insert
+        else:
+            from sqlalchemy.dialects.sqlite import insert
+        changed=db.session.execute(insert(FeedbackLike).values(feedback_id=id,guest_hash=g.guest_hash).on_conflict_do_nothing()).rowcount
+    else:
+        changed=FeedbackLike.query.filter_by(feedback_id=id,guest_hash=g.guest_hash).delete(synchronize_session=False)
+    db.session.commit()
+    if changed:forget(SITE_FEEDBACK_CACHE_KEY)
+    count=FeedbackLike.query.filter_by(feedback_id=id).count()
+    return jsonify(id=id,liked=request.method=='PUT',likes=count)

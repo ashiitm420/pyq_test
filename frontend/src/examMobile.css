@@ -1,0 +1,83 @@
+/* Keep the existing fixed-height desktop layout around the shared session wrapper. */
+.exam-session{display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden}
+.exam-session>.exam-header,.exam-session>.cbt-section-bar,.exam-session>.alert{flex-shrink:0}
+.exam-session>.exam-layout{flex:1;min-height:0;overflow:hidden}
+/* Compact phone-only exam surface; desktop rules and autosave remain unchanged. */
+@media(max-width:760px){
+ .exam-shell .exam-main{padding:0!important;height:100dvh;overflow:hidden}
+ .exam-shell .workspace{min-height:0}
+ .exam-session{--mobile-bg:#061a2d;--mobile-card:#fff;--mobile-text:#17263c;--mobile-muted:#63758d;--mobile-line:#dce5ef;--mobile-option:#fff;--mobile-selected:#eaf3ff;height:100%;display:flex;flex-direction:column;min-height:0;background:var(--mobile-bg)}
+ [data-theme="dark"] .exam-session{--mobile-card:#1b2736;--mobile-text:#eef4fc;--mobile-muted:#b7c7db;--mobile-line:#3e536b;--mobile-option:#1b2736;--mobile-selected:#244563}
+ .mobile-exam-header{position:relative;display:flex;align-items:center;gap:10px;flex:none;min-height:48px;padding:5px 80px 5px 10px;padding-top:calc(5px + env(safe-area-inset-top));background:var(--mobile-bg);color:#fff}
+ .mobile-exam-brand{display:inline-flex;align-items:center;gap:6px;color:#fff!important;font-size:14px;font-weight:750;text-decoration:none;white-space:nowrap;letter-spacing:-.4px}
+ .mobile-exam-brand>svg,.mobile-exam-brand>span>span{color:#20b7f6}
+ .mobile-mode-switch{display:flex;align-items:center;border:1px solid #3f5871;border-radius:24px;padding:2px;margin-left:auto;flex:none}
+ .mobile-mode-switch button{border:0;background:transparent;color:#edf4ff;border-radius:20px;font-size:12px;font-weight:650;min-height:32px;padding:5px 10px;line-height:1}
+ .mobile-mode-switch button[aria-pressed=true]{background:#078bea;box-shadow:inset 0 0 0 1px #61c8ff;color:#fff}
+ .mobile-icon{display:inline-flex;align-items:center;justify-content:center;flex:none;width:36px;height:36px;min-height:36px;padding:5px;border:1px solid var(--mobile-line);border-radius:9px;background:transparent;color:var(--mobile-text);cursor:pointer}
+ .mobile-icon:focus-visible,.mobile-mode-switch button:focus-visible,.mobile-paper-title:focus-visible{outline:2px solid #26b6ff;outline-offset:2px}
+ .mobile-icon:disabled,.mobile-mode-switch button:disabled{opacity:.45}
+ .mobile-fullscreen{position:absolute;right:7px;bottom:6px;border:0;color:#fff}
+ .theme-toggle.exam-toggle{position:fixed!important;top:calc(8px + env(safe-area-inset-top))!important;right:43px!important;left:auto!important;width:32px;height:32px;min-height:32px;padding:3px!important;border:0!important;box-shadow:none!important;background:transparent!important;color:#fff!important;z-index:21}
+ .theme-toggle.exam-toggle .theme-label{display:none}
+ .theme-toggle.exam-toggle>span:first-child{font-size:23px;line-height:1}
+ .mobile-paper-bar{display:flex;align-items:center;gap:8px;min-height:38px;flex:none;padding:4px 10px 6px;color:#fff;background:#0c2a48}
+ .mobile-paper-title{display:flex;align-items:center;gap:4px;min-width:0;flex:1;padding:5px 0;border:0;background:transparent;color:#fff;text-align:left;font-size:12px}
+ .mobile-paper-title>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .mobile-paper-title svg{flex:none}
+ .mobile-paper-bar select{min-width:0;max-width:100%;flex:1;font-size:12px;border:0;background:#0c2a48;color:#fff;padding:5px 0}
+ .mobile-question-position{font-size:11px;font-weight:650;white-space:nowrap}
+ .mobile-timer{display:inline-flex;align-items:center;gap:3px;font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}
+ .mobile-timer.urgent{color:#ffb59b}
+ .exam-session>.alert{flex:none;padding:6px 10px!important;margin:0!important;border-radius:0;font-size:12px}
+ .exam-session .exam-layout{display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;gap:0;padding:0 3px}
+ .exam-session .exam-layout .question-panel.panel{width:100%;flex:1;min-height:0!important;height:auto!important;margin:0;border:1px solid var(--mobile-line);border-radius:14px 14px 0 0;padding:0;overflow:hidden;background:var(--mobile-card)!important;color:var(--mobile-text)!important}
+ .mobile-question-heading{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:5px 10px 3px;flex:none;min-height:42px}
+ .mobile-question-badges{display:flex;align-items:center;gap:7px;min-width:0;font-size:11px;white-space:nowrap;color:var(--mobile-text)}
+ .mobile-question-badges>span{color:#1475d2;background:#edf5ff;padding:4px 7px;border-radius:7px;font-weight:700}
+ .mobile-question-badges strong{font-size:11px;font-weight:650}
+ .mobile-question-tools{display:flex;align-items:center;gap:1px}
+ .mobile-question-tools .mobile-icon{border:0;width:32px;height:32px;min-height:32px;border-radius:7px}
+ .mobile-question-tools [aria-pressed=true]{color:#087fc9;background:var(--mobile-selected)}
+ .exam-session .comprehension-layout{display:block!important;flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;background:var(--mobile-card)}
+ .exam-session .comprehension-question{display:block;overflow:visible!important;min-height:0;background:var(--mobile-card)}
+ .exam-session .comprehension-passage{max-height:none;overflow:visible;border:0;border-bottom:1px solid var(--mobile-line);background:var(--mobile-card)}
+ .exam-session .comprehension-heading{display:flex!important;padding:8px 12px;font-size:12px;color:var(--mobile-text)}
+ .exam-session .comprehension-passage-body{max-height:none!important;overflow:visible!important;padding:0 12px 10px}
+ .exam-session .comprehension-passage-body[style*="display: none"]{display:none!important}
+ .exam-session .passage-divider{display:none!important}
+ .exam-session .question-content{min-height:0;overflow:visible!important;padding:10px 12px 16px;background:var(--mobile-card)!important;color:var(--mobile-text)}
+ .exam-session .question-content .question-stem{font-size:16px;line-height:1.6;color:var(--mobile-text)!important;margin-bottom:16px}
+ .exam-session .question-content .options{gap:8px}
+ .exam-session .question-content .option{padding:10px;gap:10px;margin:0;min-height:48px;border:1px solid var(--mobile-line);border-radius:11px;font-size:15px;line-height:1.45;background:var(--mobile-option);color:var(--mobile-text)}
+ .exam-session .question-content .option.chosen{background:var(--mobile-selected);border-color:#369ddd}
+ .exam-session .question-content .option.option-correct{background:#e7f5ec!important;border-color:#23934e;color:#186c36!important}
+ .exam-session .question-content .option.option-incorrect{background:#fff0ef!important;border-color:#c14d47;color:#942a25!important}
+ .exam-session .question-content .option-key{height:27px;width:27px;min-width:27px;font-size:12px}
+ .exam-session .question-image{max-width:100%;height:auto}
+ .exam-session .katex-display{overflow-x:auto;overflow-y:hidden}
+ .exam-session .question-panel .save-status{padding:2px 11px 3px;min-height:17px;font-size:10px;line-height:12px;gap:5px;background:var(--mobile-card)!important;color:var(--mobile-muted);flex:none}
+ .exam-session .save-status svg{width:12px;height:12px}
+ .exam-session .check-answer-row{margin-top:14px}
+ .exam-session .check-answer-row .btn{min-height:40px;padding:8px 14px;font-size:13px}
+ .mobile-exam-actions{display:flex;align-items:center;gap:7px;flex:none;min-height:58px;padding:7px 9px calc(7px + env(safe-area-inset-bottom));background:var(--mobile-bg);border-top:1px solid #29425e}
+ .mobile-exam-actions .mobile-icon{color:#f2f6ff;border-color:#3b526a;background:#122a43;width:40px;height:40px}
+ .mobile-review,.mobile-save-next{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;white-space:nowrap;border-radius:10px;font-size:13px;font-weight:650;color:#fff}
+ .mobile-review{flex:1;min-width:72px;padding:6px 10px;background:#102941;border:1px solid #3b526a}
+ .mobile-review[aria-pressed=true]{color:#f9d681;border-color:#f9d681}
+ .mobile-save-next{flex:1.6;padding:6px 10px;min-width:115px;border:1px solid #13894f;background:#10894b}
+ .mobile-save-next:disabled,.mobile-review:disabled{opacity:.5}
+ .mobile-exam-scrim{position:fixed;inset:0;z-index:1490;border:0;background:#0008}
+ .exam-session .palette-panel.panel{position:fixed;z-index:1500;inset:auto 8px calc(66px + env(safe-area-inset-bottom));width:auto;max-height:calc(100dvh - 125px - env(safe-area-inset-top));overflow:auto;border:1px solid var(--mobile-line);border-radius:16px;padding:16px;background:var(--mobile-card)!important;color:var(--mobile-text)}
+ .mobile-palette-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0 0 12px}
+ .mobile-palette-heading h2{margin:0;font-size:17px;color:var(--mobile-text)!important}
+ .exam-session .palette-panel .muted,.exam-session .palette-panel .palette-legend>div{color:var(--mobile-muted)!important}
+ .exam-session .palette-panel .palette{grid-template-columns:repeat(6,minmax(0,1fr));gap:9px;margin:15px 0}
+ .exam-session .palette-panel .palette button{height:39px;min-width:0;font-size:13px}
+ .mobile-exam-tools-overlay{position:fixed;inset:0;z-index:1550;display:flex;align-items:flex-end;padding:8px 8px calc(66px + env(safe-area-inset-bottom));background:#0008}
+ .mobile-exam-tools-sheet{width:100%;max-height:calc(100dvh - 120px);overflow:auto;border:1px solid var(--mobile-line);border-radius:16px;padding:16px;background:var(--mobile-card);color:var(--mobile-text)}
+ .mobile-tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+ .mobile-tools-grid>button{display:flex;align-items:center;gap:8px;min-height:45px;padding:10px;border:1px solid var(--mobile-line);border-radius:9px;background:var(--mobile-option);color:var(--mobile-text);font-size:13px;text-align:left}
+ .mobile-tools-grid>button:disabled{opacity:.45}
+ @media(max-width:350px){.mobile-exam-brand{font-size:12px;gap:4px}.mobile-mode-switch button{padding:5px 8px;font-size:11px}.mobile-exam-header{gap:6px}.mobile-exam-actions{gap:5px;padding-left:6px;padding-right:6px}.mobile-save-next{font-size:12px;min-width:106px}.mobile-review{padding:6px;font-size:12px}}
+}

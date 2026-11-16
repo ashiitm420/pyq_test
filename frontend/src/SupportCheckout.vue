@@ -52,7 +52,7 @@ onUnmounted(()=>{stopped=true;checkout?.close?.();previous?.focus?.()});
 <style scoped>
 .support-overlay{position:fixed;inset:0;z-index:1600;display:grid;place-items:center;background:#0008;padding:16px}
 .support-dialog{--support-bg:#fff;--support-text:#172943;--support-muted:#576b86;--support-field:#fff;--support-soft:#f1f5f9;--support-border:#cbd5e1;width:min(100%,480px);max-height:90dvh;overflow:auto;background:var(--support-bg)!important;color:var(--support-text)!important;border-color:var(--support-border)!important;color-scheme:light}
-:global([data-theme="dark"]) .support-dialog{--support-bg:#1e2938;--support-text:#edf3fc;--support-muted:#b9c9dd;--support-field:#121d2c;--support-soft:#2b4057;--support-border:#526479;color-scheme:dark}
+:global([data-theme="dark"] .support-dialog){--support-bg:#1e2938;--support-text:#edf3fc;--support-muted:#b9c9dd;--support-field:#121d2c;--support-soft:#2b4057;--support-border:#526479;color-scheme:dark}
 .support-dialog h2{font-size:1.25rem;color:var(--support-text)!important}
 .support-dialog>p:not(.alert),.support-dialog label{color:var(--support-text)!important}
 .support-dialog .muted{color:var(--support-muted)!important}

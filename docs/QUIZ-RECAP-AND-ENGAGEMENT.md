@@ -30,3 +30,9 @@ Results no longer fetch the whole review wall in the background. `/feedback/stat
 PUT/DELETE `/api/feedback/<id>/like` sets/removes the browser's like. Composite `(feedback_id,guest_hash)` primary key plus conflict-safe insertion prevents duplicates on retries. Hidden/non-feedback messages cannot be liked. CSRF, browser rate limits and IP limits apply. One grouped query gets counts for visible reviews; writes invalidate only `site-feedback`, preserving paper/catalog/solution caches.
 
 Additive migration `8b33dd001011` adds one nullable indexed receipt column and a small likes table. PostgreSQL RLS is enabled on the new table, with public-role privileges revoked; Flask uses its existing server connection. Docker applies the migration before starting the new app. No question edits, ingestion changes, R2 objects, admin polling changes, cache-budget changes or worker-count changes. Point 6 stays deferred.
+
+## Presentation refinement (16 Nov)
+
+Keep only the topbar highlighted Notes link; remove the duplicate sidebar button and exam-row Notes card. Put lazy Support checkout buttons beside the homepage heading and result heading, retaining footer/result support access. The result heading always offers Give Feedback, including practice/custom results where automatic prompts are deliberately ineligible. Hearts use an unboxed, compact red outline/filled icon with count at each review card’s bottom-right.
+
+The recap is platform-wide “MauryaHub in numbers”, no Quiz-1 label. Display conservative rounded-down milestones: 500+ estimated learner reach (browser-based), 2,300+ starts, 500+ completed tests and 200+ papers. Do not claim 3,000+ starts without supporting data. A single 850 ms count-up begins when visible, honors reduced motion and disconnects its observer/cancels its frame on unmount. The track is decorative animation, not a fabricated historical trend. No extra API calls or live count inflation.

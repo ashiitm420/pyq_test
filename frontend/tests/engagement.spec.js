@@ -29,5 +29,5 @@ it('gives feedback or skips without blocking results, and does not prompt on sta
  localStorage.clear();api.mockRejectedValue(Error('Offline'));const other=mount(PostAttemptPrompt,{props:{attempt:a}});await flushPromises();expect(other.find('[role="dialog"]').exists()).toBe(false);other.unmount();
 });
 it('renders real snapshot numbers and no live request',()=>{
- const w=mount(QuizRecap);expect(w.text()).toContain('2,357');expect(w.text()).toContain('580');expect(w.text()).toContain('228');expect(w.text()).toContain('not verified student counts');expect(api).not.toHaveBeenCalled();w.unmount();
+ const w=mount(QuizRecap);expect(w.text()).toContain('2,300');expect(w.text()).toContain('500');expect(w.text()).toContain('200');expect(w.text()).toContain('Reach estimated from participating browsers');expect(w.text()).not.toContain('QUIZ 1');expect(api).not.toHaveBeenCalled();w.unmount();
 });

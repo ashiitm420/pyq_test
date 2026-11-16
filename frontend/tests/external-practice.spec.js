@@ -7,5 +7,5 @@ it('keeps coding practice as an external home link',async()=>{
  await flushPromises();const link=w.get('a[href="https://oppe.rangalabs.cloud/"]');
  expect(link.attributes('target')).toBe('_blank');
  expect(link.attributes('rel')).toContain('noopener');
- expect(w.find('a[href="/admin/oppe"]').exists()).toBe(false);w.unmount();
+ expect(w.find('a[href="/admin/oppe"]').exists()).toBe(false);expect(w.find('.notes-card').exists()).toBe(false);expect(w.find('.intro .support-button').exists()).toBe(true);w.unmount();
 });

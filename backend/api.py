@@ -275,16 +275,21 @@ def home():
 SITE_FEEDBACK_CACHE_KEY = 'site-feedback'
 
 def _load_site_feedback():
-    rows = ContactMessage.query.filter(
+    # Rank before limiting so an older popular review can reach the top.
+    like_counts = db.session.query(
+        FeedbackLike.feedback_id, func.count().label('likes')
+    ).group_by(FeedbackLike.feedback_id).subquery()
+    likes = func.coalesce(like_counts.c.likes, 0)
+    rows = db.session.query(ContactMessage, likes).outerjoin(
+        like_counts, like_counts.c.feedback_id == ContactMessage.id
+    ).filter(
         ContactMessage.topic.like('Site feedback · %'),
         ContactMessage.status == 'OPEN'
-    ).order_by(ContactMessage.id.desc()).limit(50).all()
-    ids=[r.id for r in rows]
-    likes=dict(db.session.query(FeedbackLike.feedback_id,func.count()).filter(FeedbackLike.feedback_id.in_(ids)).group_by(FeedbackLike.feedback_id).all()) if ids else {}
+    ).order_by(likes.desc(), ContactMessage.id.desc()).limit(50).all()
     items = []
     counts = {'5': 0, '4': 0, '3': 0, '2': 0, '1': 0}
     total_stars = 0
-    for r in rows:
+    for r, like_count in rows:
         try:
             stars = int(r.topic.split('·')[1].strip().rstrip('★'))
             stars = max(1, min(5, stars))
@@ -294,7 +299,7 @@ def _load_site_feedback():
         total_stars += stars
         items.append({
             'id': r.id,
-            'likes': likes.get(r.id,0),
+            'likes': like_count,
             'name': r.name or 'Anonymous Student',
             'stars': stars,
             'message': r.message,

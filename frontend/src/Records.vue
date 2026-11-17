@@ -16,6 +16,7 @@ const props=defineProps({route:String});const items=ref([]),total=ref(0),page=re
 const reviewLoading=ref(false),currentReview=ref(null),reviewCache=new Map(),allReview=ref([]),reviewFilter=ref('ALL'),viewMode=ref('all');let reviewVersion=0;
 const fbLiked=ref([]),fbLikeBusy=ref([]);
 const fbItems=ref([]),fbTotal=ref(0),fbAvg=ref(0),fbCounts=ref({'5':0,'4':0,'3':0,'2':0,'1':0}),fbName=ref(''),fbStars=ref(5),fbText=ref(''),fbBusy=ref(false),fbMsg=ref(''),fbErr=ref('');
+const rankedFeedback=computed(()=>[...fbItems.value].sort((a,b)=>(b.likes||0)-(a.likes||0)||b.id-a.id));
 function resultState(p){return p.state?.startsWith('ANSWERED')?(p.outcome||'UNGRADED'):'SKIPPED'}
 const result=props.route.startsWith('/result/'),collection=props.route==='/bookmarks',feedbackPage=props.route==='/feedback';
 const localInsights=ref(null);
@@ -181,7 +182,7 @@ async function remove(id){await api('/questions/'+id+'/bookmark',{method:'DELETE
  <div class="section-row"><h2 class="h4 mb-0">Student Feedbacks ({{fbTotal}})</h2></div>
  <div v-if="!fbItems.length" class="empty panel mt-3"><h3>No student feedbacks yet.</h3><p class="muted mb-0">Submit the form above to share the first review of MauryaHub!</p></div>
  <div v-else class="feedback-wall-grid mt-3">
-  <article v-for="item in fbItems" :key="item.id" class="panel feedback-item-card">
+  <article v-for="item in rankedFeedback" :key="item.id" class="panel feedback-item-card">
    <div class="feedback-item-head">
     <div class="feedback-author"><span class="feedback-avatar">{{(item.name||'A').slice(0,1).toUpperCase()}}</span><div><strong>{{item.name}}</strong><small class="muted d-block">{{new Date(item.created_at*1000).toLocaleDateString()}}</small></div></div>
     <span class="feedback-item-stars" :aria-label="item.stars+' out of 5 stars'">{{'★'.repeat(item.stars)}}{{'☆'.repeat(5-item.stars)}}</span>

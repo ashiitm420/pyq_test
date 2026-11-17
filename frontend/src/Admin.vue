@@ -82,7 +82,6 @@ async function runWebBatch(){
  webRunnerActive.value=true;webRunnerStop.value=false;error.value='';let consecutiveFailures=0;
  try{
   while(!webRunnerStop.value&&syncBatch.value&&!syncBatch.value.done){
-   if(document.hidden){webRunnerStop.value=true;notice.value='Processing paused while this tab is hidden. Return and resume when ready.';break}
    const beforeFailed=syncBatch.value.failed||0,beforeCompleted=syncBatch.value.completed||0;
    syncBatch.value=await api('/admin/catalog/batches/'+syncBatch.value.id+'/run-next',{method:'POST',body:{}});
    await loadCampaign();
@@ -269,7 +268,7 @@ async function toggleQuestion(q){await run(async()=>{const d=await api('/admin/q
 </section>
 
 <section v-if="syncBatch" class="panel catalog-batch-progress mb-4">
- <div class="section-row"><div><div class="eyebrow">ACTIVE BATCH #{{syncBatch.id}}</div><h2>{{syncBatch.done?(syncBatch.completed?'Batch complete':'Batch failed — no papers imported'):(webRunnerActive?'Processing on this web service':'Batch queued / paused')}}</h2><p class="muted mb-0">Free mode processes one paper per request. Keep this admin tab open while running; closing it safely pauses after the current paper.</p></div><strong>{{syncBatch.percent??0}}%</strong></div>
+ <div class="section-row"><div><div class="eyebrow">ACTIVE BATCH #{{syncBatch.id}}</div><h2>{{syncBatch.done?(syncBatch.completed?'Batch complete':'Batch failed — no papers imported'):(webRunnerActive?'Processing on this web service':'Batch queued / paused')}}</h2><p class="muted mb-0">Free mode processes one paper per request. Processing continues when you switch browser tabs. Keep this page open; closing it stops new requests after the current paper.</p></div><strong>{{syncBatch.percent??0}}%</strong></div>
  <div class="batch-progress-track"><div class="batch-progress-fill" :style="{width:(syncBatch.percent??0)+'%'}"></div></div>
  <div class="admin-stat-grid mt-3"><div class="panel"><span class="eyebrow">successful</span><strong>{{syncBatch.completed??0}}</strong></div><div class="panel"><span class="eyebrow">failed</span><strong>{{syncBatch.failed??0}}</strong></div><div class="panel"><span class="eyebrow">active</span><strong>{{syncBatch.active??0}}</strong></div><div class="panel"><span class="eyebrow">waiting</span><strong>{{syncBatch.queued??0}}</strong></div></div>
  <div v-if="syncBatch.done&&syncBatch.failed" class="alert alert-warning mt-3 mb-0"><strong>{{syncBatch.failed}} paper(s) reached a failure state.</strong> 100% here means the batch finished, not that it succeeded. The exact reason for each paper is shown below. Fix the common cause before retrying.</div>

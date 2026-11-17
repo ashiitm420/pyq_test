@@ -17,3 +17,11 @@ it('always offers Give Feedback on practice results, even when no popup is eligi
  const b=w.get('.result-heading .btn-primary');expect(b.text()).toBe('Give Feedback');await b.trigger('click');await flushPromises();
  expect(scroll).toHaveBeenCalledWith({behavior:'smooth',block:'start'});expect(document.activeElement).toBe(w.get('#result-feedback-section input').element);w.unmount();
 });
+it('ranks reviews by likes and reorders immediately on like and unlike',async()=>{
+ const rows=[{id:1,name:'Old',likes:1},{id:3,name:'Newest',likes:0},{id:2,name:'Middle',likes:1}].map(r=>({...r,stars:5,message:'Helpful',created_at:r.id}));
+ mocks.api.mockImplementation(async(p,o)=>p==='/feedback'?{items:rows,total:3}:p==='/feedback/state'?{submitted:false,liked_ids:[]}:{liked:o.method==='PUT',likes:o.method==='PUT'?2:0});
+ const w=mount(Records,{props:{route:'/feedback'}});await flushPromises();
+ const names=()=>w.findAll('.feedback-author strong').map(b=>b.text());expect(names()).toEqual(['Middle','Old','Newest']);
+ await w.get('[aria-label="Like review by Newest"]').trigger('click');await flushPromises();expect(names()).toEqual(['Newest','Middle','Old']);
+ await w.get('[aria-label="Unlike review by Newest"]').trigger('click');await flushPromises();expect(names()).toEqual(['Middle','Old','Newest']);w.unmount();
+});

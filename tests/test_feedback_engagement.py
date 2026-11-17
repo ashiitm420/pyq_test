@@ -58,3 +58,23 @@ def test_likes_do_not_flush_paper_or_catalog_cache(client):
     for key in keys:assert cached(key,lambda:None)==['keep']
     assert len(calls)==len(keys)
     for key in keys:forget(key)
+
+
+def test_feedback_ranks_all_reviews_before_limit_and_refreshes_after_unlike(client):
+    h=login(client)
+    rows=[ContactMessage(name=f'Student {i}',email='feedback@mauryahub.in',topic='Site feedback · 5★',message='Helpful practice',status='OPEN') for i in range(53)]
+    db.session.add_all(rows);db.session.flush()
+    oldest,second,newest=rows[0].id,rows[1].id,rows[-1].id
+    db.session.add_all([FeedbackLike(feedback_id=oldest,guest_hash='visitor-a'),FeedbackLike(feedback_id=second,guest_hash='visitor-b')]);db.session.commit()
+    data=client.get('/api/feedback').json
+    assert len(data['items'])==50
+    assert [r['id'] for r in data['items'][:3]]==[second,oldest,newest]
+    assert client.put(f'/api/feedback/{oldest}/like',headers=h).json['likes']==2
+    assert client.get('/api/feedback').json['items'][0]['id']==oldest
+    assert client.delete(f'/api/feedback/{oldest}/like',headers=h).json['likes']==1
+    assert client.get('/api/feedback').json['items'][0]['id']==second
+    # Closed or non-feedback messages never enter the public ranking.
+    rows[1].status='RESOLVED';rows[0].topic='General enquiry';db.session.commit()
+    from backend.content_cache import forget
+    forget('site-feedback')
+    assert client.get('/api/feedback').json['items'][0]['id']==newest

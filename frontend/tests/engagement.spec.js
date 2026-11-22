@@ -17,6 +17,8 @@ const mountResult = (id = attempt.id) => mount(Records, {
 });
 
 beforeEach(() => {
+  HTMLDialogElement.prototype.showModal = function () { this.open = true; };
+  HTMLDialogElement.prototype.close = function () { this.open = false; };
   offerExamSupport(null);
   vi.resetAllMocks();
   api.mockResolvedValue(attempt);
@@ -28,7 +30,8 @@ it('offers support once immediately after each exam submission and keeps review 
   await flushPromises();
   expect(first.get('.exam-support').text()).toContain('Help keep MauryaHub running');
   expect(first.get('.result-question-summary').text()).toContain('Question review');
-  expect(first.find('[role="dialog"]').exists()).toBe(false);
+  expect(first.get('dialog.exam-support').element.open).toBe(true);
+  expect(first.find('.support-dialog').exists()).toBe(false);
   expect(api.mock.calls).toEqual([['/attempts/5']]);
   await first.get('.exam-support .btn-light').trigger('click');
   expect(first.find('.exam-support').exists()).toBe(false);
@@ -44,14 +47,24 @@ it('offers support once immediately after each exam submission and keeps review 
   api.mockResolvedValue(next);
   const second = mountResult(6);
   await flushPromises();
-  expect(second.find('.exam-support').exists()).toBe(true);
-  await second.get('.exam-support .btn-outline-primary').trigger('click');
+  expect(second.get('dialog.exam-support').element.open).toBe(true);
+  await second.get('.exam-support .btn-primary').trigger('click');
+  expect(second.find('dialog.exam-support').exists()).toBe(false);
   await vi.waitFor(() => expect(second.get('[role="dialog"]').text()).toContain('Continue to payment'));
   expect(api.mock.calls).toEqual([['/attempts/5'], ['/attempts/5'], ['/attempts/6']]);
   second.unmount();
 });
 
-it('skips the support card on practice results and direct result visits', async () => {
+it('dismisses the support popup on Escape', async () => {
+  offerExamSupport(attempt);
+  const result = mountResult();
+  await flushPromises();
+  await result.get('dialog.exam-support').trigger('cancel');
+  expect(result.find('dialog.exam-support').exists()).toBe(false);
+  result.unmount();
+});
+
+it('skips the support popup on practice results and direct result visits', async () => {
   const practice = { ...attempt, mode: 'practice' };
   offerExamSupport(practice);
   api.mockResolvedValue(practice);

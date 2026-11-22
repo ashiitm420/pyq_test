@@ -1,33 +1,79 @@
-import {it,expect,vi,beforeEach} from 'vitest';
-import {mount,flushPromises} from '@vue/test-utils';
-import PostAttemptPrompt from '../src/PostAttemptPrompt.vue';
+import { it, expect, vi, beforeEach } from 'vitest';
+import { mount, flushPromises } from '@vue/test-utils';
+import Records from '../src/Records.vue';
 import QuizRecap from '../src/QuizRecap.vue';
-import {promptFor,rememberPrompt,savePreference,markFeedbackSubmitted} from '../src/engagement';
-import {api} from '../src/api';
-vi.mock('../src/api',()=>({api:vi.fn()}));
-const a={id:5,status:'SUBMITTED',mode:'exam'};
-beforeEach(()=>{localStorage.clear();vi.clearAllMocks();api.mockResolvedValue({submitted:false})});
-it('shows feedback only after a submitted exam, once per attempt and pauses after skipping',()=>{
- expect(promptFor({...a,status:'ACTIVE'})).toBeNull();expect(promptFor({...a,mode:'practice'})).toBeNull();expect(promptFor({...a,custom_exam:true})).toBeNull();
- expect(promptFor(a)).toBe('feedback');rememberPrompt(a.id,'feedback');expect(promptFor(a)).toBeNull();
- savePreference('feedback-skip',Date.now());expect(promptFor({...a,id:6})).toBeNull();
+import { offerExamSupport } from '../src/examSupport';
+import { api } from '../src/api';
+
+vi.mock('../src/api', () => ({ api: vi.fn(), go: vi.fn(), session: {} }));
+
+const attempt = {
+  id: 5, status: 'SUBMITTED', mode: 'exam', title: 'Quiz 1',
+  expires_at: 2000000000, palette: [], result: { score: 5, total_marks: 10, percentage: 50 },
+};
+const mountResult = (id = attempt.id) => mount(Records, {
+  props: { route: '/result/' + id },
+  global: { stubs: { ShareResult: true } },
 });
-it('never asks a known feedback author again and limits support to once per week',()=>{
- markFeedbackSubmitted();expect(promptFor(a)).toBe('support');rememberPrompt(a.id,'support');
- expect(promptFor({...a,id:6})).toBeNull();expect(promptFor({...a,id:7},Date.now()+8*86400000)).toBe('support');
+
+beforeEach(() => {
+  offerExamSupport(null);
+  vi.resetAllMocks();
+  api.mockResolvedValue(attempt);
 });
-it('reconciles server receipts before offering feedback and does not auto-open payment',async()=>{
- api.mockResolvedValue({submitted:true});const w=mount(PostAttemptPrompt,{props:{attempt:a}});await flushPromises();
- expect(w.text()).not.toContain('Give Feedback');expect(w.text()).toContain('Support MauryaHub');
- expect(api).toHaveBeenCalledTimes(1);expect(api).toHaveBeenCalledWith('/feedback/state');w.unmount();
+
+it('offers support once immediately after each exam submission and keeps review available', async () => {
+  offerExamSupport(attempt);
+  const first = mountResult();
+  await flushPromises();
+  expect(first.get('.exam-support').text()).toContain('Help keep MauryaHub running');
+  expect(first.get('.result-question-summary').text()).toContain('Question review');
+  expect(first.find('[role="dialog"]').exists()).toBe(false);
+  expect(api.mock.calls).toEqual([['/attempts/5']]);
+  await first.get('.exam-support .btn-light').trigger('click');
+  expect(first.find('.exam-support').exists()).toBe(false);
+  first.unmount();
+
+  const revisit = mountResult();
+  await flushPromises();
+  expect(revisit.find('.exam-support').exists()).toBe(false);
+  revisit.unmount();
+
+  const next = { ...attempt, id: 6 };
+  offerExamSupport(next);
+  api.mockResolvedValue(next);
+  const second = mountResult(6);
+  await flushPromises();
+  expect(second.find('.exam-support').exists()).toBe(true);
+  await second.get('.exam-support .btn-outline-primary').trigger('click');
+  await vi.waitFor(() => expect(second.get('[role="dialog"]').text()).toContain('Continue to payment'));
+  expect(api.mock.calls).toEqual([['/attempts/5'], ['/attempts/5'], ['/attempts/6']]);
+  second.unmount();
 });
-it('gives feedback or skips without blocking results, and does not prompt on state errors',async()=>{
- const w=mount(PostAttemptPrompt,{props:{attempt:a}});await flushPromises();
- expect(w.get('[role="dialog"]').exists()).toBe(true);
- await w.findAll('button').find(b=>b.text()==='Give Feedback').trigger('click');
- expect(w.emitted('feedback')).toHaveLength(1);expect(w.find('[role="dialog"]').exists()).toBe(false);w.unmount();
- localStorage.clear();api.mockRejectedValue(Error('Offline'));const other=mount(PostAttemptPrompt,{props:{attempt:a}});await flushPromises();expect(other.find('[role="dialog"]').exists()).toBe(false);other.unmount();
+
+it('skips the support card on practice results and direct result visits', async () => {
+  const practice = { ...attempt, mode: 'practice' };
+  offerExamSupport(practice);
+  api.mockResolvedValue(practice);
+  const result = mountResult();
+  await flushPromises();
+  expect(result.find('.exam-support').exists()).toBe(false);
+  result.unmount();
+
+  api.mockResolvedValue(attempt);
+  const directVisit = mountResult();
+  await flushPromises();
+  expect(directVisit.find('.exam-support').exists()).toBe(false);
+  directVisit.unmount();
 });
-it('renders real snapshot numbers and no live request',()=>{
- const w=mount(QuizRecap);expect(w.text()).toContain('2,300');expect(w.text()).toContain('500');expect(w.text()).toContain('200');expect(w.text()).toContain('Reach estimated from participating browsers');expect(w.text()).not.toContain('QUIZ 1');expect(api).not.toHaveBeenCalled();w.unmount();
+
+it('renders real snapshot numbers and no live request', () => {
+  const w = mount(QuizRecap);
+  expect(w.text()).toContain('2,300');
+  expect(w.text()).toContain('500');
+  expect(w.text()).toContain('200');
+  expect(w.text()).toContain('Reach estimated from participating browsers');
+  expect(w.text()).not.toContain('QUIZ 1');
+  expect(api).not.toHaveBeenCalled();
+  w.unmount();
 });

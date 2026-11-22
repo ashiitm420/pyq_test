@@ -1,6 +1,7 @@
 <script setup>
 import './examMobile.css';
 import {createPaperInsights} from './paperInsights';
+import {offerExamSupport} from './examSupport';
 import {practiceFeedback} from './practiceFeedback';
 import {displayExamTitle} from './displayTitle';
 import BusyFeedback from './BusyFeedback.vue';
@@ -191,7 +192,8 @@ async function submit(){
   }else if(queued.size>50){
    const ok=await flushText();if(!ok&&seconds.value!==0){error.value='Save pending responses before submitting.';return}
   }
-  await api(`/attempts/${props.id}/submit`,{method:'POST',body:bodyPayload});
+  const submitted = await api(`/attempts/${props.id}/submit`,{method:'POST',body:bodyPayload});
+  if (!stopped) offerExamSupport(submitted);
   queued.clear();sessionStorage.removeItem(key);sessionStorage.removeItem(draftKey);sessionStorage.removeItem(visitedKey);insights?.finish();go('/result/'+props.id);
  }catch(e){error.value=e.message}finally{submitting.value=false;trackPaper()}
 }

@@ -1,9 +1,15 @@
 <script setup>
 import { defineAsyncComponent, ref } from 'vue';
+import { hasSupportedMauryaHub } from './examSupport';
 
 const emit = defineEmits(['dismiss']);
 const checkoutOpen = ref(false);
 const SupportCheckout = defineAsyncComponent(() => import('./SupportCheckout.vue'));
+
+function closeCheckout() {
+  checkoutOpen.value = false;
+  if (hasSupportedMauryaHub()) emit('dismiss');
+}
 </script>
 
 <template>
@@ -23,7 +29,7 @@ const SupportCheckout = defineAsyncComponent(() => import('./SupportCheckout.vue
       <button type="button" class="btn btn-light" @click="emit('dismiss')">Not now</button>
     </div>
   </aside>
-  <SupportCheckout v-if="checkoutOpen" @close="checkoutOpen = false" />
+  <SupportCheckout v-if="checkoutOpen" @close="closeCheckout" />
 </template>
 
 <style scoped>

@@ -2,13 +2,16 @@
 import {ref,computed,onMounted,onUnmounted} from 'vue';
 import {api,session,loadSession} from './api';
 import {loadRazorpay} from './razorpayCheckout';
+import {rememberExamSupportPayment} from './examSupport';
 const emit=defineEmits(['close']);
 const amount=ref('50'),phase=ref('idle'),error=ref(''),message=ref(''),paid=ref(false),testMode=ref(false),root=ref();
 const busy=computed(()=>phase.value!=='idle');let checkout=null,verification=null,stopped=false,previous;
 async function verify(){
  if(!verification)return;phase.value='verifying';error.value='';
  try{
-  const d=await api('/verify-payment',{method:'POST',body:verification});if(stopped)return;
+  const d=await api('/verify-payment',{method:'POST',body:verification});
+  if (d.success && d.paid === true && testMode.value === false) rememberExamSupportPayment();
+  if(stopped)return;
   if(!d.success)throw Error('Payment could not be verified.');
   paid.value=d.paid===true;
   message.value=paid.value?'Thank you for supporting MauryaHub! Your payment has been verified.':'Your payment is authorized and awaiting capture. Please check its status again shortly.';

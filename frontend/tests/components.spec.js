@@ -1,5 +1,6 @@
 import {describe,it,expect,vi,beforeEach} from 'vitest';
 import {mount,flushPromises} from '@vue/test-utils';
+import {consumeExamSupport} from '../src/examSupport';
 import Catalog from '../src/Catalog.vue';import Exam from '../src/Exam.vue';import Admin from '../src/Admin.vue';
 const mocks=vi.hoisted(()=>({api:vi.fn(),go:vi.fn(),session:{user:{id:1,name:'Test',role:'ADMIN'}}}));
 vi.mock('../src/api',()=>({...mocks,api:async(path,o)=>{if(path.endsWith('?bootstrap=1')){const base=path.split('?')[0];return {...await mocks.api(base,o),...await mocks.api(base+'/questions')}}return mocks.api(path,o)},loadCatalog:async()=>{const [c,m]=await Promise.all([mocks.api('/courses?limit=100'),mocks.api('/metadata')]);return {courses:c.items,meta:m}},loadHome:async()=>({stats:await mocks.api('/stats'),meta:await mocks.api('/metadata')}),invalidateCatalog:vi.fn()}));
@@ -16,9 +17,9 @@ it('unimported paper disables exam and practice but preserves source',async()=>{
 });
 it('exam saves options and review mark, then submits through confirmation',async()=>{
  const a={id:1,mode:'exam',title:'DEMO DATA',status:'ACTIVE',deadline:Date.now()/1000+3600,server_time:Date.now()/1000,palette:[{question_id:1,state:'NOT_VISITED'}]};
- mocks.api.mockImplementation(async(path,options)=>path==='/attempts/1'?a:path.endsWith('/questions')?{status:'ACTIVE',items:[{question:{id:1,kind:'MCQ',text:'DEMO DATA question',marks:2,negative_marks:0,options:[{key:'A',text:'Alpha'},{key:'B',text:'Beta'}],images:[]},answer:null,marked:false}]}:path.endsWith('/answers')?{state:options.body.marked?'ANSWERED_AND_MARKED_FOR_REVIEW':options.body.answer?'ANSWERED':'VISITED'}:{});
+ mocks.api.mockImplementation(async(path,options)=>path==='/attempts/1'?a:path.endsWith('/questions')?{status:'ACTIVE',items:[{question:{id:1,kind:'MCQ',text:'DEMO DATA question',marks:2,negative_marks:0,options:[{key:'A',text:'Alpha'},{key:'B',text:'Beta'}],images:[]},answer:null,marked:false}]}:path.endsWith('/submit')?{...a,status:'SUBMITTED'}:path.endsWith('/answers')?{state:options.body.marked?'ANSWERED_AND_MARKED_FOR_REVIEW':options.body.answer?'ANSWERED':'VISITED'}:{});
  const w=mount(Exam,{props:{id:1}});await flushPromises();await w.findAll('.option')[0].trigger('click');await new Promise(r=>setTimeout(r,900));await flushPromises();expect(mocks.api).toHaveBeenCalledWith('/attempts/1/answers',expect.objectContaining({body:{items:expect.arrayContaining([expect.objectContaining({question_id:1,answer:['A']})])}}));
- await w.findAll('button').find(b=>b.text()==='Mark for review').trigger('click');await flushPromises();expect(w.text()).not.toContain('Correct answer');await w.findAll('button').find(b=>b.text()==='Submit exam').trigger('click');expect(w.find('[role="dialog"]').exists()).toBe(true);await w.findAll('button').find(b=>b.text()==='Submit attempt').trigger('click');await flushPromises();expect(mocks.go).toHaveBeenCalledWith('/result/1');w.unmount();
+ await w.findAll('button').find(b=>b.text()==='Mark for review').trigger('click');await flushPromises();expect(w.text()).not.toContain('Correct answer');await w.findAll('button').find(b=>b.text()==='Submit exam').trigger('click');expect(w.find('[role="dialog"]').exists()).toBe(true);await w.findAll('button').find(b=>b.text()==='Submit attempt').trigger('click');await flushPromises();expect(mocks.go).toHaveBeenCalledWith('/result/1');expect(consumeExamSupport(1)).toBe(true);w.unmount();
 });
 });
 describe('automatic processing',()=>{it('shows processing counters and queues catalog without approval controls',async()=>{

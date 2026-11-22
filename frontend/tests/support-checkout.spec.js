@@ -3,12 +3,13 @@ import {mount,flushPromises} from '@vue/test-utils';
 import SupportCheckout from '../src/SupportCheckout.vue';
 import SupportEntry from '../src/SupportEntry.vue';
 import {api} from '../src/api';
+import {consumeExamSupport,offerExamSupport} from '../src/examSupport';
 import {loadRazorpay} from '../src/razorpayCheckout';
 vi.mock('../src/api',()=>({api:vi.fn(),session:{csrf:'test'},loadSession:vi.fn()}));
 vi.mock('../src/razorpayCheckout',()=>({loadRazorpay:vi.fn()}));
 let options,failed,open;
 beforeEach(()=>{
- vi.clearAllMocks();options=null;failed=null;open=vi.fn();
+ localStorage.clear();vi.clearAllMocks();options=null;failed=null;open=vi.fn();
  loadRazorpay.mockResolvedValue(function(o){options=o;return {open,on:(event,fn)=>{failed=fn},close:vi.fn()}});
  api.mockImplementation(async path=>path==='/create-order'?{order_id:'order_test',amount:5000,currency:'INR',key_id:'rzp_test_fake',test_mode:true}:{success:true,paid:true,status:'captured'});
 });
@@ -24,7 +25,8 @@ it('creates an order in paise and verifies all callback fields before thanking t
  const fields={razorpay_payment_id:'pay_test',razorpay_order_id:'order_test',razorpay_signature:'signature'};
  await options.handler(fields);await flushPromises();
  expect(api).toHaveBeenLastCalledWith('/verify-payment',{method:'POST',body:fields});
- expect(w.text()).toContain('Your payment has been verified');w.unmount();
+ expect(w.text()).toContain('Your payment has been verified');
+ expect(localStorage.getItem('mauryahub:support-confirmed')).toBeNull();w.unmount();
 });
 it('handles cancellation and payment failure without claiming success',async()=>{
  const w=mount(SupportCheckout);await w.get('form').trigger('submit');await flushPromises();
@@ -39,4 +41,18 @@ it('offers status verification retry without creating another charge/order',asyn
  await w.findAll('button').find(b=>b.text()==='Check payment status').trigger('click');await flushPromises();
  expect(w.text()).toContain('Your payment has been verified');
  expect(api.mock.calls.filter(c=>c[0]==='/create-order')).toHaveLength(1);w.unmount();
+});
+
+it('silences future exam prompts only after a real contribution is captured',async()=>{
+ const attempt={id:8,mode:'exam',status:'SUBMITTED'};
+ const shouldShow=()=>{offerExamSupport(attempt);return consumeExamSupport(attempt.id)};
+ api.mockResolvedValueOnce({order_id:'order_live',amount:5000,currency:'INR',key_id:'rzp_live_fake',test_mode:false});
+ const w=mount(SupportCheckout);await w.get('form').trigger('submit');await flushPromises();
+ api.mockResolvedValueOnce({success:true,paid:false,status:'authorized'});
+ await options.handler({razorpay_payment_id:'p',razorpay_order_id:'o',razorpay_signature:'s'});
+ expect(shouldShow()).toBe(true);
+ await w.findAll('button').find(b=>b.text()==='Check payment status').trigger('click');await flushPromises();
+ expect(shouldShow()).toBe(false);
+ expect(localStorage.getItem('mauryahub:support-confirmed')).toBe('1');
+ w.unmount();
 });

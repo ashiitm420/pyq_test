@@ -54,7 +54,7 @@ async function topicStart(topic){if(starting.value)return;starting.value='topic'
 }
 .custom-exam-highlight {
   position: relative;
-  box-shadow: inset 0 0 0 2px #37dbff, 0 0 14px 2px #00bfff75;
+  box-shadow: inset 0 0 0 2px #ff3b46, 0 0 14px 2px #ff263f80;
 }
 .custom-exam-highlight::after {
   content: "";
@@ -65,7 +65,7 @@ async function topicStart(topic){if(starting.value)return;starting.value='topic'
   pointer-events: none;
   background: conic-gradient(
     from var(--custom-exam-laser-angle),
-    transparent 0 65%, #00c3ff 77%, #00f0ff 88%, #edffff 96% 99%, transparent 100%
+    transparent 0 65%, #ff2443 77%, #ff485a 88%, #ffd1d1 96% 99%, transparent 100%
   );
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask-composite: exclude;

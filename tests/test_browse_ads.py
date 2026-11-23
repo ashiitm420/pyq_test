@@ -28,8 +28,14 @@ def test_browse_shells_embed_one_exact_banner_tag(app, client, path):
     assert b"'format' : 'iframe'" in response.data
     assert b'<iframe' not in response.data
     assert response.headers['Referrer-Policy'] == 'strict-origin-when-cross-origin'
-    image_policy = next(rule for rule in response.headers['Content-Security-Policy'].split('; ') if rule.startswith('img-src '))
-    assert 'https://test.r2.cloudflarestorage.com' in image_policy
+    policy = dict(rule.split(' ', 1) for rule in response.headers['Content-Security-Policy'].split('; '))
+    assert 'https://test.r2.cloudflarestorage.com' in policy['img-src']
+    assert 'https://cdn.storageimagedisplay.com' in policy['img-src']
+    assert "'unsafe-inline'" not in policy['script-src']
+    assert "'unsafe-inline'" in policy['script-src-elem']
+    assert SCRIPT in policy['script-src-elem']
+    assert 'https://checkout.razorpay.com' in policy['script-src-elem']
+    assert policy['script-src-attr'] == "'none'"
 
 
 def test_other_direct_documents_keep_their_original_ad_policy(app, client):
@@ -37,5 +43,6 @@ def test_other_direct_documents_keep_their_original_ad_policy(app, client):
     for origin, path in [(PUBLIC, '/attempt/1'), (PUBLIC, '/result/1'), (ADMIN, '/admin'), ('https://pyq-test-1.onrender.com', '/')]:
         response = client.get(path, base_url=origin)
         assert SCRIPT not in response.headers['Content-Security-Policy']
+        assert 'script-src-elem' not in response.headers['Content-Security-Policy']
         assert b'id="mauryahub-browse-banner"' not in response.data
         assert b'content="active"' not in response.data

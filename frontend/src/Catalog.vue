@@ -54,19 +54,22 @@ async function topicStart(topic){if(starting.value)return;starting.value='topic'
 }
 .custom-exam-highlight {
   position: relative;
-  box-shadow: inset 0 0 0 1px #59dcff78;
+  box-shadow: inset 0 0 0 2px #37dbff, 0 0 14px 2px #00bfff75;
 }
 .custom-exam-highlight::after {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  padding: 2px;
+  padding: 5px;
   pointer-events: none;
-  background: conic-gradient(from var(--custom-exam-laser-angle), transparent 0 77%, #247fff 88%, #56e7ff 96%, #e6feff 99%, transparent 100%);
+  background: conic-gradient(
+    from var(--custom-exam-laser-angle),
+    transparent 0 65%, #00c3ff 77%, #00f0ff 88%, #edffff 96% 99%, transparent 100%
+  );
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask-composite: exclude;
-  animation: custom-exam-laser 3.2s linear infinite;
+  animation: custom-exam-laser 2.6s linear infinite;
 }
 @keyframes custom-exam-laser {
   to { --custom-exam-laser-angle: 360deg; }

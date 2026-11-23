@@ -4,49 +4,45 @@ import BrowseBanner from '../src/BrowseBanner.vue';
 import { needsBannerDocument } from '../src/navigation';
 
 afterEach(() => {
-  document.head.querySelectorAll('meta[name="mauryahub-browse-ads"], script[data-mauryahub-banner]').forEach(node => node.remove());
-  delete window.atAsyncOptions;
+  document.getElementById('mauryahub-browse-banner')?.remove();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
 
-it('renders nothing with ads disabled', () => {
+it('renders nothing without a server-supplied tag', () => {
   const wrapper = mount(BrowseBanner);
-  expect(wrapper.find('aside').exists()).toBe(false);
-  expect(document.querySelector('script[data-mauryahub-banner]')).toBeNull();
+  expect(wrapper.find('.browse-ad-spacer').exists()).toBe(false);
   wrapper.unmount();
 });
 
-it('loads one async script when the visible slot fits, using the provider container', () => {
-  let notify;
-  vi.stubGlobal('IntersectionObserver', class {
-    constructor(callback) { notify = callback; }
-    observe() {}
-    disconnect() {}
-  });
-  const marker = document.createElement('meta');
-  marker.name = 'mauryahub-browse-ads';
-  marker.content = 'active';
-  document.head.append(marker);
+it('positions the vendor frame without moving or recreating it', async () => {
+  const banner = document.createElement('aside');
+  banner.id = 'mauryahub-browse-banner';
+  banner.hidden = true;
+  document.body.append(banner);
+  let align;
+  vi.stubGlobal('requestAnimationFrame', callback => { align = callback; return 1; });
   const wrapper = mount(BrowseBanner);
-  const spot = wrapper.get('aside');
-  Object.defineProperty(spot.element, 'clientWidth', { value: 300, configurable: true });
-  notify([{ isIntersecting: true }]);
-  expect(document.querySelector('script[data-mauryahub-banner]')).toBeNull();
-  Object.defineProperty(spot.element, 'clientWidth', { value: 320 });
-  notify([{ isIntersecting: false }]);
-  expect(document.querySelector('script[data-mauryahub-banner]')).toBeNull();
-  notify([{ isIntersecting: true }]);
-  notify([{ isIntersecting: true }]);
+  const slot = wrapper.get('.browse-ad-spacer');
+  vi.spyOn(slot.element, 'getBoundingClientRect').mockReturnValue({ left: 20, top: 80, width: 400 });
+  align();
+  expect(banner.hidden).toBe(true);
+  expect(slot.classes()).not.toContain('has-creative');
 
-  const scripts = document.querySelectorAll('script[data-mauryahub-banner]');
-  expect(scripts).toHaveLength(1);
-  expect(scripts[0].async).toBe(true);
-  expect(scripts[0].src).toMatch(/^https:\/\/bauval\.org\/22\//);
-  const container = spot.get('.browse-ad-creative').attributes('id');
-  expect(window.atAsyncOptions).toEqual([expect.objectContaining({ format: 'js', container })]);
-  expect(wrapper.find('iframe').exists()).toBe(false);
+  const creative = document.createElement('iframe');
+  banner.append(creative);
+  await Promise.resolve();
+  await wrapper.vm.$nextTick();
+  align();
+  expect(slot.classes()).toContain('has-creative');
+  expect(banner.hidden).toBe(false);
+  expect(banner.style.left).toBe('220px');
+  expect(banner.style.top).toBe('80px');
+  expect(creative.parentNode).toBe(banner);
+
   wrapper.unmount();
+  expect(banner.hidden).toBe(true);
+  expect(creative.parentNode).toBe(banner);
 });
 
 it('refreshes browse documents and keeps exam start and submit navigation in-app', () => {

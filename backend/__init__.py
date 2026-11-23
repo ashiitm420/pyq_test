@@ -236,6 +236,8 @@ def create_app(config=None):
         ads_enabled=(app.config['ADSTERRA_BROWSE_ENABLED'] and app.config['ADMIN_SUBDOMAIN_ENABLED']
                      and app.config['ADMIN_REDIRECT_ENABLED'] and request.host.lower()=='www.mauryahub.in')
         ads_allowed=ads_enabled and browse_ads.BROWSE_ROUTE.fullmatch(path) is not None
+        if ads_allowed:
+            html=html.replace('</body>', browse_ads.MARKUP+'</body>', 1)
         if ads_enabled:
             tags+='<meta name="mauryahub-browse-ads" content="'+('active' if ads_allowed else 'available')+'">'
         if app.extensions.get('image_origin'):tags+='<link rel="preconnect" href="'+str(escape(app.extensions['image_origin']))+'" crossorigin>'

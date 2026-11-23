@@ -1,6 +1,6 @@
 import {reactive} from 'vue';
 import {paperProgress,progressRows,saveResult,bookmarkRows,isBookmarked,setBookmark,localPage} from './browserStore';
-export const session=reactive({user:null,csrf:'',storageWarning:''});
+export const session=reactive({user:null,csrf:'',storageWarning:'',customExamBeta:false});
 let catalogPromise;
 const bootstraps=new Map();
 const submittedResults=new Map();
@@ -55,7 +55,7 @@ async function requestApi(path,options={}){
  const target=createsAttempt?path+'?bootstrap=1':path;
  const r=await fetch('/api'+target,{method,credentials:'same-origin',headers:{...(body?{'Content-Type':'application/json'}:{}),...(method!=='GET'?{'X-CSRF-Token':session.csrf}:{})},body:form|| (body?JSON.stringify(body):undefined)});
  let data;try{data=await r.json()}catch{const error=new Error('The server is temporarily unavailable. Please retry.');error.status=r.status;throw error;}
- if(!r.ok){const error=new Error(data.error||'Request failed');error.status=r.status;error.code=data.code;throw error;}
+ if(!r.ok){const error=new Error(data.error||'Request failed');error.status=r.status;error.code=data.code;error.details=data;throw error;}
  if(createsAttempt&&data.items){bootstraps.clear();bootstraps.set(String(data.id),{data,time:Date.now(),user:session.user?.id})}
  const submitId=path.match(/^\/attempts\/(\d+)\/submit$/);
  if(method==='POST'&&submitId&&data.status==='SUBMITTED'){submittedResults.clear();submittedResults.set(submitId[1],{data:clone(data),user:session.user?.id,time:Date.now()});}
@@ -73,7 +73,7 @@ export function loadCatalog(){
  return api('/catalog');
 }
 export function invalidateCatalog(){clearPublicReads()}
-export async function loadSession(){const d=await api('/session');session.user=d.user||{id:'browser',name:'Guest',role:'GUEST'};return d;}
+export async function loadSession(){const d=await api('/session');session.customExamBeta=d.custom_exam_beta===true;session.user=d.user||{id:'browser',name:'Guest',role:'GUEST'};return d;}
 export {navigate as go} from './navigation';
 
 export function loadHome(){return api('/home')}

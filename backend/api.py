@@ -1,7 +1,7 @@
 import secrets,re,hashlib
 from types import SimpleNamespace
 from functools import wraps
-from flask import Blueprint,jsonify,request,session,g,abort
+from flask import Blueprint,jsonify,request,session,g,abort,current_app
 from werkzeug.security import generate_password_hash,check_password_hash
 from sqlalchemy import or_,and_,func,case,select
 from sqlalchemy.orm import joinedload
@@ -104,7 +104,8 @@ def current_session():
     session.setdefault('csrf',secrets.token_urlsafe(32))
     session.setdefault('visitor',secrets.token_urlsafe(32));session.permanent=True
     u=db.session.get(User,session.get('uid')) if session.get('uid') else None
-    return jsonify(csrf=session['csrf'],user=user_json(u) if u and u.active and u.role=='ADMIN' else None)
+    return jsonify(csrf=session['csrf'],user=user_json(u) if u and u.active and u.role=='ADMIN' else None,
+                   custom_exam_beta=current_app.config['CUSTOM_EXAM_BETA_ENABLED'])
 
 @api.post('/auth/register')
 @limiter.limit('10 per hour')

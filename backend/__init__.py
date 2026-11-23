@@ -43,8 +43,8 @@ def create_app(config=None):
         MAX_UPLOAD_SIZE=int(os.getenv('MAX_UPLOAD_SIZE', 110*1024*1024)),
         SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE='Lax',
         SESSION_COOKIE_SECURE=os.getenv('COOKIE_SECURE','false').lower()=='true',
-        ADMIN_SUBDOMAIN_ENABLED=os.getenv('ADMIN_SUBDOMAIN_ENABLED','false').lower()=='true',
-        ADMIN_REDIRECT_ENABLED=os.getenv('ADMIN_REDIRECT_ENABLED','false').lower()=='true',
+        ADMIN_SUBDOMAIN_ENABLED=os.getenv('BROWSE_ADS_ADMIN_SUBDOMAIN_ENABLED','false').lower()=='true',
+        ADMIN_REDIRECT_ENABLED=os.getenv('BROWSE_ADS_ADMIN_REDIRECT_ENABLED','false').lower()=='true',
         ADSTERRA_BROWSE_ENABLED=os.getenv('ADSTERRA_BROWSE_ENABLED','false').lower()=='true',
         PERMANENT_SESSION_LIFETIME=86400,
         RATELIMIT_STORAGE_URI=os.getenv('RATELIMIT_STORAGE_URI','memory://'),
@@ -73,6 +73,7 @@ def create_app(config=None):
                       ANALYTICS_BACKGROUND_WRITES=int(os.getenv('ANALYTICS_BACKGROUND_WRITES','1')),
                       MEMORY_LOG_INTERVAL_SECONDS=int(os.getenv('MEMORY_LOG_INTERVAL_SECONDS','60')))
     app.config['EXAM_START_CONCURRENCY']=int(os.getenv('EXAM_START_CONCURRENCY','2'))
+    app.config['CUSTOM_EXAM_BETA_ENABLED']=os.getenv('CUSTOM_EXAM_BETA_ENABLED','false').lower()=='true'
     if config: app.config.update(config)
     app.config.setdefault('RAZORPAY_KEY_ID',os.getenv('RAZORPAY_KEY_ID',''))
     app.config.setdefault('RAZORPAY_KEY_SECRET',os.getenv('RAZORPAY_KEY_SECRET',''))

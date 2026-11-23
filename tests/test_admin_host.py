@@ -56,3 +56,12 @@ def test_cutover_redirects_admin_and_rejects_legacy_public_sessions(app, client)
 
     assert client.get('/', base_url=PUBLIC).status_code == 200
     assert client.get('/api/home', base_url=PUBLIC).status_code == 200
+
+
+def test_public_custom_exam_stays_on_public_origin_after_admin_cutover(app, client):
+    app.config.update(ADMIN_SUBDOMAIN_ENABLED=True, ADMIN_REDIRECT_ENABLED=True)
+    assert client.get('/custom-exam', base_url=PUBLIC).location == ADMIN + '/custom-exam'
+    app.config['CUSTOM_EXAM_BETA_ENABLED'] = True
+    response = client.get('/custom-exam', base_url=PUBLIC)
+    assert response.status_code == 200
+    assert 'noindex' in response.headers['X-Robots-Tag']

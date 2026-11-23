@@ -6,6 +6,7 @@ from sqlalchemy.orm import selectinload, load_only
 from .models import db,Question,QuestionOption,QuestionImage,Paper,AISolution,SolutionBatch,SolutionJob,Attempt,AttemptAnswer,IngestionFile,Course,Term
 from .api import require_user,require_visitor,body,integer_argument
 from .engine import question_snapshot,grade
+from .custom_exam import check_access as check_custom_access
 from .exam_api import owned,question_with_image_urls,prepare_image_paths,use_paper_image_delivery
 bp=Blueprint('ai_solutions',__name__,url_prefix='/api')
 PROMPT_VERSION='v1'
@@ -297,6 +298,7 @@ def practice_feedback(aid):
           .filter(Attempt.id==aid).all())
     if not rows or rows[0][0].guest_hash!=g.guest_hash:abort(404)
     a=rows[0][0]
+    check_custom_access(a)
     expire_attempt(a)
     if a.expires_at<=time.time():
         cleanup_sessions(guest_hash=g.guest_hash);abort(410,description='This temporary session has expired. Your latest paper score is retained; you can retake the paper.')

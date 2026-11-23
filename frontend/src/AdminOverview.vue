@@ -12,6 +12,18 @@ const optional=p=>api(p).catch(()=>null);
 const examPriority=ref(false),priorityBusy=ref(false),priorityError=ref('');
 async function togglePriority(){priorityBusy.value=true;priorityError.value='';try{const d=await api('/admin/exam-priority',{method:'POST',body:{enabled:!examPriority.value}});examPriority.value=d.enabled}catch(e){priorityError.value=e.message}finally{priorityBusy.value=false}}
 onMounted(()=>{optional('/admin/exam-priority').then(d=>{if(!stopped&&d)examPriority.value=d.enabled})});
+const customBeta=ref(null),betaBusy=ref(false),betaError=ref('');
+async function loadBeta(paused){
+ if(betaBusy.value)return;
+ betaBusy.value=true;betaError.value='';
+ try{
+  const options=typeof paused==='boolean'?{method:'POST',body:{paused}}:undefined;
+  const data=await api('/admin/custom-exam-beta',options);
+  if(!stopped)customBeta.value=data;
+ }catch(e){if(!stopped)betaError.value=e.message}
+ finally{if(!stopped)betaBusy.value=false}
+}
+onMounted(()=>loadBeta());
 async function load(){
  loading.value=true;
  const [r,m,s,a]=await Promise.all([
@@ -46,6 +58,18 @@ const day=iso=>new Date(iso+'T00:00:00').toLocaleDateString('en-IN',{weekday:'sh
 <template>
 <div class="alert alert-info"><strong>Exam priority: {{examPriority?'ON':'OFF'}}</strong> · Pause new heavy imports during student rush. Running jobs finish normally. Resets on restart. <button class="btn btn-sm btn-outline-primary" :disabled="priorityBusy" @click="togglePriority">{{priorityBusy?'Updating…':examPriority?'Allow imports':'Pause imports'}}</button><p v-if="priorityError" role="alert">{{priorityError}}</p></div>
 <div class="adm-overview">
+ <section class="adm-card" aria-labelledby="custom-beta-title">
+  <div class="adm-card-head"><div><h2 id="custom-beta-title">Custom Exam Beta</h2><p>Daily quota · Resets at 12:00 AM IST</p></div>
+   <button type="button" class="adm-link" :disabled="betaBusy" @click="loadBeta()">Refresh quota</button>
+  </div>
+  <template v-if="customBeta">
+   <p><strong>{{n(customBeta.questions_left)}} questions left</strong> · {{n(customBeta.questions_used)}} / {{n(customBeta.daily_limit)}} used · {{n(customBeta.starts)}} custom exams started</p>
+   <p v-if="!customBeta.enabled" class="muted">Public beta is disabled in deployment settings.</p>
+   <button v-else type="button" class="btn btn-sm btn-outline-primary" :disabled="betaBusy" @click="loadBeta(!customBeta.paused)">{{customBeta.paused?'Resume new custom starts':'Pause new custom starts'}}</button>
+  </template>
+  <p v-if="betaError" role="alert">{{betaError}}</p>
+  <p v-else-if="betaBusy&&!customBeta" role="status">Loading quota…</p>
+ </section>
  <section aria-labelledby="attention-title">
   <div class="adm-section-head"><h2 id="attention-title">Needs attention</h2><button type="button" class="adm-link" @click="load">Refresh</button></div>
   <div class="adm-attention">

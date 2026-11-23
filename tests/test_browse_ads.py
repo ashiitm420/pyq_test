@@ -18,6 +18,7 @@ def test_browse_ads_require_admin_origin_cutover(app, client):
 @pytest.mark.parametrize('path', ['/', '/exam/Quiz%201', '/course/1', '/paper/1'])
 def test_browse_shells_embed_one_exact_banner_tag(app, client, path):
     app.config.update(ADSTERRA_BROWSE_ENABLED=True, ADMIN_SUBDOMAIN_ENABLED=True, ADMIN_REDIRECT_ENABLED=True)
+    app.extensions['image_origin'] = 'https://test.r2.cloudflarestorage.com'
     response = client.get(path, base_url=PUBLIC)
     assert response.status_code == 200
     assert response.data.count(b'name="mauryahub-browse-ads" content="active"') == 1
@@ -27,6 +28,8 @@ def test_browse_shells_embed_one_exact_banner_tag(app, client, path):
     assert b"'format' : 'iframe'" in response.data
     assert b'<iframe' not in response.data
     assert response.headers['Referrer-Policy'] == 'strict-origin-when-cross-origin'
+    image_policy = next(rule for rule in response.headers['Content-Security-Policy'].split('; ') if rule.startswith('img-src '))
+    assert 'https://test.r2.cloudflarestorage.com' in image_policy
 
 
 def test_other_direct_documents_keep_their_original_ad_policy(app, client):

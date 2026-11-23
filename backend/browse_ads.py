@@ -29,4 +29,4 @@ def content_security_policy(policy):
             .replace("script-src 'self'", f"script-src 'self' 'sha256-{OPTIONS_HASH}' {SCRIPT}")
             .replace("frame-src 'self'", "frame-src 'self' https://bauval.org https://mamshirt.com")
             .replace("connect-src 'self'", "connect-src 'self' https://bauval.org https://mamshirt.com https://aqml.org https://static.nresystems.com")
-            .replace("img-src 'self'", "img-src 'self' https://bauval.org https://mamshirt.com https://aqml.org"))
+            .replace("img-src 'self' data: blob:", "img-src 'self' data: blob: https://bauval.org https://mamshirt.com https://aqml.org"))

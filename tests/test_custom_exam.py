@@ -2,7 +2,7 @@ import time
 from sqlalchemy import event
 from conftest import login
 from test_engine import seed
-from backend.models import db,Paper,Question,QuestionOption,Attempt,AnalyticsEvent,PaperProgress
+from backend.models import db,Paper,Question,QuestionOption,QuestionImage,Attempt,AnalyticsEvent,PaperProgress
 
 def papers():
     p=seed();q=Paper(identity='second',course_id=p.course_id,term_id=p.term_id,exam_type_id=p.exam_type_id,name='Second paper',status='AVAILABLE')
@@ -77,14 +77,17 @@ def test_custom_content_limit_and_cached_snapshots_unchanged(app,client):
 
 def test_custom_practice_switch_preserves_time_budget_and_answers(app,client,monkeypatch):
     p,q=papers();h=login(client,True)
-    a=client.post('/api/attempts?bootstrap=1',headers=h,json={'paper_ids':[q.id],'mode':'practice','duration_seconds':600}).json
+    a=client.post('/api/attempts?bootstrap=1',headers=h,json={'paper_ids':[q.id,p.id],'mode':'practice','duration_seconds':600}).json
     aid=a['id'];qid=a['palette'][0]['question_id'];assert a['mode']=='practice' and a['deadline'] is None
+    cleared=a['palette'][1]['question_id']
+    assert client.post(f'/api/attempts/{aid}/answers',headers=h,json={'question_id':cleared,'answer':None}).status_code==200
     assert client.post(f'/api/attempts/{aid}/answers',headers=h,json={'question_id':qid,'answer':['B']}).status_code==200
     timed=client.post(f'/api/attempts/{aid}/switch-mode',headers=h,json={'mode':'exam','duration_seconds':28800}).json
     assert 598<=timed['deadline']-timed['server_time']<=600
     row=db.session.get(Attempt,aid);row.deadline=time.time()+120;db.session.commit()
     paused=client.post(f'/api/attempts/{aid}/switch-mode',headers=h,json={'mode':'practice'}).json
-    assert paused['deadline'] is None and paused['feedback'][0]['feedback']['outcome']=='CORRECT'
+    assert paused['deadline'] is None and len(paused['feedback'])==1
+    assert paused['feedback'][0]['feedback']['outcome']=='CORRECT'
     resumed=client.post(f'/api/attempts/{aid}/switch-mode',headers=h,json={'mode':'exam','duration_seconds':28800}).json
     assert 118<=resumed['deadline']-resumed['server_time']<=120
     assert client.get(f'/api/attempts/{aid}/questions/{qid}').json['answer']==['B']
@@ -101,10 +104,67 @@ def test_custom_exam_direct_route_loads_spa_shell(app,client):
     assert client.get('/custom-exam-invalid').status_code==404
 
 
-def test_custom_exam_accepts_125_questions(app,client):
+def test_custom_exam_four_papers_125_questions_keep_start_and_status_queries_bounded(app,client):
     p,q=papers();h=login(client,True)
-    for n in range(124):db.session.add(Question(paper_id=q.id,number=str(n+2),kind='NAT',text='Boundary question',answers=2,answer_status='ANSWER_AVAILABLE',marks=1,negative_marks=0,status='AVAILABLE'))
+    selected=[p,q]
+    for i,count in enumerate((29,40,50)):
+        if i==0:
+            paper=q
+        else:
+            paper=Paper(identity=f'custom-{i}',course_id=p.course_id,term_id=p.term_id,
+                        exam_type_id=p.exam_type_id,name=f'Paper {i}',status='AVAILABLE')
+            db.session.add(paper);db.session.flush();selected.append(paper)
+        for n in range(count):
+            db.session.add(Question(paper_id=paper.id,number=str(n+2),kind='NAT',text='Boundary question',
+                                    answers=2,answer_status='ANSWER_AVAILABLE',marks=1,negative_marks=0,status='AVAILABLE'))
     db.session.commit()
-    r=client.post('/api/attempts?bootstrap=1',headers=h,json={'paper_ids':[q.id],'duration_seconds':600})
-    assert r.status_code==201,r.json
-    assert len(r.json['items'])==125 and r.json['papers'][0]['questions']==125
+    body={'paper_ids':[paper.id for paper in selected],'duration_seconds':600}
+    cold=client.post('/api/attempts?bootstrap=1',headers=h,json=body)
+    assert cold.status_code==201,cold.json
+    assert len(cold.json['items'])==125
+    assert [paper['questions'] for paper in cold.json['papers']]==[5,30,40,50]
+
+    reads=[]
+    def capture(conn,cursor,statement,parameters,context,executemany):
+        if statement.lstrip().lower().startswith('select'):
+            reads.append(statement.lower())
+    event.listen(db.engine,'before_cursor_execute',capture)
+    try:
+        warm=client.post('/api/attempts?bootstrap=1',headers=h,json=body)
+        assert warm.status_code==201,warm.json
+        assert len(warm.json['items'])==125
+        # One projected paper lookup and one grouped question count on a warm start.
+        assert sum('paper.' in sql for sql in reads)==1
+        assert sum('question.paper_id' in sql for sql in reads)==1
+        assert not any('attempt_answer.snapshot' in sql for sql in reads)
+        attempt_id=warm.json['id']
+        reads.clear()
+        assert client.get(f'/api/attempts/{attempt_id}/status').status_code==200
+        assert not any('attempt_answer.' in sql for sql in reads)
+    finally:
+        event.remove(db.engine,'before_cursor_execute',capture)
+
+
+def test_custom_signed_images_use_canonical_source_policy_on_start_resume_and_submit(app,client,monkeypatch):
+    p,q=papers()
+    p.source_metadata={'question_assets_verified_r2':True}
+    alias=Paper(identity='image-alias',course_id=p.course_id,term_id=p.term_id,exam_type_id=p.exam_type_id,
+                name='Alias',status='AVAILABLE',canonical_paper_id=p.id)
+    direct=QuestionImage(question_id=Question.query.filter_by(paper_id=p.id,number='1').one().id,path='verified.png')
+    proxy=QuestionImage(question_id=Question.query.filter_by(paper_id=q.id).one().id,path='unverified.png')
+    db.session.add_all([alias,direct,proxy]);db.session.commit()
+    app.config.update(STORAGE_BACKEND='r2',IMAGE_DELIVERY='signed',R2_ENDPOINT_URL='https://test.r2.cloudflarestorage.com')
+    monkeypatch.setattr('backend.storage.private_asset_url',
+                        lambda path,id,expires=600:f'https://test.r2.cloudflarestorage.com/{path}')
+    h=login(client,True)
+    start=client.post('/api/attempts?bootstrap=1',headers=h,json={'paper_ids':[q.id,alias.id],'duration_seconds':600})
+    assert start.status_code==201,start.json
+    aid=start.json['id']
+    resumed=client.get(f'/api/attempts/{aid}?bootstrap=1')
+    assert resumed.status_code==200
+    submitted=client.post(f'/api/attempts/{aid}/submit',headers=h)
+    assert submitted.status_code==200
+    for rows in (start.json['items'],resumed.json['items'],submitted.json['review_items']):
+        images={image['id']:image['url'] for row in rows for image in row['question']['images']}
+        assert images=={direct.id:'https://test.r2.cloudflarestorage.com/verified.png',
+                        proxy.id:f'/api/images/{proxy.id}?proxy=1'}

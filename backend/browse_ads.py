@@ -25,8 +25,14 @@ MARKUP = f'''<aside id="mauryahub-browse-banner" aria-label="Advertisement" hidd
 
 
 def content_security_policy(policy):
+    # The provider writes rotating inline script elements into its about:blank
+    # frame, which inherits this public document's CSP. Keep event-handler
+    # attributes blocked and preserve the exact external script allowlist.
+    script_sources = next(rule.removeprefix('script-src ') for rule in policy.split('; ')
+                          if rule.startswith('script-src '))
     return (policy
             .replace("script-src 'self'", f"script-src 'self' 'sha256-{OPTIONS_HASH}' {SCRIPT}")
             .replace("frame-src 'self'", "frame-src 'self' https://bauval.org https://mamshirt.com")
             .replace("connect-src 'self'", "connect-src 'self' https://bauval.org https://mamshirt.com https://aqml.org https://static.nresystems.com")
-            .replace("img-src 'self' data: blob:", "img-src 'self' data: blob: https://bauval.org https://mamshirt.com https://aqml.org"))
+            .replace("img-src 'self' data: blob:", "img-src 'self' data: blob: https://bauval.org https://mamshirt.com https://aqml.org https://cdn.storageimagedisplay.com")
+            + f"; script-src-elem {script_sources} {SCRIPT} 'unsafe-inline'; script-src-attr 'none'")

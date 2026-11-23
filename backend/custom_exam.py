@@ -1,10 +1,11 @@
-"""Bounded admin experiment; no public rollout, new tables or analytics writes."""
+"""Build bounded custom exams for the administrator and public beta."""
 import json,time,threading
 from flask import abort,g,jsonify
 from sqlalchemy import String, cast, func
 from sqlalchemy.orm import aliased, load_only
 from .models import db,Attempt,AttemptAnswer,Course,ExamType,Paper,Question,Term
-from .engine import RESULT_TTL_SECONDS
+from .engine import RESULT_TTL_SECONDS, maintain_temporary_sessions
+from . import custom_exam_beta as beta
 
 MAX_PAPERS=4
 MAX_QUESTIONS=125
@@ -17,23 +18,33 @@ def metadata(a):
 
 def check_access(a):
     meta=metadata(a)
-    if meta and (getattr(g.user,'role',None)!='ADMIN' or g.user.id!=meta['admin_id']):
+    if meta and not meta.get('public_beta') and (getattr(g.user,'role',None)!='ADMIN' or g.user.id!=meta['admin_id']):
         abort(403,description='This experimental custom exam is available only to its administrator.')
 
 def start(b):
-    if getattr(g.user,'role',None)!='ADMIN':abort(403,description='Custom exams are admin-only during testing.')
+    public=g.user.role!='ADMIN'
+    if public and not beta.enabled():
+        return beta.conflict('CUSTOM_PAUSED','New Custom Exams are temporarily paused.',403)
     if not _start_slot.acquire(blocking=False):
-        return jsonify(error='Another custom exam is starting. Retry shortly.',code='START_BUSY'),503,{'Retry-After':'3'}
-    try:return _start(b)
-    finally:_start_slot.release()
+        return beta.conflict('START_BUSY','Another Custom Exam is being prepared.',503,3)
+    try:
+        return _start(b,public)
+    finally:
+        _start_slot.release()
 
-def _start(b):
+
+def _start(b,public):
     ids=b.get('paper_ids');duration=b.get('duration_seconds')
     if not isinstance(ids,list) or not 1<=len(ids)<=MAX_PAPERS or any(type(x)!=int or x<1 for x in ids) or len(set(ids))!=len(ids):
         abort(400,description='Choose 1–4 unique papers.')
     if type(duration)!=int or not 60<=duration<=28800:abort(400,description='Choose 1–480 whole minutes.')
     mode=b.get('mode','exam')
     if mode not in ('exam','practice') or b.get('collection'):abort(400,description='Choose exam or practice.')
+    if public:
+        now=time.time()
+        quota=beta.state()
+        error=beta.blocked(quota,now) or beta.check_cooldown(now) or beta.unfinished(now)
+        if error:return error
     source=aliased(Paper)
     rows=(db.session.query(
         Paper.id,Paper.name,Course.name.label('course_name'),ExamType.name.label('exam_name'),
@@ -54,6 +65,9 @@ def _start(b):
     counts=dict(db.session.query(Question.paper_id,func.count(Question.id)).filter(Question.paper_id.in_(effective),Question.status=='AVAILABLE').group_by(Question.paper_id))
     if any(not counts.get(i) for i in effective):abort(409,description='Every selected paper must have available questions.')
     if sum(counts.values())>MAX_QUESTIONS:abort(400,description='Custom exams are limited to 125 total questions during testing. No paper will be truncated.')
+    if public:
+        error=beta.blocked(quota,time.time(),sum(counts.values()))
+        if error:return error
     from .paper_content import snapshots
     all_snapshots=[];sections=[];size=0
     for p in selected:
@@ -65,9 +79,14 @@ def _start(b):
         sections.append(dict(id=p.id,source_paper_id=eid,title=f'{p.course_name} · {p.exam_name} · {p.term_name} · {p.name}',questions=len(rows)))
     # Cached snapshots are never modified. One bulk insert, one timer, no new queue.
     deadline=time.time()+duration if mode=='exam' else None
-    a=Attempt(guest_hash=g.guest_hash,user_id=None,paper_id=None,mode=mode,title=f'Custom exam · {len(sections)} papers · admin test',deadline=deadline,expires_at=deadline+RESULT_TTL_SECONDS if deadline else time.time()+86400,records_progress=False,analytics_context={'custom_exam':{'admin_id':g.user.id,'duration_seconds':duration,'remaining_seconds':duration,'direct_image_papers':[p.source_id for p in selected if p.verified_images],'papers':sections}})
+    a=Attempt(guest_hash=g.guest_hash,user_id=None,paper_id=None,mode=mode,title=f'Custom exam · {len(sections)} papers'+('' if public else ' · admin test'),deadline=deadline,expires_at=deadline+RESULT_TTL_SECONDS if deadline else time.time()+86400,records_progress=False,analytics_context={'custom_exam':{'admin_id':g.user.id,'public_beta':public,'duration_seconds':duration,'remaining_seconds':duration,'direct_image_papers':[p.source_id for p in selected if p.verified_images],'papers':sections}})
     from .exam_api import finish_new_attempt
-    return finish_new_attempt(a,all_snapshots)
+    if public:
+        error=beta.admit(len(all_snapshots))
+        if error:return error
+    response=finish_new_attempt(a,all_snapshots,replace_unfinished=not public)
+    if public:maintain_temporary_sessions()
+    return response
 
 def switch_mode(a,b):
     from .engine import ACTIVE_TTL_SECONDS,grade

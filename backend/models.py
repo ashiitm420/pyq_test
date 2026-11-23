@@ -360,3 +360,16 @@ class StudyPaperSettings(db.Model):
     paper_id = db.Column(db.Integer, db.ForeignKey('paper.id', ondelete='CASCADE'), primary_key=True)
     featured = db.Column(db.Boolean, nullable=False, default=False)
     allow_ads = db.Column(db.Boolean, nullable=False, default=False)
+
+
+class CustomExamQuota(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    day = db.Column(db.Date, nullable=False)
+    questions_used = db.Column(db.Integer, nullable=False)
+    starts = db.Column(db.Integer, nullable=False)
+    paused = db.Column(db.Boolean, nullable=False)
+
+
+class CustomExamBrowser(db.Model):
+    guest_hash = db.Column(db.String(64), primary_key=True)
+    started_at = db.Column(db.Float, nullable=False)

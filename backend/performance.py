@@ -40,6 +40,9 @@ def install(app, db):
     def begin():
         g.perf = {'start': time.perf_counter(), 'sql': 0, 'queries': 0}
         if request.endpoint=='exams.start':
+            payload=request.get_json(silent=True)
+            if isinstance(payload,dict) and 'paper_ids' in payload:
+                return
             if not starts.acquire(blocking=False):
                 from flask import jsonify
                 return jsonify(error='Many students are starting now. Please retry in a few seconds.',code='START_BUSY'),503,{'Retry-After':'3'}

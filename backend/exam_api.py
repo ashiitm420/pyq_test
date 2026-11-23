@@ -131,10 +131,10 @@ def start_payload(a,snapshots,images_prepared=False):
                          for s in ordered]
     return result
 
-def finish_new_attempt(a,snapshots,paper=None):
+def finish_new_attempt(a,snapshots,paper=None,*,replace_unfinished=True):
     """Persist all answer rows in one batch and return the already-built bootstrap."""
     # A new start replaces this visitor's unfinished tests, even with answers.
-    if db.engine.dialect.name=='postgresql':
+    if replace_unfinished and db.engine.dialect.name=='postgresql':
         from sqlalchemy import text as _sql_text
         db.session.execute(_sql_text(
             "WITH del_ans AS ("
@@ -142,7 +142,7 @@ def finish_new_attempt(a,snapshots,paper=None):
             "SELECT id FROM attempt WHERE guest_hash = :gh AND status = 'ACTIVE'"
             ")) DELETE FROM attempt WHERE guest_hash = :gh AND status = 'ACTIVE'"
         ), {'gh': g.guest_hash})
-    else:
+    elif replace_unfinished:
         old_ids=db.session.query(Attempt.id).filter_by(guest_hash=g.guest_hash,status='ACTIVE')
         db.session.query(AttemptAnswer).filter(AttemptAnswer.attempt_id.in_(old_ids)).delete(synchronize_session=False)
         Attempt.query.filter_by(guest_hash=g.guest_hash,status='ACTIVE').delete(synchronize_session=False)

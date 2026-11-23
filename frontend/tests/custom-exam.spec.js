@@ -3,7 +3,7 @@ import {mount,flushPromises} from '@vue/test-utils';
 import CustomExamBuilder from '../src/CustomExamBuilder.vue';
 import Exam from '../src/Exam.vue';
 const mocks=vi.hoisted(()=>({api:vi.fn(),go:vi.fn(),session:{user:{id:1,role:'ADMIN'}}}));vi.mock('../src/api',()=>mocks);
-afterEach(()=>{vi.restoreAllMocks();vi.clearAllMocks();sessionStorage.clear();mocks.session.user={id:1,role:'ADMIN'}});
+afterEach(()=>{vi.useRealTimers();vi.restoreAllMocks();vi.clearAllMocks();sessionStorage.clear();mocks.session.user={id:1,role:'ADMIN'};mocks.session.customExamBeta=false});
 it('creates one admin-only combined attempt with chosen papers and one duration',async()=>{
  mocks.api.mockImplementation(async path=>path==='/catalog'?{courses:[],meta:{exams:[]}}:path.startsWith('/papers?')?{items:[{id:1,course:'CF',question_count:10},{id:2,course:'Industry',question_count:20}],total:2}:{id:88});
  vi.spyOn(window,'confirm').mockReturnValue(true);
@@ -42,4 +42,30 @@ it('switches source papers locally, retains answers, and remembers the previous 
  expect(summary.findAll('tbody tr')[1].findAll('th,td').map(c=>c.text())).toEqual(['Industry','0','1','0']);
  expect(w.text()).not.toContain('.pdf');
  expect(mocks.api).toHaveBeenCalledTimes(1);w.unmount();
+});
+
+
+it('shows the beta label and a local retry countdown without polling',async()=>{
+ vi.useFakeTimers();
+ mocks.session.user={role:'GUEST'};mocks.session.customExamBeta=true;
+ mocks.api.mockImplementation(async path=>{
+  if(path==='/catalog')return {courses:[],meta:{}};
+  if(path.startsWith('/papers?'))return {items:[{id:1,course:'Finance',question_count:25}],total:1};
+  throw Object.assign(new Error('Another Custom Exam is being prepared.'),{
+   code:'START_BUSY',details:{retry_after_seconds:3},
+  });
+ });
+ const w=mount(CustomExamBuilder);await flushPromises();
+ expect(w.get('.beta-tag').text()).toBe('BETA');
+ await w.get('input[type=checkbox]').setValue(true);
+ const start=w.findAll('button').find(button=>button.text()==='Start custom exam');
+ await start.trigger('click');await flushPromises();
+ expect(w.text()).toContain('Try again in 3 seconds.');
+ expect(start.attributes('disabled')).toBeDefined();
+ await vi.advanceTimersByTimeAsync(2000);
+ expect(w.text()).toContain('Try again in 1 second.');
+ await vi.advanceTimersByTimeAsync(1000);
+ expect(start.attributes('disabled')).toBeUndefined();
+ expect(mocks.api).toHaveBeenCalledTimes(3);
+ w.unmount();
 });

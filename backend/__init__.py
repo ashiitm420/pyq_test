@@ -43,6 +43,9 @@ def create_app(config=None):
         MAX_UPLOAD_SIZE=int(os.getenv('MAX_UPLOAD_SIZE', 110*1024*1024)),
         SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE='Lax',
         SESSION_COOKIE_SECURE=os.getenv('COOKIE_SECURE','false').lower()=='true',
+        ADMIN_SUBDOMAIN_ENABLED=os.getenv('ADMIN_SUBDOMAIN_ENABLED','false').lower()=='true',
+        ADMIN_REDIRECT_ENABLED=os.getenv('ADMIN_REDIRECT_ENABLED','false').lower()=='true',
+        ADSTERRA_BROWSE_ENABLED=os.getenv('ADSTERRA_BROWSE_ENABLED','false').lower()=='true',
         PERMANENT_SESSION_LIFETIME=86400,
         RATELIMIT_STORAGE_URI=os.getenv('RATELIMIT_STORAGE_URI','memory://'),
         LLM_PROVIDER=os.getenv('LLM_PROVIDER','none'), LLM_API_KEY=os.getenv('LLM_API_KEY',''),
@@ -102,6 +105,9 @@ def create_app(config=None):
     install_analytics(app)
     from .performance import install
     install(app, db)
+    from .admin_host import install as install_admin_host, is_admin_host
+    from . import browse_ads
+    install_admin_host(app)
     @app.before_request
     def csrf():
         if request.path.startswith('/api/') and request.method in ('POST','PUT','PATCH','DELETE'):
@@ -116,14 +122,17 @@ def create_app(config=None):
         response.headers['Content-Security-Policy']="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; frame-src 'self' https://tcsion.com https://www.tcsion.com; object-src 'none'; base-uri 'self'"
         # SPA navigation does not reload response headers. Permit the payment
         # provider on SPA shells, but load its SDK only on an explicit click.
-        if request.endpoint=='frontend' and response.mimetype=='text/html':
+        if request.endpoint=='frontend' and response.mimetype=='text/html' and not is_admin_host(app, request):
             policy=response.headers['Content-Security-Policy']
             policy=policy.replace("script-src 'self'", "script-src 'self' https://checkout.razorpay.com https://checkout-static-next.razorpay.com https://checkout-static.razorpay.com https://api.razorpay.com")
             policy=policy.replace("frame-src 'self'", "frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com")
             policy=policy.replace("connect-src 'self'", "connect-src 'self' https://api.razorpay.com https://checkout.razorpay.com")
             response.headers['Content-Security-Policy']=policy
+        if getattr(response,'browse_ads_allowed',False):
+            response.headers['Content-Security-Policy']=browse_ads.content_security_policy(response.headers['Content-Security-Policy'])
+            response.headers['Referrer-Policy']='strict-origin-when-cross-origin'
         # Keep third-party ad permissions off every other route, including the SPA.
-        if request.path.startswith('/study/papers/') and response.status_code==200:
+        if request.path.startswith('/study/papers/') and response.status_code==200 and not is_admin_host(app, request):
             from flask import g
             if getattr(g,'study_ads_allowed',False):
                 response.headers['Content-Security-Policy']=response.headers['Content-Security-Policy'].replace("script-src 'self'", "script-src 'self' https://pagead2.googlesyndication.com https://fundingchoicesmessages.google.com").replace("frame-src 'self'", "frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://fundingchoicesmessages.google.com").replace("connect-src 'self'", "connect-src 'self' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net").replace("img-src 'self' data: blob:", "img-src 'self' data: blob: https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net")
@@ -223,10 +232,16 @@ def create_app(config=None):
         html=(dist/'index.html').read_text()
         from markupsafe import escape
         meta=metadata();tags='<link rel="canonical" href="'+str(escape(meta['canonical_url']))+'">'
+        ads_enabled=(app.config['ADSTERRA_BROWSE_ENABLED'] and app.config['ADMIN_SUBDOMAIN_ENABLED']
+                     and app.config['ADMIN_REDIRECT_ENABLED'] and request.host.lower()=='www.mauryahub.in')
+        ads_allowed=ads_enabled and browse_ads.BROWSE_ROUTE.fullmatch(path) is not None
+        if ads_enabled:
+            tags+='<meta name="mauryahub-browse-ads" content="'+('active' if ads_allowed else 'available')+'">'
         if app.extensions.get('image_origin'):tags+='<link rel="preconnect" href="'+str(escape(app.extensions['image_origin']))+'" crossorigin>'
         for name,key in [('google-site-verification','site_verification'),('google-adsense-account','adsense_account')]:
             if meta[key]:tags+='<meta name="'+name+'" content="'+str(escape(meta[key]))+'">'
         response=app.response_class(html.replace('</head>',tags+'</head>',1),mimetype='text/html');response.headers['Cache-Control']='no-cache'
+        response.browse_ads_allowed=ads_allowed
         if path.startswith(('admin','custom-exam','attempt/','result/','login','progress','bookmarks','history','dashboard','mistakes')):response.headers['X-Robots-Tag']='noindex, nofollow'
         return response
     from .cli import register_cli

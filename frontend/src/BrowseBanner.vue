@@ -1,73 +1,76 @@
 <script setup>
 import { onMounted, onUnmounted, ref } from 'vue';
 
-const key = '04b45b8b141ae47be2afd0bd9dac1a47';
-const containerId = 'atContainer-' + key;
-const enabled = document.querySelector('meta[name="mauryahub-browse-ads"]')?.content === 'active';
+// Keep the parser-inserted tag and its creative in their original document.
+const banner = document.getElementById('mauryahub-browse-banner');
 const slot = ref(null);
-let resize, visibility, visible = false;
+const filled = ref(false);
+let size, creative, frame;
 
-function loadWhenReady() {
-  if (!visible || !slot.value || slot.value.clientWidth < 320) return;
-  if (document.querySelector('script[data-mauryahub-banner]')) return;
-  resize?.disconnect();
-  visibility?.disconnect();
-  if (!Array.isArray(window.atAsyncOptions)) window.atAsyncOptions = [];
-  window.atAsyncOptions.push({
-    key, format: 'js', async: true, container: containerId, params: {},
-  });
-  const script = document.createElement('script');
-  script.async = true;
-  script.src = 'https://bauval.org/22/' + key;
-  script.dataset.mauryahubBanner = '';
-  document.head.append(script);
+function alignBanner() {
+  const bounds = slot.value?.getBoundingClientRect();
+  if (!banner || !bounds) return;
+  banner.hidden = !filled.value || bounds.width < 320;
+  if (banner.hidden) return;
+  banner.style.left = `${bounds.left + window.scrollX + bounds.width / 2}px`;
+  banner.style.top = `${bounds.top + window.scrollY}px`;
+}
+
+function scheduleAlignment() {
+  cancelAnimationFrame(frame);
+  frame = requestAnimationFrame(alignBanner);
+}
+
+function updateCreative() {
+  filled.value = Boolean(banner.querySelector('iframe'));
+  scheduleAlignment();
 }
 
 onMounted(() => {
-  if (!slot.value) return;
+  if (!banner || !slot.value) return;
+  creative = new MutationObserver(updateCreative);
+  creative.observe(banner, { childList: true, subtree: true });
   if (typeof ResizeObserver !== 'undefined') {
-    resize = new ResizeObserver(loadWhenReady);
-    resize.observe(slot.value);
+    size = new ResizeObserver(scheduleAlignment);
+    size.observe(slot.value);
+    size.observe(document.body);
   }
-  if (typeof IntersectionObserver !== 'undefined') {
-    visibility = new IntersectionObserver(entries => {
-      visible = entries.some(entry => entry.isIntersecting);
-      loadWhenReady();
-    }, { rootMargin: '100px' });
-    visibility.observe(slot.value);
-  } else {
-    visible = true;
-    loadWhenReady();
-  }
+  window.addEventListener('resize', scheduleAlignment);
+  updateCreative();
 });
 
 onUnmounted(() => {
-  resize?.disconnect();
-  visibility?.disconnect();
+  if (!banner) return;
+  creative?.disconnect();
+  size?.disconnect();
+  cancelAnimationFrame(frame);
+  window.removeEventListener('resize', scheduleAlignment);
+  banner.hidden = true;
 });
 </script>
 
 <template>
-  <div v-if="enabled" class="browse-ad-region">
-    <aside ref="slot" class="browse-ad" aria-label="Advertisement">
-      <small>Advertisement</small>
-      <div :id="containerId" class="browse-ad-creative"></div>
-    </aside>
+  <div v-if="banner" class="browse-ad-region" aria-hidden="true">
+    <div ref="slot" class="browse-ad-spacer" :class="{ 'has-creative': filled }"></div>
   </div>
 </template>
 
-<style scoped>
+<style>
 .browse-ad-region { container-type: inline-size; }
-.browse-ad {
-  display: grid;
-  justify-items: center;
+.browse-ad-spacer.has-creative { min-height: 68px; margin: 20px 0; }
+@container (width < 320px) {
+  .browse-ad-spacer.has-creative { min-height: 0; margin: 0; }
+}
+#mauryahub-browse-banner:not([hidden]) {
+  position: absolute;
+  transform: translateX(-50%);
+  display: flex;
+  width: 320px;
+  flex-direction: column;
+  align-items: center;
   gap: 4px;
-  margin: 20px 0;
   color: var(--muted, #63758d);
 }
-.browse-ad small { font-size: 10px; line-height: 14px; }
-.browse-ad-creative { width: 320px; min-height: 50px; }
-@container (width < 320px) {
-  .browse-ad { display: none; }
-}
+#mauryahub-browse-banner small { font-size: 10px; line-height: 14px; }
+#mauryahub-browse-banner iframe { display: block; border: 0; }
 </style>

@@ -70,6 +70,7 @@ def create_app(config=None):
                       ANALYTICS_BACKGROUND_WRITES=int(os.getenv('ANALYTICS_BACKGROUND_WRITES','1')),
                       MEMORY_LOG_INTERVAL_SECONDS=int(os.getenv('MEMORY_LOG_INTERVAL_SECONDS','60')))
     app.config['EXAM_START_CONCURRENCY']=int(os.getenv('EXAM_START_CONCURRENCY','2'))
+    app.config['CUSTOM_EXAM_BETA_ENABLED']=os.getenv('CUSTOM_EXAM_BETA_ENABLED','false').lower()=='true'
     if config: app.config.update(config)
     app.config.setdefault('RAZORPAY_KEY_ID',os.getenv('RAZORPAY_KEY_ID',''))
     app.config.setdefault('RAZORPAY_KEY_SECRET',os.getenv('RAZORPAY_KEY_SECRET',''))

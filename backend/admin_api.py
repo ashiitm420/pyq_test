@@ -20,6 +20,17 @@ def exam_priority():
     return jsonify(enabled=current_app.extensions.get('exam_priority_mode',False),
                    scope='Current worker; resets on restart. Running jobs are allowed to finish.')
 
+@admin.route('/custom-exam-beta',methods=['GET','POST'])
+@require_user(True)
+def custom_exam_beta():
+    from .custom_exam_beta import overview
+    paused=None
+    if request.method=='POST':
+        paused=body().get('paused')
+        if type(paused) is not bool:abort(400,description='paused must be true or false')
+    return jsonify(overview(paused))
+
+
 @admin.post('/catalog/repair-java-2025')
 @require_user(True)
 def repair_java_sources():

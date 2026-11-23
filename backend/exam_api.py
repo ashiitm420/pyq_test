@@ -74,14 +74,21 @@ def use_paper_image_delivery(paper_id,paper=None):
 def use_attempt_image_delivery(a,paper=None):
     custom=custom_metadata(a)
     if custom and current_app.config.get('IMAGE_DELIVERY')=='signed':
-        g.force_proxy_images=not custom.get('direct_images',False)
+        direct_papers=custom.get('direct_image_papers')
+        if direct_papers is None:
+            # Attempts created before per-paper delivery retain their original policy.
+            g.force_proxy_images=not custom.get('direct_images',False)
+        else:
+            g.direct_image_papers=frozenset(direct_papers)
+            g.force_proxy_images=not g.direct_image_papers
     else:use_paper_image_delivery(a.paper_id,paper=paper)
 
 def question_with_image_urls(snapshot):
     result=public_question(snapshot)
     paths=getattr(g,'image_paths',{})
     ttl=getattr(g,'image_signed_ttl',None)
-    force_proxy=getattr(g,'force_proxy_images',False)
+    direct_papers=getattr(g,'direct_image_papers',None)
+    force_proxy=getattr(g,'force_proxy_images',False) or (direct_papers is not None and snapshot.get('paper_id') not in direct_papers)
     result['images']=[{**image,'url':('/api/images/'+str(image['id'])+'?proxy=1') if force_proxy else (image_url(paths.get(image['id']),image['id'],expires=ttl) if paths.get(image['id']) else '/api/images/'+str(image['id'])+'?proxy=1')} for image in result.get('images',[]) if image.get('id') is not None]
     return result
 
@@ -90,7 +97,9 @@ def prepare_image_paths(snapshots,signed_ttl=None):
     if getattr(g,'force_proxy_images',False) or current_app.config.get('IMAGE_DELIVERY','proxy')=='proxy':return
     paths={}
     missing=set()
+    direct_papers=getattr(g,'direct_image_papers',None)
     for snapshot in snapshots:
+        if direct_papers is not None and snapshot.get('paper_id') not in direct_papers:continue
         for image in snapshot.get('images',[]):
             if image.get('_asset_path'):paths[image['id']]=image['_asset_path']
             else:missing.add(image['id'])
@@ -122,10 +131,10 @@ def start_payload(a,snapshots,images_prepared=False):
                          for s in ordered]
     return result
 
-def finish_new_attempt(a,snapshots,paper=None):
+def finish_new_attempt(a,snapshots,paper=None,*,replace_unfinished=True):
     """Persist all answer rows in one batch and return the already-built bootstrap."""
     # A new start replaces this visitor's unfinished tests, even with answers.
-    if db.engine.dialect.name=='postgresql':
+    if replace_unfinished and db.engine.dialect.name=='postgresql':
         from sqlalchemy import text as _sql_text
         db.session.execute(_sql_text(
             "WITH del_ans AS ("
@@ -133,7 +142,7 @@ def finish_new_attempt(a,snapshots,paper=None):
             "SELECT id FROM attempt WHERE guest_hash = :gh AND status = 'ACTIVE'"
             ")) DELETE FROM attempt WHERE guest_hash = :gh AND status = 'ACTIVE'"
         ), {'gh': g.guest_hash})
-    else:
+    elif replace_unfinished:
         old_ids=db.session.query(Attempt.id).filter_by(guest_hash=g.guest_hash,status='ACTIVE')
         db.session.query(AttemptAnswer).filter(AttemptAnswer.attempt_id.in_(old_ids)).delete(synchronize_session=False)
         Attempt.query.filter_by(guest_hash=g.guest_hash,status='ACTIVE').delete(synchronize_session=False)

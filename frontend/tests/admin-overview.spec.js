@@ -4,7 +4,8 @@ const mocks=vi.hoisted(()=>({api:vi.fn(),session:{user:{id:1,name:'Ashish',email
 vi.mock('../src/api',()=>mocks);
 import Admin from '../src/Admin.vue';
 
-beforeEach(()=>{localStorage.removeItem('pyq-admin-tab');mocks.api.mockReset();mocks.api.mockImplementation(async path=>{
+beforeEach(()=>{localStorage.removeItem('pyq-admin-tab');mocks.api.mockReset();mocks.api.mockImplementation(async (path,options)=>{
+ if(path==='/admin/custom-exam-beta')return {enabled:true,paused:options?.body?.paused??false,questions_left:625,questions_used:1875,daily_limit:2500,starts:18};
  if(path==='/admin/stats')return {papers:12,processed:10,questions:340,queued:1,active_processing:0,failed:2};
  if(path.startsWith('/admin/content-reports'))return {items:[],total:3};
  if(path.startsWith('/admin/contact-messages'))return {items:[],total:5};
@@ -18,6 +19,13 @@ beforeEach(()=>{localStorage.removeItem('pyq-admin-tab');mocks.api.mockReset();m
 it('opens on the overview with attention counts, badges and working navigation',async()=>{
  const w=mount(Admin,{attachTo:document.body});await flushPromises();
  expect(w.get('.adm-title h1').text()).toBe('Overview');
+ const beta=w.get('[aria-labelledby="custom-beta-title"]');
+ expect(beta.text()).toContain('625 questions left');
+ expect(beta.text()).toContain('1,875 / 2,500 used');
+ expect(beta.text()).toContain('18 custom exams started');
+ await beta.findAll('button').find(b=>b.text()==='Pause new custom starts').trigger('click');await flushPromises();
+ expect(mocks.api).toHaveBeenCalledWith('/admin/custom-exam-beta',{method:'POST',body:{paused:true}});
+ expect(beta.text()).toContain('Resume new custom starts');
  const attention=w.findAll('.adm-attn').map(b=>b.text());
  expect(attention[0]).toContain('3');expect(attention[1]).toContain('5');expect(attention[2]).toContain('2');expect(attention[3]).toContain('7');
  expect(w.text()).toContain('25%');expect(w.text()).toContain('41');

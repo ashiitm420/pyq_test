@@ -6,7 +6,7 @@ import re
 
 KEY = '04b45b8b141ae47be2afd0bd9dac1a47'
 SCRIPT = f'https://bauval.org/22/{KEY}'
-BROWSE_ROUTE = re.compile(r'(?:|(?:course|paper)/[0-9]+|exam/[^/]+)')
+BROWSE_ROUTE = re.compile(r'(?:|custom-exam|(?:course|paper)/[0-9]+|exam/[^/]+)')
 OPTIONS = f"""
   atOptions = {{
     'key' : '{KEY}',

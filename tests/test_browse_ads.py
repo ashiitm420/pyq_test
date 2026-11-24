@@ -15,9 +15,10 @@ def test_browse_ads_require_admin_origin_cutover(app, client):
         assert b'mauryahub-browse-ads' not in response.data
 
 
-@pytest.mark.parametrize('path', ['/', '/exam/Quiz%201', '/course/1', '/paper/1'])
+@pytest.mark.parametrize('path', ['/', '/exam/Quiz%201', '/course/1', '/paper/1', '/custom-exam'])
 def test_browse_shells_embed_one_exact_banner_tag(app, client, path):
     app.config.update(ADSTERRA_BROWSE_ENABLED=True, ADMIN_SUBDOMAIN_ENABLED=True, ADMIN_REDIRECT_ENABLED=True)
+    app.config['CUSTOM_EXAM_BETA_ENABLED'] = True
     app.extensions['image_origin'] = 'https://test.r2.cloudflarestorage.com'
     response = client.get(path, base_url=PUBLIC)
     assert response.status_code == 200
@@ -40,7 +41,7 @@ def test_browse_shells_embed_one_exact_banner_tag(app, client, path):
 
 def test_other_direct_documents_keep_their_original_ad_policy(app, client):
     app.config.update(ADSTERRA_BROWSE_ENABLED=True, ADMIN_SUBDOMAIN_ENABLED=True, ADMIN_REDIRECT_ENABLED=True)
-    for origin, path in [(PUBLIC, '/attempt/1'), (PUBLIC, '/result/1'), (ADMIN, '/admin'), ('https://pyq-test-1.onrender.com', '/')]:
+    for origin, path in [(PUBLIC, '/attempt/1'), (PUBLIC, '/result/1'), (ADMIN, '/admin'), (ADMIN, '/custom-exam'), ('https://pyq-test-1.onrender.com', '/')]:
         response = client.get(path, base_url=origin)
         assert SCRIPT not in response.headers['Content-Security-Policy']
         assert 'script-src-elem' not in response.headers['Content-Security-Policy']

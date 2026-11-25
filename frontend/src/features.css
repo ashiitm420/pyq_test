@@ -149,7 +149,7 @@
 [data-theme="dark"] .palette button.current,[data-theme="dark"] .palette-legend i.current{border-color:#60a5fa;outline-color:#bfdbfe}
 [data-theme="dark"] .current-question-label{color:#93c5fd}
 
-.comprehension-split{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,3fr);gap:16px;flex:1;min-height:0;overflow:hidden}
+.comprehension-split{display:grid;grid-template-columns:minmax(0,calc(var(--passage-width,50%) - 6px)) 12px minmax(0,1fr);gap:0;flex:1;min-height:0;overflow:hidden}
 .comprehension-passage{min-width:0;min-height:0;display:flex;flex-direction:column;border-right:1px solid var(--line);padding-right:16px}
 .comprehension-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;font-size:.85rem}
 .comprehension-passage-body{overflow:auto;min-height:0;overscroll-behavior:contain;padding:4px 4px 16px}
@@ -168,7 +168,6 @@
 .comprehension-layout:not(.comprehension-split){display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden}
 .comprehension-layout:not(.comprehension-split)>.comprehension-question{flex:1}
 
-.comprehension-split{grid-template-columns:minmax(0,var(--passage-width,60%)) 12px minmax(0,1fr);gap:0}
 .comprehension-split>.comprehension-passage{padding:0 10px;border-right:0}
 .comprehension-split>.comprehension-question{padding-left:10px}
 .passage-divider{cursor:col-resize;touch-action:none;display:flex;align-items:center;justify-content:center;background:transparent}

@@ -261,7 +261,7 @@ onUnmounted(()=>{mobileMedia?.removeEventListener?.('change',mobileBreakpoint);d
   <div ref="feedbackPanel" v-if="feedback&&attempt.mode==='practice'" class="feedback compact-feedback" :class="'feedback-'+feedback.outcome.toLowerCase()" role="status"><span class="feedback-outcome">{{feedback.outcome==='PARTIAL'?'PARTIALLY CORRECT':feedback.outcome}}</span><span v-if="feedback.awarded!==null&&feedback.awarded!==undefined" class="feedback-marks">Marks: {{Number(feedback.awarded.toFixed(2))}} / {{item.question.marks}}</span><div class="feedback-summary"><span>Your answer: <strong>{{compactAnswer(value)}}</strong></span><span aria-hidden="true">·</span><span>Correct: <strong>{{compactAnswer(feedback.answers)}}</strong></span></div><MathText v-if="feedback.explanation" :text="feedback.explanation"/><SavedAISolution :attempt-id="id" :question-id="item.question.id" :saved="practiceCache.get(item.question.id)?.solution"/></div>
 </div></div></ComprehensionLayout><div class="save-status" role="status"><Check v-if="!pending" :size="15"/><WifiOff v-else :size="15"/>{{saved}}</div><div v-if="!isMobile" class="question-actions"><button class="btn btn-review" :disabled="submitting" @click="markNext">Mark for review &amp; next</button><button class="btn btn-light" :disabled="submitting" @click="answer(null)">Clear response</button><button class="btn btn-review" :disabled="submitting" @click="persist({question_id:current.question_id,marked:!item.marked})"><Flag :size="16"/>{{item.marked?'Unmark review':'Mark for review'}}</button><div class="spacer"></div><button class="btn btn-light" @click="open(index-1)" :disabled="index===0||submitting"><ChevronLeft :size="17"/>Previous</button><button class="btn btn-primary" @click="open(index+1)" :disabled="index===attempt.palette.length-1||submitting">Save &amp; next<ChevronRight :size="17"/></button><button v-if="desktopPaletteHidden" class="btn btn-outline-primary" :disabled="submitting" @click="confirm=true">Submit {{attempt.mode==='exam'?'exam':'practice'}}</button></div></section>
 <button v-if="!isMobile" type="button" class="desktop-palette-toggle" aria-controls="exam-question-palette" :aria-expanded="!desktopPaletteHidden" :aria-label="desktopPaletteHidden?'Show question palette':'Hide question palette'" :title="desktopPaletteHidden?'Show question palette':'Hide question palette'" @click="desktopPaletteHidden=!desktopPaletteHidden">
-  <ChevronLeft v-if="desktopPaletteHidden" :size="15" aria-hidden="true"/><ChevronRight v-else :size="15" aria-hidden="true"/>
+  <ChevronLeft v-if="desktopPaletteHidden" :size="20" :stroke-width="3.5" aria-hidden="true"/><ChevronRight v-else :size="20" :stroke-width="3.5" aria-hidden="true"/>
 </button>
 <button v-if="isMobile&&showPalette" class="mobile-exam-scrim" type="button" tabindex="-1" aria-label="Close question palette" @click="showPalette=false"></button><aside v-if="!isMobile||showPalette" v-show="isMobile||!desktopPaletteHidden" id="exam-question-palette" ref="palettePanel" class="palette-panel panel" :role="isMobile?'dialog':undefined" :aria-modal="isMobile?true:undefined" :aria-label="isMobile?'Question palette':undefined" :class="{'palette-open':showPalette}"><div v-if="isMobile" class="mobile-palette-heading"><h2>Question palette</h2><button type="button" class="mobile-icon" aria-label="Close question palette" @click="showPalette=false"><X :size="21"/></button></div><button v-if="!isMobile" class="palette-toggle text-btn" @click="showPalette=!showPalette">Question palette {{showPalette?'−':'+'}}</button><div :class="{'mobile-hidden':!showPalette}"><h2 v-if="!isMobile" class="palette-heading">Question palette</h2><p class="muted small">{{attempt.palette.filter(p=>p.state.startsWith('ANSWERED')).length}} / {{attempt.palette.length}} answered</p><div class="palette"><button v-for="p in visiblePalette" :class="[p.state,{current:p.n===index}]" :aria-label="'Question '+(p.number||p.n+1)+', '+paletteLabel(p.state)" :aria-current="p.n===index?'step':undefined" :disabled="submitting" @click="jumpPalette(p)">{{p.number||p.n+1}}</button></div><div class="palette-legend"><div v-for="s in ['ANSWERED','NOT_ANSWERED','NOT_VISITED','MARKED_FOR_REVIEW','ANSWERED_AND_MARKED_FOR_REVIEW']"><i :class="s"></i>{{paletteLabel(s)}}</div><div><i class="current"></i>Current question</div></div></div><button class="btn btn-primary w-100 mt-3" @click="showPalette=false;confirm=true" :disabled="submitting">Submit {{attempt.mode==='exam'?'exam':'practice'}}</button><p class="small muted mt-3 mb-0">← / → previous / next question. Responses are saved temporarily during this session. {{attempt.mode==='exam'?'The server enforces the deadline, including after refresh.':'Click Check answer to reveal answers and marks.'}}</p></aside></div>
 <nav v-if="isMobile" class="mobile-exam-actions" aria-label="Question navigation"><button type="button" class="mobile-icon" aria-label="Open question palette" :aria-expanded="showPalette" @click="showPalette=!showPalette"><LayoutGrid :size="21"/></button><button type="button" class="mobile-icon" aria-label="Previous question" :disabled="index===0||submitting" @click="open(index-1)"><ChevronLeft :size="22"/></button><button type="button" class="mobile-review" :aria-pressed="Boolean(item?.marked)" :disabled="submitting||!item" @click="persist({question_id:current.question_id,marked:!item.marked})"><Flag :size="17" :fill="item?.marked?'currentColor':'none'"/><span>{{item?.marked?'Marked':'Review'}}</span></button><button type="button" class="mobile-save-next" :disabled="submitting" @click="index===attempt.palette.length-1?confirm=true:open(index+1)">{{index===attempt.palette.length-1?'Finish':'Save & Next'}}<ChevronRight :size="20"/></button></nav>
@@ -286,19 +286,20 @@ onUnmounted(()=>{mobileMedia?.removeEventListener?.('change',mobileBreakpoint);d
 }
 .desktop-palette-toggle{
  grid-column:2;
- align-self:start;
+ align-self:center;
  justify-self:center;
  display:grid;
  place-items:center;
- width:21px;
- height:42px;
- margin-top:12px;
+ width:22px;
+ height:44px;
  padding:0;
- color:var(--muted);
- background:var(--panel,#fff);
- border:1px solid var(--line);
+ color:#1d4ed8;
+ background:#eff6ff;
+ border:1px solid #93c5fd;
  border-radius:6px;
 }
-.desktop-palette-toggle:hover,.desktop-palette-toggle:focus-visible{color:var(--blue);border-color:currentColor}
-[data-theme="dark"] .desktop-palette-toggle{background:#17243a}
+.desktop-palette-toggle:hover{background:#dbeafe;border-color:currentColor}
+.desktop-palette-toggle:focus-visible{outline:2px solid currentColor;outline-offset:-2px}
+[data-theme="dark"] .desktop-palette-toggle{color:#93c5fd;background:#17243a;border-color:#3b82f6}
+[data-theme="dark"] .desktop-palette-toggle:hover{background:#1e3a5f}
 </style>
